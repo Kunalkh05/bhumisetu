@@ -132,3 +132,98 @@ hypothesis_settings.register_profile(
 )
 
 hypothesis_settings.load_profile(os.environ.get("HYPOTHESIS_PROFILE", "dev"))
+
+
+# ---------------------------------------------------------------------------
+# PostgreSQL fixtures (§20.9)
+# ---------------------------------------------------------------------------
+#
+# Declared here rather than in tests/db/ because more than one test package needs
+# them: tests/config_integrity/ reads the live catalogue to catch a constraint a
+# migration created with raw SQL, which a walk over Base.metadata cannot see.
+#
+# The migrated database is session scoped because `alembic upgrade head` is the
+# expensive part and does not vary per test. Isolation comes from the
+# outer-transaction pattern in db_connection, not from rebuilding the schema, which
+# would make the suite unusable once there are thirty tables.
+
+from typing import Iterator as _Iterator  # noqa: E402
+
+from sqlalchemy import Connection as _Connection, Engine as _Engine, text as _text  # noqa: E402
+
+from tests.postgres import skip_without_postgres, temporary_database  # noqa: E402
+
+
+@pytest.fixture(scope="session")
+def migrated_url() -> _Iterator[str]:
+    """A throwaway database with every migration applied."""
+    skip_without_postgres()
+    with temporary_database() as url:
+        from alembic import command
+        from alembic.config import Config
+
+        config = Config("alembic.ini")
+        # Passed through env.py rather than exported into os.environ, so a test
+        # session cannot leave a stray DATABASE_URL affecting anything else.
+        config.attributes["test_url"] = url
+        command.upgrade(config, "head")
+        yield url
+
+
+@pytest.fixture(scope="session")
+def migrated_engine(migrated_url: str) -> _Iterator[_Engine]:
+    from app.db.session import create_guarded_engine
+
+    engine = create_guarded_engine(migrated_url)
+    yield engine
+    engine.dispose()
+
+
+@pytest.fixture
+def db_connection(migrated_engine: _Engine) -> _Iterator[_Connection]:
+    """A connection inside a transaction that is always rolled back.
+
+    Every test sees the migrated schema with no rows from any other test, without
+    paying for a schema rebuild. Nothing a test writes survives it, including
+    trigger side effects, which is what lets the hierarchy tests each build their
+    own tree.
+    """
+    connection = migrated_engine.connect()
+    transaction = connection.begin()
+    try:
+        yield connection
+    finally:
+        transaction.rollback()
+        connection.close()
+
+
+@pytest.fixture
+def area_factory(db_connection: _Connection):
+    """Insert an administrative area, returning its derived path and state_key.
+
+    Supplies deliberate rubbish for path and state_key on every call. If the trigger
+    ever stops overwriting them, every test using this factory fails rather than one
+    dedicated test — the derived-column guarantee is load-bearing for R2.2 and
+    should be hard to lose quietly.
+    """
+
+    def insert(code: str, area_type: str, name: str, parent_code: str | None = None):
+        return db_connection.execute(
+            _text(
+                """
+                INSERT INTO administrative_area
+                    (code, area_type, name, parent_code, state_key, path)
+                VALUES
+                    (:code, :area_type, :name, :parent_code, 'SUPPLIED', 'SUPPLIED')
+                RETURNING code, path::text AS path, state_key
+                """
+            ),
+            {
+                "code": code,
+                "area_type": area_type,
+                "name": name,
+                "parent_code": parent_code,
+            },
+        ).one()
+
+    return insert
