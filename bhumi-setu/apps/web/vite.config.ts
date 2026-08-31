@@ -1,4 +1,6 @@
 import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import { fileURLToPath, URL } from 'node:url';
 
 /**
  * Officer portal build (design §3.4, §10.6).
@@ -14,7 +16,12 @@ import { defineConfig } from 'vite';
  */
 export default defineConfig({
   base: '/officer/',
-
+  plugins: [react()],
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
+  },
   server: {
     // Reachable from the proxy container, not just from inside this one.
     host: true,
@@ -23,7 +30,6 @@ export default defineConfig({
     // about.
     strictPort: true,
   },
-
   preview: {
     host: true,
     port: 3000,
