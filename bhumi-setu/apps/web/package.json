@@ -6,6 +6,7 @@
   "description": "BHUMISETU officer portal. The citizen portal is server-rendered from the api service and is deliberately not part of this bundle.",
   "scripts": {
     "dev": "vite",
+    "dev:local": "vite --config vite.config.local.ts",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
