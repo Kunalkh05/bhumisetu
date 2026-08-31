@@ -77,8 +77,11 @@ from app.settings import get_broker_settings
 QUEUE_NAMES: tuple[str, ...] = ("ocr", "ocr_bulk", "ml", "import", "maintenance")
 
 #: The single registry of modules Celery imports to find tasks. Empty at task
-#: 1.1; each later task adds its own module.
-TASK_MODULES: tuple[str, ...] = ()
+#: 1.1; each later task adds its own module. Task 3.8 adds the first —
+#: ``app.db.outbox`` — whose ``dispatch_outbox`` the beat schedule below drives.
+#: A task whose module is absent here is never registered, and its beat entry
+#: fails loudly at dispatch rather than silently no-opping.
+TASK_MODULES: tuple[str, ...] = ("app.db.outbox",)
 
 #: Task name -> queue. Routing is explicit for every task in §13.7 so that a
 #: task's queue is a property of the topology rather than of its call site.

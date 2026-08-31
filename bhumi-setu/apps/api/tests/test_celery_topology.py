@@ -107,10 +107,17 @@ def test_the_outbox_is_dispatched_every_two_seconds() -> None:
     assert entry["schedule"] == pytest.approx(2.0)
 
 
-def test_no_task_modules_are_registered_yet() -> None:
-    """Task 1.1 ships the topology, not the tasks. Each lands with its own task."""
-    assert TASK_MODULES == ()
-    assert celery_app.conf.include == ()
+def test_the_outbox_dispatcher_is_the_first_registered_task_module() -> None:
+    """Task 1.1 shipped the topology with no tasks; task 3.8 adds the first module.
+
+    ``dispatch_outbox`` has a beat entry, and a task whose module is not in
+    ``TASK_MODULES`` is never imported by a worker — so it is never registered and
+    the beat entry fails loudly at dispatch rather than silently no-opping. The
+    module must therefore appear both in ``TASK_MODULES`` and in the app's
+    ``include`` (which is built from it).
+    """
+    assert "app.db.outbox" in TASK_MODULES
+    assert "app.db.outbox" in celery_app.conf.include
 
 
 def test_broker_is_the_committed_redis_url() -> None:

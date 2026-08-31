@@ -311,3 +311,130 @@ def test_every_registered_validator_rejects_something() -> None:
     for key, validator in VALIDATORS.items():
         with pytest.raises((PolicyValueInvalid, TypeError, AttributeError)):
             validator(key, object())
+
+# ---------------------------------------------------------------------------
+# Property 65, the biconditional form — "accepted exactly when"
+# ---------------------------------------------------------------------------
+#
+# The tests above generate a *valid* value and break it one way at a time, which
+# proves the rejection side one defect per test. Task 2.8 asks for the other
+# direction as a property: over arbitrary values, drawn to straddle the boundary,
+# acceptance must coincide *exactly* with the specification predicate. A validator
+# that accepted one malformed set in a thousand, or rejected one legal set, would
+# pass every single-defect test above and fail here.
+#
+# The oracle is written from the specification (a contiguous partition of [0, 1];
+# review strictly below auto-accept), not by copying the validator — the two are
+# only allowed to agree because both are correct, and that agreement is the claim.
+
+
+def _is_accepted(validator, key: str, value) -> bool:
+    """True when ``validator`` admits ``value``; False when it raises the domain
+    error. Any other exception propagates — an ``AttributeError`` from a generator
+    that wandered outside the input space is a bug in the test, not a rejection."""
+    try:
+        validator(key, value)
+        return True
+    except PolicyValueInvalid:
+        return False
+
+
+# --- Risk band cutoffs (R28.7) ---------------------------------------------
+
+# Exactly representable, and chosen to straddle every boundary the predicate turns
+# on: 0.0 (excluded — the first band would be empty), 1.0 (the only legal top), and
+# 1.5 (above the interval). Independent draws produce out-of-order and duplicate
+# sets far more often than valid ones, so the accept branch is fed separately.
+_CUTOFF_POOL = (0.0, 0.1, 0.25, 0.5, 0.6, 0.75, 0.9, 1.0, 1.5)
+
+
+@st.composite
+def st_maybe_valid_cutoffs(draw) -> dict:
+    """A cutoff set that is valid about half the time and malformed the rest.
+
+    The valid half comes from :func:`st_band_cutoffs`, so the accept branch is
+    actually exercised rather than left to chance; the other half draws each bound
+    independently and sometimes drops or adds a band, covering the gap, overlap,
+    wrong-top, missing-band and unknown-band failures in one generator."""
+    if draw(st.booleans()):
+        return dict(draw(st_band_cutoffs()))
+    value = {band: draw(st.sampled_from(_CUTOFF_POOL)) for band in BANDS}
+    shape = draw(st.sampled_from(["as_is", "as_is", "as_is", "drop", "add"]))
+    if shape == "drop":
+        del value[draw(st.sampled_from(BANDS))]
+    elif shape == "add":
+        value["EXTREME"] = draw(st.sampled_from(_CUTOFF_POOL))
+    return value
+
+
+def _partitions_unit_interval(value) -> bool:
+    """The R28.7 predicate, straight from the spec: the four bands, as ascending
+    upper bounds, tile (0, 1] with no gap, no overlap, and a top of exactly 1.0."""
+    if not isinstance(value, dict) or set(value) != set(BANDS):
+        return False
+    bounds = [value[band] for band in BANDS]
+    if any(isinstance(b, bool) or not isinstance(b, (int, float)) for b in bounds):
+        return False
+    if any(b <= 0.0 or b > 1.0 for b in bounds):
+        return False
+    if bounds != sorted(bounds) or len(set(bounds)) != len(bounds):
+        return False
+    return bounds[-1] == 1.0
+
+
+@given(cutoffs=st_maybe_valid_cutoffs())
+@settings(max_examples=200)
+def test_a_cutoff_set_is_accepted_exactly_when_it_partitions_the_unit_interval(
+    cutoffs: dict,
+) -> None:
+    """Feature: bhumisetu, Property 65: for any submitted Risk_Band cutoff set, the
+    change is accepted exactly when the bands partition the interval 0 to 1 into
+    contiguous non-overlapping ranges covering every probability."""
+    accepted = _is_accepted(validate_partitions_unit_interval, "risk.band_cutoffs", cutoffs)
+    assert accepted == _partitions_unit_interval(cutoffs), cutoffs
+
+
+# --- OCR thresholds (R28.8) -------------------------------------------------
+
+# Straddles the [0, 1] range (−0.1 and 1.1 are out) and packs values near the
+# auto-accept/review boundary so the ordering rule is exercised, not just the range
+# check. 0.0 and 1.0 are inside the interval for thresholds, unlike a band bound.
+_THRESHOLD_POOL = (-0.1, 0.0, 0.4, 0.5, 0.6, 0.9, 0.95, 1.0, 1.1)
+_THRESHOLD_KEYS = ("auto_accept", "review", "document_rejection")
+
+
+@st.composite
+def st_maybe_valid_threshold_set(draw) -> dict:
+    """An OCR threshold set drawn to land on both sides of ``review < auto_accept``,
+    sometimes out of range, sometimes missing one of the three keys."""
+    value = {name: draw(st.sampled_from(_THRESHOLD_POOL)) for name in _THRESHOLD_KEYS}
+    if draw(st.integers(min_value=0, max_value=4)) == 0:
+        del value[draw(st.sampled_from(_THRESHOLD_KEYS))]
+    return value
+
+
+def _review_below_auto_accept(value) -> bool:
+    """The R28.8 predicate: the three named thresholds are present and in [0, 1],
+    and review is strictly below auto-accept. document_rejection carries no ordering
+    constraint of its own — the set turns solely on review versus auto-accept."""
+    if not isinstance(value, dict) or any(name not in value for name in _THRESHOLD_KEYS):
+        return False
+    for name in _THRESHOLD_KEYS:
+        bound = value[name]
+        if isinstance(bound, bool) or not isinstance(bound, (int, float)):
+            return False
+        if not 0.0 <= float(bound) <= 1.0:
+            return False
+    return float(value["review"]) < float(value["auto_accept"])
+
+
+@given(thresholds=st_maybe_valid_threshold_set())
+@settings(max_examples=200)
+def test_an_ocr_threshold_set_is_accepted_exactly_when_review_is_below_auto_accept(
+    thresholds: dict,
+) -> None:
+    """Feature: bhumisetu, Property 65: for any submitted OCR threshold set, the
+    change is accepted exactly when the review threshold is strictly below the
+    auto-accept threshold."""
+    accepted = _is_accepted(validate_ocr_threshold_set, "ocr.thresholds", thresholds)
+    assert accepted == _review_below_auto_accept(thresholds), thresholds

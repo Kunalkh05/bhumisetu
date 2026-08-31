@@ -5,10 +5,10 @@ Named ``column_types`` and not ``types``: the latter shadows the standard librar
 resulting failure is a circular-import traceback out of ``functools`` that names
 neither this file nor the real cause.
 
-Only ``ltree`` so far. It lives here rather than in ``app/models/`` because the
-placement rule in :mod:`app.db.base` is about *mapped tables* — a column type is
-plumbing, and putting it in the models package would give the metadata walk a
-module with no table in it.
+``ltree`` and the PostGIS ``geometry`` type so far. They live here rather than in
+``app/models/`` because the placement rule in :mod:`app.db.base` is about *mapped
+tables* — a column type is plumbing, and putting it in the models package would
+give the metadata walk a module with no table in it.
 
 Why ltree at all
 ----------------
@@ -49,11 +49,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from sqlalchemy import String
+from sqlalchemy import String, cast
 from sqlalchemy.engine import Dialect
 from sqlalchemy.types import TypeDecorator, UserDefinedType
 
-__all__ = ["LQuery", "Ltree", "to_ltree_label", "to_ltree_path"]
+__all__ = ["Geometry", "LQuery", "Ltree", "to_ltree_label", "to_ltree_path"]
 
 # ltree admits letters, digits and underscore in a label; '.' separates labels.
 _ILLEGAL_LABEL_CHARS = re.compile(r"[^A-Za-z0-9_]+")
@@ -109,12 +109,28 @@ def to_ltree_path(*labels: str) -> str:
     return ".".join(labels)
 
 
+def _as_ltree(other: Any) -> Any:
+    """Coerce a raw operand to an explicit ``::ltree`` cast; pass expressions through.
+
+    ``scoped()`` (§8.1) compares a ``path`` column against the officer's scope
+    paths, which arrive as plain Python strings. Bound as-is they reach PostgreSQL
+    as ``text`` and the ``ltree <@ text`` form leans on implicit resolution; casting
+    makes the operand's type explicit at the call site instead. A column or other
+    SQL expression already carries a type, so it is passed through untouched — which
+    is also what keeps ``@>``/``<@`` between two ``path`` columns from acquiring a
+    spurious cast.
+    """
+    if isinstance(other, (str, bytes)):
+        return cast(other, Ltree())
+    return other
+
+
 class Ltree(UserDefinedType[str]):
     """The PostgreSQL ``ltree`` type.
 
     Values move as strings in both directions, which is what makes the operators
-    usable from the ORM: ``AdministrativeArea.path.op("<@")(scope_path)`` renders
-    as ``path <@ 'IN.MH'`` and hits the GiST index.
+    usable from the ORM: ``AdministrativeArea.path.descendant_of(scope_path)``
+    renders as ``path <@ 'IN.MH'::ltree`` and hits the GiST index.
 
     ``cache_ok`` is set so statements using this type participate in SQLAlchemy's
     compiled-statement cache. That is only correct because the type carries no
@@ -122,6 +138,27 @@ class Ltree(UserDefinedType[str]):
     """
 
     cache_ok = True
+
+    class Comparator(UserDefinedType.Comparator[str]):
+        """The two ltree containment operators ``scoped()`` (§8.1) needs.
+
+        Named methods rather than raw ``.op("<@")`` at every call site because the
+        direction of ``<@`` is easy to invert and impossible to see once written:
+        ``a <@ b`` is "a is a *descendant* of b", so an officer scoped to a district
+        sees a village when ``village.path <@ district.path``. Spelling it
+        ``village.path.descendant_of(district.path)`` puts the reading in the source,
+        and the parity test on the administrative hierarchy pins the semantics.
+        """
+
+        def descendant_of(self, other: Any) -> Any:
+            """``self <@ other`` — is this path at or below ``other`` in the tree."""
+            return self.op("<@", is_comparison=True)(_as_ltree(other))
+
+        def ancestor_of(self, other: Any) -> Any:
+            """``self @> other`` — is this path at or above ``other`` in the tree."""
+            return self.op("@>", is_comparison=True)(_as_ltree(other))
+
+    comparator_factory = Comparator
 
     def get_col_spec(self, **_: Any) -> str:
         return "ltree"
@@ -173,3 +210,65 @@ class LQuery(TypeDecorator[str]):
 
     def load_dialect_impl(self, dialect: Dialect) -> Any:
         return dialect.type_descriptor(_LQueryImpl())
+
+
+class Geometry(UserDefinedType[str]):
+    """The PostGIS ``geometry`` type, parameterised by geometry kind and SRID.
+
+    Why a hand-rolled type rather than GeoAlchemy2
+    ----------------------------------------------
+
+    GeoAlchemy2 is the usual answer, and it is deliberately *not* a dependency.
+    Its value is the read/write conversion between the database's EWKB and Shapely
+    geometries, plus the spatial function bindings — none of which the API process
+    needs. Geometry is validated and stored by ``GIS_Service`` (§12) close to
+    PostGIS, spatial queries are expressed as raw SQL against the GiST index, and
+    tiles are served as MVT straight from the database. Pulling in GeoAlchemy2 and
+    its GEOS-linked stack for a column type that only has to *name itself in DDL*
+    is weight the deployment would carry for nothing. This mirrors :class:`Ltree`:
+    the platform declares the shape of the PostgreSQL type it uses and leaves the
+    heavy conversions to the database.
+
+    What it does, and does not, do
+    ------------------------------
+
+    :meth:`get_col_spec` renders ``geometry(MultiPolygon,4326)`` so a model
+    carrying this type describes the real column, and the metadata walk (the schema
+    guards of task 2.7) sees a geometry column rather than an opaque blob. It does
+    **not** convert values in either direction: nothing in the API binds a Python
+    geometry through the ORM today, and the day something does, it goes through
+    ``GIS_Service`` with an explicit ``ST_GeomFrom…`` rather than an implicit
+    driver coercion that would hide the SRID.
+
+    The migration that creates the column does not import this type
+    ---------------------------------------------------------------
+
+    Migration 0006 adds ``geom`` with raw ``ALTER TABLE … ADD COLUMN geom
+    geometry(MultiPolygon, 4326)``, exactly as migration 0001 adds ``path ltree``
+    with raw SQL. A frozen migration must not import a module that keeps changing;
+    the DDL string is the contract, and this type is how the *models* name the same
+    column so ``Base.metadata`` stays a faithful picture of the schema.
+
+    ``cache_ok`` and the parameters
+    -------------------------------
+
+    Set ``True`` so statements using the type join the compiled-statement cache.
+    Unlike :class:`Ltree` this type *does* carry parameters, and they change the
+    DDL — so they are stored as instance attributes named exactly as the
+    constructor arguments, which is what lets SQLAlchemy fold them into the cache
+    key correctly rather than caching two differently-shaped columns under one key.
+    """
+
+    cache_ok = True
+
+    def __init__(self, geometry_type: str = "GEOMETRY", srid: int = 4326) -> None:
+        #: The geometry subtype, e.g. ``MultiPolygon``. Kept verbatim so the DDL
+        #: matches §6.1 rather than a normalised spelling PostGIS would also accept.
+        self.geometry_type = geometry_type
+        #: The spatial reference identifier. 4326 (WGS 84) platform-wide (§12): one
+        #: SRID everywhere means a spatial join never silently compares coordinates
+        #: in two frames.
+        self.srid = srid
+
+    def get_col_spec(self, **_: Any) -> str:
+        return f"geometry({self.geometry_type},{self.srid})"

@@ -42,6 +42,10 @@ class ErrorCode:
     DUPLICATE_DOCUMENT = "DUPLICATE_DOCUMENT"
     PAYOUT_EXCEEDS_AWARD = "PAYOUT_EXCEEDS_AWARD"
     NOT_AUTHORISED = "NOT_AUTHORISED"
+    # Distinct from NOT_AUTHORISED: this is "no valid session" (R1.6, 401), where
+    # that is "authenticated but forbidden" (R2.3, 403). authenticate() raises the
+    # former; the gate (task 5.6) raises the latter.
+    UNAUTHENTICATED = "UNAUTHENTICATED"
 
     # Envelope codes for failures that are not domain refusals.
     VALIDATION_FAILED = "VALIDATION_FAILED"

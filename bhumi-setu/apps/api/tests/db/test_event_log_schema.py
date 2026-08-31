@@ -267,8 +267,82 @@ def test_txid_records_the_writing_transaction(db_connection: Connection) -> None
     ).scalar_one()
 
 
+# A plan-dependent assertion needs a plan the planner would actually produce in
+# production, which means a populated table with statistics — the seed-then-ANALYZE
+# pattern task 17.5 uses for the PostGIS benchmark (apps/api/tests/perf/). On a
+# near-empty table the cost estimates for two indexes over the same
+# (entity_type, entity_id) prefix collapse to within rounding of each other, and
+# which one EXPLAIN reports is effectively a coin toss: event_knowable, one column
+# shorter, is picked as readily as event_entity_asof. The single-row version of
+# this test therefore passed or failed by luck of the planner and the server
+# version, not by whether the index does its job.
+
+# occurrence_time is laid down one row per minute from this instant, so an as-of
+# read can name a cutoff that selects a real slice of the history.
+_SEED_BASE = "2025-01-01 00:00:00+00"
+# 200 minutes in — half the seeded events for the entity under test fall on each
+# side. That the cutoff excludes part of the history is the whole point: it is what
+# gives occurrence_time <= cutoff its selectivity, and so what makes event_entity_asof
+# (occurrence_time is its third column) cheaper than event_knowable (which cannot use
+# the bound and would have to filter then sort). Against the full table `now()` would
+# match every row and that distinction would vanish.
+_AS_OF_CUTOFF = "2025-01-01 03:20:00+00"
+
+
+def seed_events_for_planning(connection: Connection) -> None:
+    """Populate `event` to a scale where an index scan is the planner's rational
+    choice, then ANALYZE so the estimates reflect it.
+
+    A few hundred events for the one entity/case under test, and a few thousand for
+    other entities so the (entity_type, entity_id) filter is selective and a
+    sequential scan is genuinely the expensive option. Inserted in two set-based
+    statements rather than a Python loop so the seed costs one round trip each.
+    """
+    connection.execute(
+        text(
+            """
+            INSERT INTO event (event_type, entity_type, entity_id, case_id,
+                               actor_type, actor_id, occurrence_time, payload)
+            SELECT 'CASE_UPDATED', 'acquisition_case', 1, 99,
+                   'OFFICER', 'officer:412',
+                   CAST(:base AS timestamptz) + make_interval(mins => g),
+                   CAST('{}' AS jsonb)
+            FROM generate_series(1, 400) AS g
+            """
+        ),
+        {"base": _SEED_BASE},
+    )
+    connection.execute(
+        text(
+            """
+            INSERT INTO event (event_type, entity_type, entity_id, case_id,
+                               actor_type, actor_id, occurrence_time, payload)
+            SELECT 'PARCEL_UPDATED', 'land_parcel', (g % 900) + 2, NULL,
+                   'OFFICER', 'officer:412',
+                   CAST(:base AS timestamptz) + make_interval(mins => g),
+                   CAST('{}' AS jsonb)
+            FROM generate_series(1, 3600) AS g
+            """
+        ),
+        {"base": _SEED_BASE},
+    )
+    connection.execute(text("ANALYZE event"))
+
+
 def test_the_entity_as_of_read_uses_its_index(db_connection: Connection) -> None:
-    insert_event(db_connection)
+    """§5.3: the as-of read for one entity resolves through event_entity_asof as an
+    ordered index scan — the index carries occurrence_time and the (occurrence_time,
+    id) ordering, so the read needs neither a filter pass nor a sort.
+
+    Seeded and ANALYZEd first (see seed_events_for_planning) and read as-of a cutoff
+    inside that history rather than now(); the note above explains why both are
+    load-bearing. enable_seqscan is left off in keeping with the other index tests
+    here: the question is whether the index serves the read, not whether the planner
+    prefers it to a scan of a handful of rows. The test still fails if
+    event_entity_asof is dropped (the planner falls back to event_knowable and a
+    sort) or if the predicate stops being sargable.
+    """
+    seed_events_for_planning(db_connection)
     db_connection.execute(text("SET LOCAL enable_seqscan = off"))
     plan = "\n".join(
         db_connection.scalars(
@@ -276,10 +350,11 @@ def test_the_entity_as_of_read_uses_its_index(db_connection: Connection) -> None
                 """
                 EXPLAIN SELECT * FROM event
                  WHERE entity_type = 'acquisition_case' AND entity_id = 1
-                   AND occurrence_time <= now()
+                   AND occurrence_time <= CAST(:as_of AS timestamptz)
                  ORDER BY occurrence_time, id
                 """
-            )
+            ),
+            {"as_of": _AS_OF_CUTOFF},
         )
     )
     assert "event_entity_asof" in plan, plan

@@ -1,0 +1,15 @@
+{#-
+  A citizen's view of one ownership record (§8.2, §10, R26.7).
+
+  The gate has already run: this template is handed the *gated* dict, so `owner_name`
+  and `government_identifier` are simply absent from the context for a citizen who does
+  not own the record. The conditionals below therefore render nothing for a co-owner —
+  the template cannot print a name it was never given. When `government_identifier` is
+  present it arrives already masked to its trailing four characters (R26.5), so the
+  template prints it verbatim without knowing masking happened.
+-#}
+<section class="ownership" data-record-id="{{ id }}">
+  <p class="share">{{ share }}</p>
+  {% if owner_name %}<p class="owner-name">{{ owner_name }}</p>{% endif %}
+  {% if government_identifier %}<p class="gov-id">{{ government_identifier }}</p>{% endif %}
+</section>

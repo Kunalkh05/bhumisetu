@@ -20,10 +20,15 @@ to the client.
 Sessions are not wired here. ``unit_of_work()`` is opened by the route handler,
 not by a dependency; ``app/db/session.py`` explains why.
 
-Routers are absent because no route exists yet. The one endpoint below,
-``GET /healthz``, is unauthenticated and returns a fixed body with no version,
-environment or dependency state, so it discloses only that the process is
-answering. Authentication for the real surfaces arrives with §19.1 in task 5.
+The four consumer surfaces of §9 — officer (``/api/officer``), citizen JSON
+(``/api/citizen``), citizen HTML (``/c``) and internal (``/internal``) — are
+included from :data:`app.api.routers.ALL_ROUTERS`, each built with
+``route_class=GatedRoute`` so every response they carry is redacted at the
+boundary (§8.2). They hold no endpoints yet; the domain tasks register on them,
+and including an empty router adds nothing until they do. ``GET /healthz`` below
+is unauthenticated and deliberately *not* on a gated router: it returns a fixed
+body with no version, environment or dependency state, so it discloses only that
+the process is answering.
 """
 
 from __future__ import annotations
@@ -35,6 +40,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from app.api.routers import ALL_ROUTERS
 from app.errors import DomainError, ErrorCode, ErrorEnvelope
 from app.settings import CoreSettings, get_core_settings, get_database_settings
 
@@ -113,6 +119,11 @@ def create_app(core: CoreSettings | None = None) -> FastAPI:
         openapi_url=None if core.is_production else "/openapi.json",
     )
     _register_error_handlers(app)
+
+    # The §9 consumer surfaces. Each is a GatedRoute router, so an endpoint a later
+    # task registers on it is redacted at the boundary by construction (§8.2).
+    for router in ALL_ROUTERS:
+        app.include_router(router)
 
     @app.get("/healthz", include_in_schema=False)
     async def healthz() -> dict[str, str]:

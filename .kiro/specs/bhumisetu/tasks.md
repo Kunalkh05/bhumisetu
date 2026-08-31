@@ -4,28 +4,29 @@
 
 Implementation follows the design's own dependency structure rather than the requirements' numbering. Four mechanisms are load-bearing — `PolicyResolver` (§4), the event log with `personal_datum` indirection (§5), `VersionedRepository` (§7), and `GatedRoute`/`ResponseGate` (§8) — and every later subsystem reads dates, appends events, writes entities, and serializes responses through them. They are built first, each with the structural test or CI guard that keeps it honest landing in the same task group, so the guards exist before there is code for them to catch.
 
-Stack is fixed by §3: Python 3.11 / FastAPI / SQLAlchemy 2.0 / Alembic, Celery on Redis, PostgreSQL 15 + PostGIS 3.3, MinIO, React + Vite for the officer portal only. The citizen surface is server-rendered Jinja2 from the API service (§10).
+Stack is fixed by the design's **Language and stack** section (under its Overview): Python 3.11 / FastAPI / SQLAlchemy 2.0 / Alembic, Celery on Redis, PostgreSQL 15 + PostGIS 3.3, MinIO, React + Vite for the officer portal only, with the deviations from the committed `docker-compose.yml` collected in §3.4. The citizen surface is server-rendered Jinja2 from the API service (§10).
 
 After the four mechanisms: sessions → core domain → validation → documents and OCR → GIS → officer portal → citizen portal → synthetic dataset → ML pipeline → priority and intervention → retention and DSAR → bulk import → localization → the measurement harnesses for the requirements §2 flags as not satisfiable as written.
 
 ## Preconditions carried into every task
 
-These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1). They are constraints on implementation, not tasks:
+These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), plus Q4's threshold values remaining unconfirmed. Q1, Q4, Q8, and Q10 are now resolved as maintainer defaults, and the concrete values live in the requirements Open Policy Decisions section. They are constraints on implementation, not tasks:
 
-- **No statutory period value may be seeded.** Task 2 ships the `policy_config` schema, the resolver, and the validators, and leaves every RFCTLARR period row unseeded. The R28.5 refuse-and-report path (`409 POLICY_VALUE_MISSING`) is the operating state. Every task that needs a deadline works against configured values supplied by test fixtures, never against a legal number written into code, a column default, or a CHECK constraint.
+- **A review-required RFCTLARR baseline is seeded; no statutory period is ever a literal.** A default RFCTLARR_2013 platform-wide (state key `'*'`) baseline IS now seeded as fixture/seed data — the period values from the requirements Q8 resolution, each flagged review-required before production use. Per-state values still refuse-and-report (R28.5, `409 POLICY_VALUE_MISSING`) until that state configures them. The invariant preserved unchanged is that no statutory period is ever a code literal, a column default, or a CHECK constraint — the AST lint of 2.6 and the schema guards of 2.7 stay in force. Task 2 ships the `policy_config` schema, the resolver, and the validators; Task 2.8 still seeds no value into product code — the baseline lives in the seed/config task (21.3). Every task that needs a deadline works against configured values, never against a legal number written into code, a column default, or a CHECK constraint.
 - **The retention sweep ships disabled.** Task 25 builds `CATEGORY_MAP`, the metadata-walk classification test, the two-armed erasure path, and the DSAR handlers, and leaves `retention.sweep_enabled` false with no seeded `retention.period.*` rows. Erasure is irreversible; confirming Q10 late costs nothing, confirming it wrongly and sweeping is unrecoverable (§1.3).
-- **The label definition is configuration.** No task may hardcode the stage transition in scope, the deadline baseline, the horizon length, or the censoring treatment. All four are fields on `LabelDefinition` resolved from `Policy_Config` (§14.4).
+- **The label definition is configuration.** No task may hardcode the stage transition in scope, the deadline baseline, the horizon length, or the censoring treatment. All four are fields on `LabelDefinition` resolved from `Policy_Config` (§14.4). Q1 is now resolved as a maintainer default (see the requirements Open Policy Decisions section for the resolved values); those values still enter only as `LabelDefinition` configuration, never as hardcoded constants.
+- **No OCR confidence threshold value may be seeded.** The auto-accept, review, manual-entry, and document-rejection thresholds of Q4 are `Policy_Config` values, and no `ocr.threshold.*` row may be seeded outside test fixtures. Tasks 2.4, 2.5, 16.4, and 16.7 already build the mechanism: the validator that rejects a threshold set where review is not strictly below auto-accept, the write path that refuses a threshold change without a matching non-superseded `extraction_accuracy_report`, `review_state_for`'s refusal to assign `AUTO_ACCEPTED` unless a current report admits that threshold, and the report that states precision at every threshold held in config. A confidence score is a model output, not an accuracy measurement, so an unconfirmed threshold seeded as a default would silently admit bad extracted values into cases, parcels, and ownership records with no human review and no evidence that the precision at that threshold was ever measured. That is the failure being designed out.
 - **Human-only or hardware-only obligations are preconditions, not tasks.** Confirming Q1/Q8/Q10, hand-labelling the Holdout_Set (R11.10 requires labels recorded independently of any OCR output), choosing a GPU or CPU recognizer for R11.8, and confirming the R24.3 measurement reading are named inside the tasks that depend on them.
 
 ## Tasks
 
-- [ ] 1. Substrate: package layout, Alembic baseline, and compose topology
+- [x] 1. Substrate: package layout, Alembic baseline, and compose topology
   - [x] 1.1 Application skeleton and transactional session plumbing
     - `apps/api/app/main.py`, `app/settings.py`, and `app/db/session.py` with a `unit_of_work()` context manager that yields one session inside one transaction — §5.2's atomicity guarantee is this boundary, so it must exist before `EventLog.append`
     - `app/db/base.py` declaring `Base.metadata`; the metadata-walk tests in 2.7 and 25.2 read it, so it is the single registry of tables
     - Celery app under `apps/api/app/workers/celery_app.py` declaring the §13.7 queue topology: `ocr`, `ocr_bulk`, `ml`, `import`, `maintenance`, plus the beat schedule skeleton
     - _Requirements: 4.8_
-  - [-] 1.2 Alembic baseline migration: extensions, jurisdiction hierarchy, officers and roles
+  - [x] 1.2 Alembic baseline migration: extensions, jurisdiction hierarchy, officers and roles
     - `CREATE EXTENSION IF NOT EXISTS postgis`, `ltree`, `pgcrypto`
     - `administrative_area` (`code` PK, `area_type`, `state_key`, `parent_code`, `path ltree`) with `USING gist (path)`; `officer`; `role`; `jurisdiction_scope (role_id, area_code)`
     - Create the `bhumisetu_app` database role that task 3.1 revokes `UPDATE, DELETE` on `event` from
@@ -37,48 +38,48 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1). T
     - `web` builds with `base: '/officer/'` and serves the officer portal only; remove `apps/web/src/citizen/`
     - Stop using `JWT_SECRET` for officer and citizen sessions; retain it for `/internal/*` service tokens only
     - _Requirements: 11.10, 24.1, 27.6_
-  - [-] 1.4 Migration round-trip test and property-test harness configuration
+  - [x] 1.4 Migration round-trip test and property-test harness configuration
     - `alembic upgrade head` then `downgrade base` against a throwaway PostGIS database (§20.9)
     - Hypothesis settings per §20.8: minimum 100 examples, persistent example database in CI so a shrunk counterexample replays on every later run; shared domain generators module `apps/api/tests/strategies.py` with `st_devanagari_text`, `st_cadastral_polygon`, `st_share_vector`, `st_event_timeline`, `st_stage_graph`, `st_confidence` as stubs to be filled by the tasks that need them
     - _Requirements: none directly — harness for §20.8 and §20.9_
 
-- [ ] 2. Policy_Config and PolicyResolver (§4) — no subsystem may compute a date, threshold, cutoff, or weight without it
-  - [~] 2.1 `policy_config` schema, resolution query, and change-control storage
+- [x] 2. Policy_Config and PolicyResolver (§4) — no subsystem may compute a date, threshold, cutoff, or weight without it
+  - [x] 2.1 `policy_config` schema, resolution query, and change-control storage
     - Migration creating `policy_config` exactly as §4.1: `policy_key`, `state_key` (`'*'` for platform-wide), nullable `act_key`, `effective_from`, `value jsonb`, `justification_report_id`, `created_by`; `policy_config_unique_version` unique constraint; `policy_config_resolve` index; `policy_ocr_threshold_requires_report` CHECK
     - Rows are never updated or deleted — a change is a new row with a later `effective_from`, which is what gives R28.3 its history without a separate audit table
     - Implement the `_RESOLVE_SQL` of §4.1 with the `ORDER BY (state_key = :state) DESC, effective_from DESC` that gives a state override precedence over the platform default at the same date in one query
     - _Requirements: 28.1, 28.2, 28.3, 28.4_
-  - [~] 2.2 `PolicyResolver` with no default, and `PolicySnapshot`
+  - [x] 2.2 `PolicyResolver` with no default, and `PolicySnapshot`
     - `apps/api/app/services/policy.py`: `PolicyResolver.get(key, *, state, act, as_of)` with a per-request cache and **no `default=` parameter** — a default is how a statutory period ends up hardcoded; `try_get` returns `None` explicitly for the callers that branch on absence
     - `PolicyValueMissing` carrying key, state, act, and date, mapped to `409 POLICY_VALUE_MISSING` in the §9.4 error envelope
     - `PolicySnapshot(values, resolved_at, content_hash)` — frozen and hashable, recorded against every output that must be attributable to the configuration that produced it (notice deadlines, priority scores, training runs)
     - _Requirements: 7.1, 28.4, 28.5_
     - _Property 64_
-  - [~] 2.3 The stage set as data, not an enum
+  - [x] 2.3 The stage set as data, not an enum
     - `acquisition_case.stage_key` is `text` with **no enum type and no CHECK constraint**; add `stage_set_effective_from` and `stage_entered_on` (migration lands with the case table in 8.1, columns declared here)
     - `StageGraph` parsed from the `policy.stage_set` value shape of §4.3, where `period_key` is a pointer to another policy key rather than a number
     - `stage_deadline(case, *, resolver)` resolving the graph as of `case.stage_set_effective_from` (pinned at creation, so an in-flight case stays coherent when a state's stage set changes) and the period as of `case.stage_entered_on`, not today
     - _Requirements: 5.3, 5.6, 7.2, 28.6_
-  - [~] 2.4 Validator registry keyed on `policy_key` pattern
+  - [x] 2.4 Validator registry keyed on `policy_key` pattern
     - `validate_partitions_unit_interval` for `risk.band_cutoffs` — this is what makes `classify` total and monotone by construction rather than by re-checking at every call
     - `validate_review_below_auto_accept` for `ocr.threshold.*`; `validate_stage_graph` (reachability, at least one terminal, no non-terminal stage without successors, no orphan); `validate_non_negative_days` for `retention.period.*`; `validate_weights_normalisable` for `priority.weights` (reject negative and all-zero)
     - _Requirements: 28.7, 28.8_
     - _Property 65_
-  - [~] 2.5 Policy write path with change control
+  - [x] 2.5 Policy write path with change control
     - `PolicyService.set` inserting a new row, appending a `POLICY_CHANGED` event carrying key, prior value, new value, effective-from, and officer, gated on the `config.write` permission
     - For `ocr.threshold.*`, assert beyond the CHECK constraint that the referenced `extraction_accuracy_report` is not superseded, matches the current extraction model version and script set, and actually states a precision figure at the new threshold value (§13.6); a CHECK can only require non-null
     - Enqueue the reband pass on a `risk.band_cutoffs` change (consumed by 22.10)
     - _Requirements: 2.5, 28.3, 28.9_
     - _Property 65_
-  - [~] 2.6 AST lint rejecting integer literals reaching date arithmetic
+  - [x] 2.6 AST lint rejecting integer literals reaching date arithmetic
     - `apps/api/tests/config_integrity/test_no_literal_period.py` walking every Python file under `apps/api/app`, `ml/src`, and `workers`, failing on a `Constant` keyword argument to any `timedelta`/`relativedelta` call (§20.7)
     - Lands now, before the subsystems it polices exist, so a hardcoded period can never be committed and later discovered
     - _Requirements: 7.2_
-  - [~] 2.7 Schema guard tests: no date defaults, no day counts in CHECK constraints, no stage enum
+  - [x] 2.7 Schema guard tests: no date defaults, no day counts in CHECK constraints, no stage enum
     - `test_no_date_column_default_and_no_day_count_check` walking `Base.metadata` for `Date`/`DateTime` columns with a computed `server_default` (only `now()` is admissible), and every live CHECK constraint definition against a day-count pattern
     - `test_no_stage_enum_anywhere` asserting no `case_stage` enum type exists and no CHECK constraint mentions `stage_key`
     - _Requirements: 7.2, 28.6_
-  - [~] 2.8 Effective-dated resolution and validator property tests, with statutory periods left unseeded
+  - [x] 2.8 Effective-dated resolution and validator property tests, with statutory periods left unseeded
     - Property test: for any key and any date D the resolved value is the one whose `effective_from` is the latest at or before D, with state-specific beating platform-wide
     - Property test: a missing key refuses the dependent operation and returns the key and the date, and no code path substitutes a default
     - Property test: a cutoff set is accepted exactly when it contiguously partitions [0, 1]; an OCR threshold set exactly when review is strictly below auto-accept
@@ -87,35 +88,35 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1). T
     - _Properties 13, 64, 65_
 
 - [ ] 3. Event log with `personal_datum` indirection (§5) — the sole source of the citizen timeline and of ML features
-  - [~] 3.1 `event` schema, ordering indexes, and database-enforced append-only
+  - [x] 3.1 `event` schema, ordering indexes, and database-enforced append-only
     - Migration creating `event` per §5.1 including `occurrence_time` and `recording_time` as distinct columns, `has_pd_refs`, `entity_version_after`, `provenance`, `import_batch_id`, `corrects_event_id`, and `txid bigint DEFAULT txid_current()`
     - Indexes `event_entity_asof`, `event_case_asof`, `event_knowable`, `event_txid`; BRIN on `recording_time`; unpartitioned by the §5.1 decision
     - `REVOKE UPDATE, DELETE ON event FROM bhumisetu_app` — R4.2 is a revoked grant, not application code; additionally map the ORM model read-only so an accidental mutation raises before reaching the database
     - Ordering is `(occurrence_time, id)`; the `id` tiebreak is what makes the order total, which R17.5's determinism depends on
     - _Requirements: 4.1, 4.2, 4.3, 4.4_
-  - [~] 3.2 `personal_datum` table with an irreversible single-transition trigger
+  - [x] 3.2 `personal_datum` table with an irreversible single-transition trigger
     - Migration creating `personal_datum` per §5.4 with `value_ciphertext bytea`, `key_version`, `erased_at`, `erasure_event_id`, and both indexes
     - Trigger rejecting any update other than `value_ciphertext → NULL` with `erased_at` set once, and rejecting un-erasure — this table is the only mutable thing in the log's read path and the mutation surface is deliberately one column
     - Per-category encryption key handling for `value_ciphertext` as defence in depth, keeping crypto-shredding available if Q10's confirmation demands it (§5.4)
     - _Requirements: 4.2, 32.12_
-  - [-] 3.3 Personal-data attribute registry and the ML-feature disjointness guard
+  - [x] 3.3 Personal-data attribute registry and the ML-feature disjointness guard
     - Create `apps/api/app/retention/categories.py` with `CATEGORY_MAP`, the `Discriminated` and `Reference` entry kinds, and `category_of(table, column, row=None)` that raises `KeyError` on an unclassified attribute — no `.get(..., default)`. Populate the personal-data entries the event log needs to externalise; task 25.2 completes it to full schema coverage and adds the metadata-walk test
     - Create `ml/src/features/registry.py` with the `FeatureExtractor` protocol's `source_attributes` declaration and an empty registry, so the seam exists before any extractor does
     - `test_features_do_not_derive_from_personal_data` intersecting every registered extractor's `source_attributes` with the personal-data attribute set and failing on any overlap. This belongs here, not with the ML tasks: it is the invariant that stops erasure from silently rewriting historical feature rows and breaking R17.5. The test also asserts every registered extractor declares `source_attributes` at all, so it fails closed rather than passing vacuously on an empty registry
     - _Requirements: 17.3, 32.2 (partial — completed in 25.2)_
     - _Property 39_
-  - [~] 3.4 `EventLog.append` on the caller's session, with payload externalisation
+  - [x] 3.4 `EventLog.append` on the caller's session, with payload externalisation
     - `apps/api/app/db/event_log.py`: `append(session, *, event_type, entity, actor, changes, occurrence_time, entity_version_after=None, **kw)` taking the ambient session and never opening a connection, ending in `session.flush()` so a failure surfaces inside the caller's transaction
     - `_externalise_personal_data` writing a `personal_datum` row per personal-data attribute and putting `{"$pd": id}` in the payload; non-personal attributes stay inline as `{"from": …, "to": …}`; set `has_pd_refs` accordingly
     - _Requirements: 4.1, 4.3, 4.8_
     - _Property 7_
-  - [~] 3.5 Read paths: `OCCURRED_BY` and `KNOWABLE_AT`, and the `$erased` payload resolver
+  - [x] 3.5 Read paths: `OCCURRED_BY` and `KNOWABLE_AT`, and the `$erased` payload resolver
     - `events(entity, as_of, mode)` where `OCCURRED_BY` filters `occurrence_time <= T` and `KNOWABLE_AT` filters both `occurrence_time <= T AND recording_time <= T`. The distinction is load-bearing: R4.4 permits a backdated append and R17.2 forbids an attribute that first became knowable after T, and only a both-times filter satisfies both
     - Record the mode on every consumer so a row can never be misinterpreted later
     - `PayloadResolver` collecting `$pd` ids only from rows with `has_pd_refs = true`, batch-fetching in one `= ANY(...)`, and substituting `{"$erased": {"data_category": …, "erased_at": …}}` for an erased datum while leaving actor, entity, both timestamps, and ordering straight from the untouched rows
     - _Requirements: 4.5, 4.7, 32.13_
     - _Properties 9, 84_
-  - [~] 3.6 Compensating events
+  - [x] 3.6 Compensating events
     - `append_correction(session, *, corrects_event_id, ...)` writing a new event that references the erroneous event's identifier while leaving the erroneous event stored unchanged; used by R4.6 corrections and by the erasure path in 25.3
     - _Requirements: 4.6_
     - _Property 8_
@@ -123,7 +124,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1). T
     - `assert_event_in_transaction()` raising unless an `event` row exists for `(TG_TABLE_NAME, NEW.id, txid_current())`; installed as a `DEFERRABLE INITIALLY DEFERRED` constraint trigger on all eleven R29.1 tables so a service that forgets to append cannot commit
     - Session flag the trigger checks, allowing the import path to disable it for the duration of a chunk (consumed by 26.2), because the trigger would otherwise fire 10 000 times per batch
     - _Requirements: 4.1_
-  - [~] 3.8 Transactional outbox for non-database side effects
+  - [-] 3.8 Transactional outbox for non-database side effects
     - Migration creating `task_outbox` per §5.2 with `idempotency_key` unique and the partial `task_outbox_pending` index
     - `dispatch_outbox` on `maintenance`, polling under `SELECT ... FOR UPDATE SKIP LOCKED` and setting `enqueued_at`; scheduled every 2 seconds. Redis offers no transactional enqueue, so without this a rolled-back upload could leave an OCR job in flight against a document that does not exist
     - Every enqueue, SMS send, and presigned-URL issuance goes through it, which is why every task built later must be idempotent (§13.4)
@@ -137,24 +138,24 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1). T
     - _Properties 7, 8, 9, 10_
 
 - [ ] 4. `VersionedRepository` (§7) — the only write path for a versioned entity
-  - [~] 4.1 `entity_version` on every R29.1 entity and the `Versioned` mixin
+  - [x] 4.1 `entity_version` on every R29.1 entity and the `Versioned` mixin
     - Migration adding `entity_version integer NOT NULL DEFAULT 1` to `acquisition_case`, `land_parcel`, `ownership_record`, `statutory_notice`, `objection`, `award`, `payout`, `document`, `extracted_field`, `validation_issue`, and `notice_service_record` (the tables themselves land in tasks 8–15; this task owns the mixin and the version semantics)
     - `Versioned` declarative mixin so a new entity type cannot be added without a version column
     - _Requirements: 29.1_
     - _Property 67_
-  - [~] 4.2 `VersionedRepository.update` — conditional UPDATE first, event append second, one transaction
+  - [x] 4.2 `VersionedRepository.update` — conditional UPDATE first, event append second, one transaction
     - `apps/api/app/db/versioned_repository.py` issuing `UPDATE ... WHERE id = :id AND entity_version = :expected` with `RETURNING`, then `EventLog.append` on the same session with `entity_version_after`
     - The order is the point: on the rejection path no event is ever written, so R29.5 holds structurally rather than by relying on rollback, and moving the append to a separate connection becomes impossible to do quietly
     - Strengthened predicate for a stage transition (`AND stage_key = :expected_stage`) per §7.2
     - _Requirements: 29.1, 29.3, 29.5, 29.6, 29.7_
     - _Properties 67, 69_
-  - [~] 4.3 Conflict description and the error envelope
+  - [x] 4.3 Conflict description and the error envelope
     - `_describe_conflict` returning every attribute whose stored value differs from the value the request presented as prior, each current stored value, the actor whose modification produced the current version (read from `event.entity_version_after` — without it, attributing a version to an actor means guessing from timestamps), and that modification's occurrence time
     - `_describe_field_review_conflict` additionally returning the winner's `review_state` and recorded value (R29.8)
     - `ENTITY_VERSION_CONFLICT` 409 envelope per §9.4; `If-Match` header dependency and `expected_version` request-model field
     - _Requirements: 29.3, 29.4, 29.8_
     - _Property 68_
-  - [~] 4.4 Same-version race test on two real connections
+  - [-] 4.4 Same-version race test on two real connections
     - Two-connection harness (not mocks — the guarantee under test is PostgreSQL's re-evaluation of the `WHERE` clause under `READ COMMITTED` after the first transaction commits, and a mock would test our belief about it)
     - Property test: for any two requests presenting the same version, exactly one commits; for a stage transition exactly one transition is recorded; for a field review the rejection carries the winner's state, value, and officer
     - Property test: a rejected modification leaves the entity bit-identical attribute for attribute and appends no event
@@ -167,28 +168,28 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1). T
     - _Property 70_
 
 - [ ] 5. `GatedRoute` and `ResponseGate` (§8) — must exist before the first endpoint
-  - [~] 5.1 `Principal`, `authenticate()`, and `scoped()`
+  - [x] 5.1 `Principal`, `authenticate()`, and `scoped()`
     - `apps/api/app/security/access.py`: frozen `Principal` with `kind`, `id`, `role_ids`, `permissions`, `scope_paths` (ltree, officers), `case_id` and `owner_record_ids` (citizens)
     - One `authenticate()` dependency recognising an officer cookie, a citizen cookie, or a service token and returning a `Principal`. **Nothing downstream branches on request origin** — that is how R2.7 holds for the officer portal, the citizen portal, and a direct call alike
     - `scoped(stmt, principal, area_col)` applying `AcquisitionCase.id == principal.case_id` for citizens and an ltree `descendant_of` disjunction over `scope_paths` for officers; the one composable clause applied to every scope-restricted query
     - Resolve permissions and scope from the database on each request keyed by the session's officer id, never cached in the session record — this is what makes R2.6 true
     - _Requirements: 2.1, 2.2, 2.6, 2.7, 3.7_
     - _Properties 4, 5, 6_
-  - [~] 5.2 `Visibility`, `Sensitive`, `GatedModel`, and `ResponseGate.apply`
+  - [x] 5.2 `Visibility`, `Sensitive`, `GatedModel`, and `ResponseGate.apply`
     - `apps/api/app/security/gate.py`: `Visibility` (`PUBLIC`, `OWNER_ONLY`, `OFFICER_ONLY`, `PERMISSION`), the `Sensitive(...)` field factory carrying `visibility`, `mask`, `permission`, and `data_category` in `json_schema_extra`
     - `ResponseGate.apply` walking the response model's fields, computing the failed field paths, and producing the body via `model_dump(exclude=...)` so a redacted field is **absent from the JSON**, not null and not merely unrendered
     - `mask="TRAILING_4"` applied by the gate on the serialized value so the full value never enters the response object and an endpoint author cannot forget it
     - _Requirements: 26.5, 26.7_
     - _Properties 60, 61_
-  - [~] 5.3 `GatedRoute` route class and the four routers
+  - [x] 5.3 `GatedRoute` route class and the four routers
     - `GatedRoute(APIRoute)` wrapping the inner handler and passing every response through `ResponseGate.apply` with `request.state.principal`
     - `officer_router` (`/api/officer`), `citizen_router` (`/api/citizen`), `citizen_html` (`/c`), `internal_router` (`/internal`) all constructed with `route_class=GatedRoute`, so an endpoint registered on them is gated whether or not the author thought about it
     - Jinja2 templates render the **gated** dict, so a template physically cannot print a co-owner's `owner_name` — the key is not in its context
     - _Requirements: 2.7, 26.7_
-  - [~] 5.4 Route-table test
+  - [x] 5.4 Route-table test
     - `test_every_route_is_gated` iterating `app.routes` and asserting each is a `GatedRoute` whose `response_model` subclasses `GatedModel`; a handler returning a bare `dict` or a `JSONResponse`, a model without visibility annotations, or a router created without `route_class` fails the build
     - _Requirements: 26.7_
-  - [~] 5.5 Field-coverage test against the personal-data registry
+  - [-] 5.5 Field-coverage test against the personal-data registry
     - `test_no_unannotated_sensitive_field` intersecting every `GatedModel` field name with the personal-data attribute set from `CATEGORY_MAP` (task 3.3) and asserting every match carries a `Sensitive(...)` annotation — adding `contact_mobile` to a response model without annotating it fails the build
     - `test_redaction_matrix_is_exhaustive` over every field of every gated model against `OFFICER`, `OWNER`, `NON_OWNER`, and `SERVICE` principals, asserting presence exactly where the annotation permits it
     - _Requirements: 26.1, 26.3, 26.4, 26.6, 26.7_
@@ -238,7 +239,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1). T
     - _Properties 3, 87_
 
 - [ ] 8. Projects, acquisition cases, and stage transitions
-  - [~] 8.1 `project` and `acquisition_case` migrations
+  - [x] 8.1 `project` and `acquisition_case` migrations
     - `project` with `area_code`, `purpose_category`, `sanctioned_extent`, `geom geometry(MultiPolygon, 4326)` and its GiST index
     - `acquisition_case` per §6.1 including `stage_key text` with no enum and no CHECK, `stage_set_effective_from`, `stage_entered_on`, `stage_deadline`, `deadline_breached`, `is_terminal`, `terminal_event_id`, the four denormalised counters, the `risk_*` and `priority_*` columns, and the `case_queue` and `case_rescore` partial indexes
     - _Requirements: 5.1, 5.2_
@@ -260,7 +261,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1). T
     - _Properties 4, 11_
 
 - [ ] 9. Land parcels and ownership records
-  - [~] 9.1 `land_parcel`, `case_parcel`, and `ownership_record` migrations
+  - [x] 9.1 `land_parcel`, `case_parcel`, and `ownership_record` migrations
     - `land_parcel` with the six-column identity, `village_norm` generated with `normalize(village, NFC)` **for matching only, never display or export**, `extent`/`extent_unit`, `geom`, `geodesic_area_sqm`; the `parcel_identity` unique index over `coalesce(sub_division, '')` serving R6.2, R6.3, and R30.9 from one constraint; `parcel_geom_gist`; `parcel_dup_scan`
     - `ownership_record` with `validity daterange GENERATED ALWAYS AS (daterange(valid_from, valid_to, '[]')) STORED`, `ownership_validity_gist` on `(parcel_id, validity)`, `ownership_mobile_hash`
     - **No exclusion constraint on `(parcel_id, owner_identity_key, validity)`**, per §6.1's explicit rejection: R13.5 requires an overlapping same-owner validity period to raise a Validation_Issue, and an exclusion constraint would reject the write instead, contradicting the requirement and breaking the import's partial-commit semantics. The GiST index exists for querying and for the detection rule
@@ -281,7 +282,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1). T
     - _Properties 12, 13_
 
 - [ ] 10. Statutory notices and the deadline sweep
-  - [~] 10.1 `statutory_notice`, `notice_parcel`, and `notice_service_record` migrations
+  - [-] 10.1 `statutory_notice`, `notice_parcel`, and `notice_service_record` migrations
     - `response_deadline` frozen at issue with `policy_snapshot_hash` recording which configuration produced it — this is what makes R7.8 structural rather than a rule someone has to remember
     - `notice_service_record.service_location geometry(Point, 4326)` (R15.2)
     - _Requirements: 7.3, 7.5, 15.2_
@@ -567,7 +568,10 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1). T
     - Parcels with cadastral geometry, ownership vectors summing inside and outside tolerance, awards with consistent and inconsistent component sums, documents with extractions across the confidence range
     - _Requirements: 18.7, 19.6, 19.7, 19.8_
   - [~] 21.3 Fixture-level policy configuration
-    - Seed `policy.stage_set`, period keys, OCR thresholds, band cutoffs, priority weights, promotion thresholds, monitoring thresholds, the label definition, and the citizen-visible event set as **fixture data only**, keyed to a synthetic state and act. No RFCTLARR values, no real state keys — the platform stays in the R28.5 refuse-and-report state for real deployments
+    - Seed `policy.stage_set`, period keys, OCR thresholds, band cutoffs, priority weights, promotion thresholds, monitoring thresholds, the label definition, and the citizen-visible event set as **synthetic-state fixture data** keyed to a synthetic state and act, so the point-in-time replay and training tests run against a self-contained configuration. This synthetic-state fixture is also the ONLY place any `retention.period.*` value is seeded: seed the DPDP_2023 Data_Category retention periods (Q10) here, keyed to the synthetic state, so the retention and erasure-path tests have configured periods to exercise without any retention period ever reaching the platform-wide baseline
+    - Also seed the resolved platform-wide (state key `'*'`) default baseline from the requirements Q8 resolution as effective-dated seed/config rows: the RFCTLARR_2013 statutory periods (Q8) — notice periods, objection windows, and stage deadlines — each carrying a `# review-required before production use` comment. Seeding the statutory baseline platform-wide is safe because no irreversibility attaches to a statutory deadline: a wrong or unreviewed period surfaces as a visible breach flag or schedule an operator can correct, never as lost data. These are seed/config data, not product code — the AST lint of 2.6 and the schema guards of 2.7 still hold, so no period is a literal, a column default, or a CHECK constraint
+    - Do NOT seed any `retention.period.*` row into the platform-wide baseline — the DPDP_2023 retention periods (Q10) live only in the synthetic-state fixture above, never platform-wide. Erasure requires BOTH `retention.sweep_enabled` true AND configured `retention.period.*` values, so leaving the periods unseeded outside fixtures means enabling the sweep alone erases nothing: an administrator must deliberately configure the reviewed periods for their state before any erasure can occur, which keeps irreversible erasure behind two independent deliberate actions rather than one. The decided DPDP default values remain recorded in the requirements Q10 resolution for that administrator to apply
+    - Keep `retention.sweep_enabled` false — with no `retention.period.*` seeded outside the fixture, enabling the sweep alone would still erase nothing, and no erasure runs until a deployment confirms its state's land-record retention rules, configures its retention periods, and enables the sweep explicitly; seed no state-specific statutory rows either, so any state-and-act key with no effective value stays in the R28.5 refuse-and-report path for real deployments
     - _Requirements: 28.1, 28.5_
 
 - [ ] 22. Machine learning pipeline (internal order matters; each sub-task depends on the one before)
@@ -830,45 +834,48 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1). T
 - **Four tasks are marked optional** (`22.14`, `22.15`, `24.6`, `24.7`): exploratory notebooks, per-district cutoff *calibration tooling*, the monitoring dashboard surface beyond R31.14's required fields, and officer chart polish. In each case the requirement-bearing and property-bearing behaviour ships in a required task and only the discretionary surface is optional. Nothing a correctness property or a `BLOCKING` validation path depends on is marked optional.
 - **One deliberate divergence from the task-list brief.** The brief lists a `daterange` exclusion constraint among the migration work. §6.1 explicitly rejects an exclusion constraint on `(parcel_id, owner_identity_key, validity)`: R13.5 requires an overlapping same-owner validity period to *raise a Validation_Issue*, and an exclusion constraint would reject the write instead, contradicting the requirement and breaking the import's partial-commit semantics. Task 9.1 creates the `daterange` generated column and the GiST index, and no exclusion constraint.
 - **The brief refers to four requirements flagged in §2; §2 names three** (R24.3, R15.8, R11.8). Task 28 covers those three plus the R27.6 font conflict flagged in §10.4, which is the same kind of finding — a stated number that may not survive a particular deployment.
+- **Q11 (proactive citizen notification) is resolved as out of scope**, so there is no notification task and its absence is a recorded decision rather than an oversight. The Citizen_Portal is pull-only: a citizen learns of a stage change by opening it, which is what R25.1's next-expected-step presentation is for. The only outbound message BHUMISETU sends is R3.1's one-time passcode, built in task 7.4. If Q11 is later confirmed as in scope, it arrives as a new requirement with its own trigger event set, channel, consent record, language-selection rule, and delivery-failure behaviour, and as new tasks — it is not latent in any task listed here.
 - Preconditions requiring a human decision or hardware are named inside the tasks that depend on them rather than made into tasks: confirming Q1, Q8, and Q10; hand-labelling the Holdout_Set; choosing the OCR recognizer's hardware target; confirming the R24.3 measurement reading; and confirming whether a DSAR response may carry an unmasked government identifier.
 - Each task references the specific acceptance criteria it implements, and property-bearing tasks cite the design's property numbers, so the coverage table below can be checked against the requirements document criterion by criterion.
 - **The dependency graph serializes every migration-bearing task into its own wave.** Alembic revisions are separate files but share one linear `down_revision` chain, so two migration tasks running in parallel produce a branched history that has to be merged by hand. This is why the graph is 30 waves rather than a dozen: the 22 tasks that add schema are the critical path, and the code and test tasks fan out around them.
 
 ## Requirement Coverage
 
+Each row lists every required sub-task whose `_Requirements:` line cites at least one criterion of that requirement, in task order. Optional sub-tasks are not listed: `22.14`, `22.15`, `24.6`, and `24.7` state "none" or "none beyond … already covered in" a required task, so they carry no coverage of their own.
+
 | Req | Tasks |
 |---|---|
-| 1 Officer auth | 7.1, 7.2, 7.3 |
-| 2 RBAC and scope | 1.2, 5.1, 5.6, 8.3, 8.4, 2.5, 26.1 |
-| 3 Citizen access | 7.2, 7.4, 7.5, 7.6, 19.1 |
-| 4 Event log | 3.1, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 21.1 |
-| 5 Project and case | 8.1, 8.2, 8.3, 8.4, 2.3 |
+| 1 Officer auth | 7.1, 7.2, 7.3, 7.6 |
+| 2 RBAC and scope | 1.2, 2.5, 5.1, 5.3, 5.6, 8.3, 8.4 |
+| 3 Citizen access | 5.1, 7.2, 7.4, 7.5, 7.6 |
+| 4 Event log | 1.1, 3.1, 3.2, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 21.1 |
+| 5 Project and case | 2.3, 8.1, 8.2, 8.4 |
 | 6 Parcel and ownership | 9.1, 9.2, 9.3, 9.4, 13.3, 13.6 |
-| 7 Notices and deadlines | 2.3, 2.6, 2.7, 10.1, 10.2, 10.3, 10.4 |
+| 7 Notices and deadlines | 2.2, 2.3, 2.6, 2.7, 10.1, 10.2, 10.3, 10.4 |
 | 8 Objections | 11.1, 11.2 |
-| 9 Award and payout | 12.1, 12.2, 12.3, 13.3 |
-| 10 Documents | 15.1, 15.2, 15.3, 15.4, 3.8 |
-| 11 OCR and accuracy | 16.1–16.8, 1.3, 28.3 |
+| 9 Award and payout | 12.1, 12.2, 12.3, 13.3, 13.6 |
+| 10 Documents | 3.8, 15.1, 15.2, 15.3, 15.4 |
+| 11 OCR and accuracy | 1.3, 15.3, 16.1, 16.2, 16.3, 16.4, 16.6, 16.7, 16.8, 18.5, 28.3 |
 | 12 Confidence routing | 16.1, 16.4, 16.5, 16.8, 18.3 |
-| 13 Validation execution | 13.1–13.6, 24.5 |
-| 14 Severity and audit | 8.2, 13.1, 13.4, 13.5, 13.6, 5.6, 18.5 |
+| 13 Validation execution | 13.1, 13.2, 13.3, 13.4, 13.6, 24.5 |
+| 14 Severity and audit | 5.6, 8.2, 8.4, 13.1, 13.2, 13.4, 13.5, 13.6, 18.5 |
 | 15 Geometry | 10.1, 17.1, 17.2, 17.4, 17.5, 17.6, 28.2 |
-| 16 Map | 17.2, 17.3, 18.2, 18.4, 18.7 |
-| 17 Point-in-time features | 3.3, 21.1, 22.2, 22.3, 22.4, 22.5 |
-| 18 Training and promotion | 21.2, 22.6, 22.7, 22.8, 22.9 |
-| 19 Risk scoring and bands | 21.2, 22.9, 22.10, 22.13, 18.2 |
+| 16 Map | 17.3, 17.6, 18.2, 18.4, 18.7 |
+| 17 Point-in-time features | 3.3, 21.1, 22.1, 22.2, 22.3, 22.4, 22.5 |
+| 18 Training and promotion | 18.2, 21.2, 22.1, 22.6, 22.7, 22.8, 22.9 |
+| 19 Risk scoring and bands | 18.2, 21.2, 22.1, 22.9, 22.10, 22.13 |
 | 20 Explanation and HITL | 22.11 |
 | 21 Priority and queue | 24.1, 24.2, 24.4, 24.5 |
-| 22 Dashboard | 24.3, 24.4, 24.5, 24.7* |
+| 22 Dashboard | 24.3, 24.4, 24.5 |
 | 23 Case workspace | 8.3, 18.2, 18.3, 18.5, 24.5 |
-| 24 Citizen budget | 1.3, 19.1, 19.4, 19.5, 19.7, 28.1, 28.4 |
-| 25 Citizen content | 19.1, 19.2, 19.3, 19.7, 15.2 |
-| 26 Citizen redaction | 5.2, 5.5, 19.3, 19.7, 22.11 |
-| 27 Localization | 1.3, 18.6, 19.6, 27.1, 27.2, 27.3, 28.4 |
-| 28 Policy config | 2.1–2.8, 16.7, 21.3, 25.1 |
+| 24 Citizen budget | 1.3, 19.1, 19.3, 19.4, 19.5, 19.7, 28.1, 28.4 |
+| 25 Citizen content | 15.2, 19.1, 19.2, 19.3, 19.7 |
+| 26 Citizen redaction | 5.2, 5.3, 5.4, 5.5, 19.3, 19.7 |
+| 27 Localization | 1.3, 18.6, 19.1, 19.5, 19.6, 27.1, 27.2, 27.3, 28.4 |
+| 28 Policy config | 2.1, 2.2, 2.3, 2.4, 2.5, 2.7, 2.8, 10.4, 13.2, 16.7, 21.3, 25.1, 25.4 |
 | 29 Concurrency | 4.1–4.5, 8.2, 16.5, 18.1 |
-| 30 Bulk import | 3.7, 9.4, 15.1, 15.4, 26.1–26.5, 13.2 |
-| 31 Model monitoring | 5.6, 22.12, 22.13, 24.6* |
+| 30 Bulk import | 13.2, 15.1, 15.4, 26.1–26.5 |
+| 31 Model monitoring | 5.6, 18.2, 22.1, 22.7, 22.12, 22.13 |
 | 32 Retention and DSAR | 3.2, 3.3, 3.5, 25.1–25.6 |
 
 ## Task Dependency Graph
