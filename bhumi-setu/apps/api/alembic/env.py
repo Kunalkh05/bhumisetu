@@ -32,6 +32,16 @@ target_metadata = all_metadata()
 
 
 def _url() -> str:
+    """The database to migrate.
+
+    ``config.attributes["test_url"]`` lets the test fixtures point a migration at
+    a throwaway database without exporting ``DATABASE_URL`` into the process
+    environment, where it would outlive the fixture and quietly affect anything
+    else that reads settings.
+    """
+    from_test = context.config.attributes.get("test_url")
+    if from_test:
+        return str(from_test)
     return get_database_settings().database_url
 
 

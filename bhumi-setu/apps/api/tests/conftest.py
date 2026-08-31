@@ -91,3 +91,44 @@ def clean_settings_cache() -> Iterator[None]:
     clear_settings_cache()
     yield
     clear_settings_cache()
+
+# ---------------------------------------------------------------------------
+# Hypothesis profiles (§20.8)
+# ---------------------------------------------------------------------------
+
+from hypothesis import HealthCheck, Verbosity, settings as hypothesis_settings  # noqa: E402
+
+# The `.hypothesis/examples` directory is what makes a found counterexample
+# permanent. Hypothesis writes every failing example there and replays it first
+# on the next run, so a bug found once by a random draw becomes a deterministic
+# regression test without anyone writing it down. In CI the directory must be
+# cached between runs or this is lost — the point of the database is that it
+# outlives the session that found the failure.
+
+hypothesis_settings.register_profile(
+    "dev",
+    max_examples=100,
+    deadline=None,          # PostgreSQL round trips vary too much for a deadline
+    print_blob=True,        # print a reproducible blob on failure
+    suppress_health_check=[HealthCheck.function_scoped_fixture],
+)
+
+hypothesis_settings.register_profile(
+    "ci",
+    max_examples=300,
+    deadline=None,
+    print_blob=True,
+    derandomize=False,      # CI should keep finding new counterexamples
+    suppress_health_check=[HealthCheck.function_scoped_fixture],
+)
+
+# For reproducing one reported failure without the rest of the suite in the way.
+hypothesis_settings.register_profile(
+    "debug",
+    max_examples=1000,
+    deadline=None,
+    verbosity=Verbosity.verbose,
+    suppress_health_check=[HealthCheck.function_scoped_fixture],
+)
+
+hypothesis_settings.load_profile(os.environ.get("HYPOTHESIS_PROFILE", "dev"))

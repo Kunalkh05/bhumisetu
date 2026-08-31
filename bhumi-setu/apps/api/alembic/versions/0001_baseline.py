@@ -203,13 +203,22 @@ def upgrade() -> None:
             name="fk_administrative_area_parent_code_administrative_area",
             ondelete="RESTRICT",
         ),
+        # Bare names. The `ck` naming convention in app/db/base.py is
+        # ck_%(table_name)s_%(constraint_name)s, so it wraps the name given here.
+        # Passing an already-prefixed name yields
+        # ck_administrative_area_ck_administrative_area_root_area_c599 — prefixed
+        # twice, truncated at 63 characters, with a hash suffix. That name is
+        # unpredictable, so a later migration cannot DROP the constraint by name,
+        # it does not match what the model declares (making every autogenerate
+        # emit a spurious diff), and the error message a violation produces no
+        # longer says what the rule was.
         sa.CheckConstraint(
             "parent_code IS NULL OR parent_code <> code",
-            name="ck_administrative_area_area_not_its_own_parent",
+            name="area_not_its_own_parent",
         ),
         sa.CheckConstraint(
             "parent_code IS NOT NULL OR area_type = 'state'",
-            name="ck_administrative_area_root_area_is_a_state",
+            name="root_area_is_a_state",
         ),
         comment=(
             "Administrative hierarchy. Jurisdiction scope (R2.1) is a set of "
