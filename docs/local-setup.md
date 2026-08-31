@@ -3,6 +3,52 @@
 Three services are needed: PostgreSQL with PostGIS, Redis, and an S3-compatible
 object store. Pick one of the two paths below — you do not need both.
 
+## Apple Silicon: check your Homebrew first
+
+On an M-series Mac, run:
+
+```bash
+uname -m        # arm64
+brew --prefix   # must be /opt/homebrew
+```
+
+If `brew --prefix` prints `/usr/local` you have the **Intel** Homebrew running
+under Rosetta, and it will install x86_64 binaries. Two things then fail in ways
+that do not name the real cause:
+
+- **Colima** installs, then dies with `limactl is running under rosetta, please
+  reinstall lima with native arch`. Lima requires a native arm64 build.
+- **PostGIS** tries to build dependencies from source, because some bottles are
+  unavailable for the Rosetta prefix, and fails on Command Line Tools if those
+  are older than your macOS.
+
+Fix it once by installing the native Homebrew alongside the Intel one:
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+```
+
+Having both prefixes is normal and supported; `/opt/homebrew` takes precedence.
+
+If your Command Line Tools are older than your macOS version, source builds also
+fail. Check with `pkgutil --pkg-info=com.apple.pkg.CLTools_Executables` and
+update from System Settings, or:
+
+```bash
+sudo rm -rf /Library/Developer/CommandLineTools && sudo xcode-select --install
+```
+
+### Avoiding the problem entirely
+
+Both of these are native arm64 and need neither Homebrew nor Command Line Tools:
+
+| Option | Notes |
+|---|---|
+| **[Postgres.app](https://postgresapp.com)** | Bundles PostgreSQL and PostGIS precompiled. Only PostgreSQL is needed for the early backend tasks — Redis first appears at task 7.1 and object storage at 15.1. |
+| **[OrbStack](https://orbstack.dev)** | Native container runtime, runs the existing compose file unchanged, so you get the exact pinned `postgis:15-3.3` and no version skew against CI. Free for personal use. |
+
+---
 ## Path A — native, no containers (recommended on macOS)
 
 Lighter than a container runtime and starts faster. No Docker Desktop licence
