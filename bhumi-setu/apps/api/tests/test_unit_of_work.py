@@ -22,7 +22,9 @@ are declared on a metadata local to this module rather than on
 from __future__ import annotations
 
 import pytest
-from sqlalchemy import Engine, Integer, String, insert, select
+from hypothesis import HealthCheck, given, settings
+from hypothesis import strategies as st
+from sqlalchemy import Engine, Integer, String, delete, insert, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 
@@ -108,6 +110,57 @@ def test_failed_event_append_abandons_the_state_change(engine: Engine) -> None:
             session.flush()
 
     assert stored_labels(engine) == []
+
+
+@settings(
+    max_examples=100,
+    deadline=None,
+    suppress_health_check=[HealthCheck.function_scoped_fixture],
+)
+@given(
+    existing=st.lists(
+        st.text(alphabet="abcdefghijklmnopqrstuvwxyz", min_size=1, max_size=16),
+        min_size=0,
+        max_size=8,
+        unique=True,
+    ),
+    attempted=st.lists(
+        st.text(alphabet="ABCDEFGHIJKLMNOPQRSTUVWXYZ", min_size=1, max_size=16),
+        min_size=1,
+        max_size=8,
+        unique=True,
+    ),
+)
+def test_property_10_injected_append_failure_leaves_state_bit_identical(
+    engine: Engine, existing: list[str], attempted: list[str]
+) -> None:
+    """Property 10: an injected event-append failure abandons every state change.
+
+    The initial rows commit. The attempted rows are inserted in the next unit of work,
+    followed by a duplicate event row that stands in for ``EventLog.append`` failing
+    during its final ``flush()``. After the exception, the stored state equals the
+    pre-operation snapshot exactly: no missing original rows and no partial attempted
+    rows.
+    """
+    with engine.begin() as connection:
+        connection.execute(delete(Widget))
+        connection.execute(delete(EventStub))
+
+    with unit_of_work(bind=engine) as session:
+        session.add(EventStub(id=777, event_type="CASE_CREATED"))
+        for index, label in enumerate(existing, start=1):
+            session.execute(insert(Widget).values(id=index, label=label))
+
+    before = stored_labels(engine)
+
+    with pytest.raises(IntegrityError):
+        with unit_of_work(bind=engine) as session:
+            for offset, label in enumerate(attempted, start=len(existing) + 1):
+                session.execute(insert(Widget).values(id=offset, label=label))
+            session.add(EventStub(id=777, event_type="CASE_UPDATED"))
+            session.flush()
+
+    assert stored_labels(engine) == before
 
 
 def test_sequential_blocks_are_independent_after_a_failure(engine: Engine) -> None:

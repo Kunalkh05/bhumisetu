@@ -87,7 +87,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - _Requirements: 28.2, 28.4, 28.5, 28.7, 28.8_
     - _Properties 13, 64, 65_
 
-- [ ] 3. Event log with `personal_datum` indirection (§5) — the sole source of the citizen timeline and of ML features
+- [x] 3. Event log with `personal_datum` indirection (§5) — the sole source of the citizen timeline and of ML features
   - [x] 3.1 `event` schema, ordering indexes, and database-enforced append-only
     - Migration creating `event` per §5.1 including `occurrence_time` and `recording_time` as distinct columns, `has_pd_refs`, `entity_version_after`, `provenance`, `import_batch_id`, `corrects_event_id`, and `txid bigint DEFAULT txid_current()`
     - Indexes `event_entity_asof`, `event_case_asof`, `event_knowable`, `event_txid`; BRIN on `recording_time`; unpartitioned by the §5.1 decision
@@ -120,16 +120,16 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - `append_correction(session, *, corrects_event_id, ...)` writing a new event that references the erroneous event's identifier while leaving the erroneous event stored unchanged; used by R4.6 corrections and by the erasure path in 25.3
     - _Requirements: 4.6_
     - _Property 8_
-  - [~] 3.7 Deferred constraint trigger backstop on the eleven versioned entity tables
+  - [x] 3.7 Deferred constraint trigger backstop on the eleven versioned entity tables
     - `assert_event_in_transaction()` raising unless an `event` row exists for `(TG_TABLE_NAME, NEW.id, txid_current())`; installed as a `DEFERRABLE INITIALLY DEFERRED` constraint trigger on all eleven R29.1 tables so a service that forgets to append cannot commit
     - Session flag the trigger checks, allowing the import path to disable it for the duration of a chunk (consumed by 26.2), because the trigger would otherwise fire 10 000 times per batch
     - _Requirements: 4.1_
-  - [-] 3.8 Transactional outbox for non-database side effects
+  - [x] 3.8 Transactional outbox for non-database side effects
     - Migration creating `task_outbox` per §5.2 with `idempotency_key` unique and the partial `task_outbox_pending` index
     - `dispatch_outbox` on `maintenance`, polling under `SELECT ... FOR UPDATE SKIP LOCKED` and setting `enqueued_at`; scheduled every 2 seconds. Redis offers no transactional enqueue, so without this a rolled-back upload could leave an OCR job in flight against a document that does not exist
     - Every enqueue, SMS send, and presigned-URL issuance goes through it, which is why every task built later must be idempotent (§13.4)
     - _Requirements: 4.8, 10.5_
-  - [~] 3.9 Event log property tests
+  - [x] 3.9 Event log property tests
     - Property test: every state change appends exactly one event carrying actor, entity, changed attributes with prior and new values, occurrence time, and a distinct recording time
     - Property test: an update or delete against a stored event is rejected on every available interface path and the row is unchanged; a correction exists only as a new appended event referencing the erroneous one
     - Property test over `st_event_timeline()` including backdated appends: history is ordered by occurrence time with a deterministic tiebreak, and the returned set for T equals exactly the events at or before T
@@ -137,7 +137,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.8_
     - _Properties 7, 8, 9, 10_
 
-- [ ] 4. `VersionedRepository` (§7) — the only write path for a versioned entity
+- [x] 4. `VersionedRepository` (§7) — the only write path for a versioned entity
   - [x] 4.1 `entity_version` on every R29.1 entity and the `Versioned` mixin
     - Migration adding `entity_version integer NOT NULL DEFAULT 1` to `acquisition_case`, `land_parcel`, `ownership_record`, `statutory_notice`, `objection`, `award`, `payout`, `document`, `extracted_field`, `validation_issue`, and `notice_service_record` (the tables themselves land in tasks 8–15; this task owns the mixin and the version semantics)
     - `Versioned` declarative mixin so a new entity type cannot be added without a version column
@@ -155,19 +155,19 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - `ENTITY_VERSION_CONFLICT` 409 envelope per §9.4; `If-Match` header dependency and `expected_version` request-model field
     - _Requirements: 29.3, 29.4, 29.8_
     - _Property 68_
-  - [-] 4.4 Same-version race test on two real connections
+  - [x] 4.4 Same-version race test on two real connections
     - Two-connection harness (not mocks — the guarantee under test is PostgreSQL's re-evaluation of the `WHERE` clause under `READ COMMITTED` after the first transaction commits, and a mock would test our belief about it)
     - Property test: for any two requests presenting the same version, exactly one commits; for a stage transition exactly one transition is recorded; for a field review the rejection carries the winner's state, value, and officer
     - Property test: a rejected modification leaves the entity bit-identical attribute for attribute and appends no event
     - _Requirements: 29.5, 29.6, 29.7, 29.8, 29.10_
     - _Properties 69, 70_
-  - [~] 4.5 Static uniformity checks (R29.10)
+  - [x] 4.5 Static uniformity checks (R29.10)
     - Test enumerating every mutating route on `app.routes` and asserting each declares `expected_version` in its request model or an `If-Match` dependency
     - Static check that no module outside `app/db/` imports `sqlalchemy.update` or executes an `Update` against a versioned table, so the officer API, the citizen API, the Import_Service, and internal calls all reach the same code
     - _Requirements: 29.10_
     - _Property 70_
 
-- [ ] 5. `GatedRoute` and `ResponseGate` (§8) — must exist before the first endpoint
+- [x] 5. `GatedRoute` and `ResponseGate` (§8) — must exist before the first endpoint
   - [x] 5.1 `Principal`, `authenticate()`, and `scoped()`
     - `apps/api/app/security/access.py`: frozen `Principal` with `kind`, `id`, `role_ids`, `permissions`, `scope_paths` (ltree, officers), `case_id` and `owner_record_ids` (citizens)
     - One `authenticate()` dependency recognising an officer cookie, a citizen cookie, or a service token and returning a `Principal`. **Nothing downstream branches on request origin** — that is how R2.7 holds for the officer portal, the citizen portal, and a direct call alike
@@ -189,19 +189,19 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
   - [x] 5.4 Route-table test
     - `test_every_route_is_gated` iterating `app.routes` and asserting each is a `GatedRoute` whose `response_model` subclasses `GatedModel`; a handler returning a bare `dict` or a `JSONResponse`, a model without visibility annotations, or a router created without `route_class` fails the build
     - _Requirements: 26.7_
-  - [-] 5.5 Field-coverage test against the personal-data registry
+  - [x] 5.5 Field-coverage test against the personal-data registry
     - `test_no_unannotated_sensitive_field` intersecting every `GatedModel` field name with the personal-data attribute set from `CATEGORY_MAP` (task 3.3) and asserting every match carries a `Sensitive(...)` annotation — adding `contact_mobile` to a response model without annotating it fails the build
     - `test_redaction_matrix_is_exhaustive` over every field of every gated model against `OFFICER`, `OWNER`, `NON_OWNER`, and `SERVICE` principals, asserting presence exactly where the annotation permits it
     - _Requirements: 26.1, 26.3, 26.4, 26.6, 26.7_
     - _Property 60_
-  - [~] 5.6 Permission registry and the generated RBAC matrix
+  - [x] 5.6 Permission registry and the generated RBAC matrix
     - `PERMISSIONS = {case.transition, config.write, import.submit, validation.waive.BLOCKING, validation.waive.MAJOR, model.administer, dsar.dispose}`
     - `test_rbac_matrix_is_exhaustive_and_declared` deriving every `(route, role, in_scope)` triple from `app.routes` × `ALL_ROLES` and failing on any triple without a declared expectation, so a new route or a new permission cannot pass untested
     - `NOT_AUTHORISED` 403 with no body detail, plus an `ACCESS_DENIED` event (R2.3)
     - _Requirements: 2.3, 2.4, 2.5, 2.8, 14.6, 31.12_
     - _Properties 4, 5_
 
-- [~] 6. Checkpoint — load-bearing mechanisms
+- [x] 6. Checkpoint — load-bearing mechanisms
   - Ensure all tests pass, ask the user if questions arise. Before proceeding, confirm the AST lint, the schema guards, the route-table test, the field-coverage test, the same-version race test, and the feature/personal-data disjointness test all run in CI and all fail when deliberately violated. Everything after this point is written on top of these four mechanisms.
 
 - [ ] 7. Sessions, authentication, and citizen access
@@ -282,7 +282,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - _Properties 12, 13_
 
 - [ ] 10. Statutory notices and the deadline sweep
-  - [-] 10.1 `statutory_notice`, `notice_parcel`, and `notice_service_record` migrations
+  - [x] 10.1 `statutory_notice`, `notice_parcel`, and `notice_service_record` migrations
     - `response_deadline` frozen at issue with `policy_snapshot_hash` recording which configuration produced it — this is what makes R7.8 structural rather than a rule someone has to remember
     - `notice_service_record.service_location geometry(Point, 4326)` (R15.2)
     - _Requirements: 7.3, 7.5, 15.2_
