@@ -27,6 +27,7 @@ from hypothesis import strategies as st
 
 __all__ = [
     "st_administrative_code",
+    "st_band_cutoffs",
     "st_cadastral_polygon",
     "st_confidence",
     "st_devanagari_text",
@@ -178,9 +179,52 @@ def st_event_timeline() -> st.SearchStrategy:
     return _owned_by("3.9", "st_event_timeline", "R4.4, R17.1")
 
 
-def st_stage_graph() -> st.SearchStrategy:
-    """Configured stage sets with declared successors and a terminal stage."""
-    return _owned_by("2.8", "st_stage_graph", "R5.3, R28.7")
+@st.composite
+def st_stage_graph(draw, min_stages: int = 2, max_stages: int = 6) -> dict:
+    """A structurally valid stage graph: a chain ending in a terminal stage.
+
+    Chains rather than arbitrary graphs, because the validator's rules are about
+    reachability from the first stage and about every non-terminal stage having a
+    successor — a chain satisfies both by construction, which makes this a generator
+    of *valid* graphs. The invalid cases are built by mutating one of these, so each
+    test names the single defect it introduced instead of hoping a random graph
+    happened to be broken in the way under test.
+    """
+    count = draw(st.integers(min_value=min_stages, max_value=max_stages))
+    keys = [f"S{i}" for i in range(count)]
+    stages = []
+    for index, key in enumerate(keys):
+        terminal = index == count - 1
+        stages.append(
+            {
+                "key": key,
+                "label_key": f"stage.{key.lower()}",
+                "successors": [] if terminal else [keys[index + 1]],
+                "period_key": None if terminal else f"period.{key.lower()}",
+                "terminal": terminal,
+            }
+        )
+    return {"stages": stages}
+
+
+@st.composite
+def st_band_cutoffs(draw) -> dict[str, float]:
+    """A valid risk band cutoff set: four strictly increasing bounds ending at 1.0.
+
+    Drawn as three distinct interior bounds and then sorted, rather than drawn in
+    order with rejection. Sorting cannot fail a health check the way a filter over
+    four independent draws can, and every draw is usable.
+    """
+    interior = draw(
+        st.lists(
+            st.floats(min_value=0.01, max_value=0.99, allow_nan=False, allow_infinity=False),
+            min_size=3,
+            max_size=3,
+            unique=True,
+        )
+    )
+    low, medium, high = sorted(interior)
+    return {"LOW": low, "MEDIUM": medium, "HIGH": high, "CRITICAL": 1.0}
 
 
 def st_confidence() -> st.SearchStrategy:
