@@ -1,0 +1,374 @@
+# BHUMISETU development topology.
+#
+# Deviations from the originally committed stack are recorded in design §3.4;
+# each one is annotated below with the requirement that forced it.
+#
+# Credentials in this file are development defaults. The object-storage keys are
+# parameterised so a real deployment supplies its own, and the two of them MUST
+# stay distinct in every deployment: their separation is what enforces R11.10
+# (see minio-init). The database password and JWT_SECRET are still literals and
+# still carry their "change in production" caveat.
+
+services:
+  # PostgreSQL with PostGIS extension
+  postgres:
+    image: postgis/postgis:15-3.3
+    container_name: bhumisetu-postgres
+    environment:
+      POSTGRES_USER: bhumisetu
+      POSTGRES_PASSWORD: bhumisetu_dev_password
+      POSTGRES_DB: bhumisetu
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bhumisetu"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for job queue, caching, and officer/citizen sessions.
+  # Sessions are opaque server-side tokens, not JWTs (design §3.4, §19.1):
+  # R1.5 needs immediate revocation and R2.6 needs a role change to apply on
+  # the next request, neither of which a self-contained token can do.
+  redis:
+    image: redis:7-alpine
+    container_name: bhumisetu-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MinIO (S3-compatible object storage).
+  # Root credentials are used by minio-init only; no application service holds
+  # them, because root can read every bucket including the holdout set.
+  minio:
+    image: minio/minio:latest
+    container_name: bhumisetu-minio
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  # Bucket and access-key provisioning (design §13.6).
+  #
+  # Creates bhumisetu-documents, bhumisetu-models, and bhumisetu-holdout, then
+  # provisions two keys: an application key denied on the holdout bucket, and a
+  # holdout-only read key. R11.10 requires the Holdout_Set to be withheld from
+  # every process that tunes the OCR_Service; credential separation is the
+  # enforcement. The script proves the boundary before exiting, and every
+  # service below waits on it completing successfully, so a stack that cannot
+  # enforce the separation does not come up.
+  minio-init:
+    image: minio/mc:RELEASE.2025-08-13T08-35-41Z
+    container_name: bhumisetu-minio-init
+    environment:
+      - MINIO_ENDPOINT=http://minio:9000
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minioadmin}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-minioadmin}
+      - MC_CONFIG_DIR=/tmp/.mc
+      - OBJECT_STORAGE_BUCKET=bhumisetu-documents
+      - OBJECT_STORAGE_MODELS_BUCKET=bhumisetu-models
+      - OBJECT_STORAGE_ACCESS_KEY=${OBJECT_STORAGE_ACCESS_KEY:-bhumisetu-app}
+      - OBJECT_STORAGE_SECRET_KEY=${OBJECT_STORAGE_SECRET_KEY:-bhumisetu_app_dev_secret}
+      - HOLDOUT_STORAGE_BUCKET=bhumisetu-holdout
+      - HOLDOUT_STORAGE_ACCESS_KEY=${HOLDOUT_STORAGE_ACCESS_KEY:-bhumisetu-holdout}
+      - HOLDOUT_STORAGE_SECRET_KEY=${HOLDOUT_STORAGE_SECRET_KEY:-bhumisetu_holdout_dev_secret}
+    volumes:
+      - ./deployment/minio/init.sh:/init.sh:ro
+      - ./deployment/minio/policies:/policies:ro
+    entrypoint: ["/bin/sh", "/init.sh"]
+    depends_on:
+      minio:
+        condition: service_healthy
+
+  # Edge proxy (design §3.4, §10.6).
+  #
+  # Terminates TLS, enables HTTP/3, and compresses with brotli at quality 11 —
+  # the last is directly load-bearing for R24.1, whose 150 KB citizen budget is
+  # stated in compressed bytes and measured in CI at the same quality.
+  # Routes /officer/* to the React portal and everything else, citizen portal
+  # included, to the API service.
+  proxy:
+    build:
+      context: ./deployment/proxy
+      dockerfile: Dockerfile
+    container_name: bhumisetu-proxy
+    environment:
+      - BHUMISETU_SITE_ADDRESS=${BHUMISETU_SITE_ADDRESS:-localhost}
+      # Caddy's own CA for development. A real deployment sets this to an ACME
+      # issuer, e.g. BHUMISETU_TLS_DIRECTIVE="tls ops@example.gov.in".
+      - BHUMISETU_TLS_DIRECTIVE=${BHUMISETU_TLS_DIRECTIVE:-tls internal}
+    ports:
+      - "80:80"
+      - "443:443"
+      # HTTP/3 is QUIC over UDP; without this the h3 advertisement cannot be
+      # taken up and R24.3's 0-RTT assumption does not hold.
+      - "443:443/udp"
+    volumes:
+      - ./deployment/proxy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+      - web
+
+  # FastAPI Backend. Also serves the citizen portal at /c/* as server-rendered
+  # Jinja2 (design §10) — the 150 KB budget rules out a React bundle.
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: bhumisetu-api
+    environment:
+      - APP_ENV=development
+      - DATABASE_URL=postgresql+psycopg://bhumisetu:bhumisetu_dev_password@postgres:5432/bhumisetu
+      - REDIS_URL=redis://redis:6379/0
+      - SESSION_STORE_URL=redis://redis:6379/1
+      - OBJECT_STORAGE_ENDPOINT=http://minio:9000
+      - OBJECT_STORAGE_ACCESS_KEY=${OBJECT_STORAGE_ACCESS_KEY:-bhumisetu-app}
+      - OBJECT_STORAGE_SECRET_KEY=${OBJECT_STORAGE_SECRET_KEY:-bhumisetu_app_dev_secret}
+      - OBJECT_STORAGE_BUCKET=bhumisetu-documents
+      - OBJECT_STORAGE_MODELS_BUCKET=bhumisetu-models
+      # /internal/* service tokens ONLY (design §3.4, §19.1). Officer and
+      # citizen sessions are opaque tokens in Redis under SESSION_STORE_URL;
+      # this secret must never be used to mint one.
+      - INTERNAL_SERVICE_TOKEN_ALGORITHM=HS256
+      - JWT_SECRET=dev-secret-change-in-production
+      - LOG_LEVEL=INFO
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./apps/api:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # OCR Worker — interactive extraction only (queue `ocr`, design §13.7).
+  #
+  # This is the process that tunes the OCR service, so it holds the application
+  # key and NO holdout credential. R11.10 is enforced by that absence plus the
+  # explicit Deny in bhumisetu-app-rw.json. Do not add HOLDOUT_STORAGE_* here;
+  # apps/api/tests/infra/test_compose_topology.py fails the build if you do.
+  #
+  # Every Celery process in the stack runs the one app declared in
+  # apps/api/app/workers/celery_app.py, because that is where §13.7's queues and
+  # the task_routes live. A worker booting a second Celery app would not have
+  # those routes, so `extract_document` would be published to one topology and
+  # consumed from another. The image is still built from workers/ocr (the engine
+  # and its system dependencies live there, design §3.2); the api package is
+  # mounted alongside and reached through PYTHONPATH.
+  worker-ocr:
+    build:
+      context: ./workers/ocr
+      dockerfile: Dockerfile
+    container_name: bhumisetu-worker-ocr
+    environment:
+      - PYTHONPATH=/app:/opt/bhumisetu/api
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgresql+psycopg://bhumisetu:bhumisetu_dev_password@postgres:5432/bhumisetu
+      - OBJECT_STORAGE_ENDPOINT=http://minio:9000
+      - OBJECT_STORAGE_ACCESS_KEY=${OBJECT_STORAGE_ACCESS_KEY:-bhumisetu-app}
+      - OBJECT_STORAGE_SECRET_KEY=${OBJECT_STORAGE_SECRET_KEY:-bhumisetu_app_dev_secret}
+      - OBJECT_STORAGE_BUCKET=bhumisetu-documents
+    volumes:
+      - ./workers/ocr:/app
+      - ./apps/api:/opt/bhumisetu/api
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    command: >
+      celery -A app.workers.celery_app worker --loglevel=info
+      --concurrency=2 -Q ocr
+
+  # Accuracy measurement worker (queue `ocr_bulk`, design §13.6).
+  #
+  # §13.7's table places ocr_bulk on worker-ocr. It cannot live there: the
+  # measurement task reads the Holdout_Set and worker-ocr must not hold the key
+  # that can. A separate process on the same image keeps both properties, and
+  # §13.7's stated reason for the separate queue — a 200-document measurement
+  # must not starve interactive extraction — holds more strongly across two
+  # processes than within one.
+  #
+  # Concurrency 1 gives §13.7's "prefetch 1" its effect: the Celery app sets
+  # worker_prefetch_multiplier = 1 globally, so a single-slot worker reserves one
+  # job rather than several.
+  worker-measure:
+    build:
+      context: ./workers/ocr
+      dockerfile: Dockerfile
+    container_name: bhumisetu-worker-measure
+    environment:
+      - PYTHONPATH=/app:/opt/bhumisetu/api
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgresql+psycopg://bhumisetu:bhumisetu_dev_password@postgres:5432/bhumisetu
+      - OBJECT_STORAGE_ENDPOINT=http://minio:9000
+      # Application key for reading the extraction model artifact.
+      - OBJECT_STORAGE_ACCESS_KEY=${OBJECT_STORAGE_ACCESS_KEY:-bhumisetu-app}
+      - OBJECT_STORAGE_SECRET_KEY=${OBJECT_STORAGE_SECRET_KEY:-bhumisetu_app_dev_secret}
+      - OBJECT_STORAGE_MODELS_BUCKET=bhumisetu-models
+      # Holdout key. This is the only service that holds it.
+      - HOLDOUT_STORAGE_BUCKET=bhumisetu-holdout
+      - HOLDOUT_STORAGE_ACCESS_KEY=${HOLDOUT_STORAGE_ACCESS_KEY:-bhumisetu-holdout}
+      - HOLDOUT_STORAGE_SECRET_KEY=${HOLDOUT_STORAGE_SECRET_KEY:-bhumisetu_holdout_dev_secret}
+    volumes:
+      - ./workers/ocr:/app
+      - ./apps/api:/opt/bhumisetu/api
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    command: >
+      celery -A app.workers.celery_app worker --loglevel=info
+      --concurrency=1 -Q ocr_bulk
+
+  # ML Worker (queue `ml`, design §13.7).
+  #
+  # ml/ is mounted rather than copied because §3.2 makes it importable by both
+  # this worker and the api service; PYTHONPATH covers the api package (for the
+  # domain services the ml tasks read through) and ml/ itself.
+  worker-ml:
+    build:
+      context: ./workers/ml
+      dockerfile: Dockerfile
+    container_name: bhumisetu-worker-ml
+    environment:
+      - PYTHONPATH=/app:/opt/bhumisetu/api:/opt/bhumisetu
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgresql+psycopg://bhumisetu:bhumisetu_dev_password@postgres:5432/bhumisetu
+      - ML_MODEL_PATH=/app/models
+      - OBJECT_STORAGE_ENDPOINT=http://minio:9000
+      - OBJECT_STORAGE_ACCESS_KEY=${OBJECT_STORAGE_ACCESS_KEY:-bhumisetu-app}
+      - OBJECT_STORAGE_SECRET_KEY=${OBJECT_STORAGE_SECRET_KEY:-bhumisetu_app_dev_secret}
+      - OBJECT_STORAGE_MODELS_BUCKET=bhumisetu-models
+    volumes:
+      - ./workers/ml:/app
+      - ./apps/api:/opt/bhumisetu/api
+      - ./ml:/opt/bhumisetu/ml
+      - ./ml/models:/app/models
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    command: >
+      celery -A app.workers.celery_app worker --loglevel=info
+      --concurrency=1 -Q ml
+
+  # General worker: `import` and `maintenance` (design §3.4, §13.7).
+  #
+  # R30.11's import throughput must not queue behind OCR jobs, and the
+  # retention, deadline, outbox, and dashboard sweeps must not block scoring.
+  # §13.7 wants import at concurrency 4 and maintenance at 2; one worker
+  # process has a single pool, so this runs at 4 and the maintenance tasks
+  # share it. Split into two services if maintenance latency ever suffers.
+  worker-general:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: bhumisetu-worker-general
+    environment:
+      - APP_ENV=development
+      - DATABASE_URL=postgresql+psycopg://bhumisetu:bhumisetu_dev_password@postgres:5432/bhumisetu
+      - REDIS_URL=redis://redis:6379/0
+      - SESSION_STORE_URL=redis://redis:6379/1
+      - OBJECT_STORAGE_ENDPOINT=http://minio:9000
+      - OBJECT_STORAGE_ACCESS_KEY=${OBJECT_STORAGE_ACCESS_KEY:-bhumisetu-app}
+      - OBJECT_STORAGE_SECRET_KEY=${OBJECT_STORAGE_SECRET_KEY:-bhumisetu_app_dev_secret}
+      - OBJECT_STORAGE_BUCKET=bhumisetu-documents
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./apps/api:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    command: >
+      celery -A app.workers.celery_app worker --loglevel=info
+      --concurrency=4 -Q import,maintenance
+
+  # Scheduler (design §3.4). Nothing else in the stack can fire the periodic
+  # work R7.6/7.7, R19.2, R31.1/31.5, R22.5, and R32.10 all require.
+  # Runs no tasks itself; it only enqueues them.
+  worker-beat:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: bhumisetu-worker-beat
+    environment:
+      - APP_ENV=development
+      - DATABASE_URL=postgresql+psycopg://bhumisetu:bhumisetu_dev_password@postgres:5432/bhumisetu
+      - REDIS_URL=redis://redis:6379/0
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./apps/api:/app
+      - beat_schedule:/var/lib/celery
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: >
+      celery -A app.workers.celery_app beat --loglevel=info
+      --schedule=/var/lib/celery/celerybeat-schedule
+
+  # Officer portal only (design §3.4, §10.6). Mounted at /officer/ via Vite
+  # `base`; there is no citizen surface here — apps/web/src/citizen/ was
+  # removed because the citizen portal is Jinja2 served by the api service.
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    container_name: bhumisetu-web
+    environment:
+      # Same-origin behind the proxy, so no cross-origin API host is needed.
+      # The previous absolute http://localhost:8000 would bypass the proxy and
+      # its TLS termination entirely.
+      - VITE_API_URL=/api
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules
+    command: npm run dev
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
+  caddy_data:
+  caddy_config:
+  beat_schedule:

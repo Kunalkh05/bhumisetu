@@ -1,0 +1,57 @@
+# BHUMISETU edge proxy (design §3.4, §10.6)
+#
+# Two origins behind one hostname:
+#   /officer/*  -> web:3000   React officer portal, Vite base '/officer/'
+#   everything  -> api:8000   FastAPI, including the server-rendered citizen
+#                             portal at /c/* (design §10)
+{
+	# HTTP/3 is load-bearing, not a nicety. Design §2 records that 0-RTT
+	# resumption materially affects whether R24.3's 5 s FCP / 8 s interactive
+	# target is reachable at all on the 400 kbps / 2000 ms RTT profile.
+	servers {
+		protocols h1 h2 h3
+	}
+
+	# Admin API bound to loopback inside the container only.
+	admin localhost:2019
+}
+
+{$BHUMISETU_SITE_ADDRESS:localhost} {
+	# TLS termination. `internal` uses Caddy's own CA, which is what a
+	# compose-based development stack wants. A real deployment overrides this
+	# with an ACME issuer by setting BHUMISETU_TLS_DIRECTIVE, e.g.
+	#   BHUMISETU_TLS_DIRECTIVE="tls ops@example.gov.in"
+	{$BHUMISETU_TLS_DIRECTIVE:tls internal}
+
+	# Brotli first, so a client advertising `br` gets brotli rather than zstd.
+	#
+	# Quality 11 is chosen to match BROTLI_Q in
+	# apps/api/tests/perf/test_citizen_budget.py (design §10.5). The two
+	# numbers must stay equal: R24.1's budget counts the bytes actually
+	# transferred, so a proxy compressing at a lower quality than the test
+	# would let a real page exceed 150 KB while CI reported it inside budget.
+	# zstd and gzip remain as fallbacks for clients without brotli.
+	encode {
+		br 11
+		zstd
+		gzip
+	}
+
+	# `handle` rather than `handle_path`: the prefix must survive, because the
+	# officer bundle is built with Vite `base: '/officer/'` and its asset URLs
+	# are absolute under that prefix.
+	@officer path /officer /officer/*
+	handle @officer {
+		reverse_proxy web:3000
+	}
+
+	# Everything else, citizen portal included, is the API service.
+	handle {
+		reverse_proxy api:8000
+	}
+
+	log {
+		output stderr
+		format console
+	}
+}

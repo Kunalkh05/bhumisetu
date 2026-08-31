@@ -1,0 +1,44 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ListApplicationBuckets",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetBucketLocation",
+        "s3:ListBucket",
+        "s3:ListBucketMultipartUploads"
+      ],
+      "Resource": [
+        "arn:aws:s3:::bhumisetu-documents",
+        "arn:aws:s3:::bhumisetu-models"
+      ]
+    },
+    {
+      "Sid": "ReadWriteApplicationObjects",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject",
+        "s3:AbortMultipartUpload",
+        "s3:ListMultipartUploadParts"
+      ],
+      "Resource": [
+        "arn:aws:s3:::bhumisetu-documents/*",
+        "arn:aws:s3:::bhumisetu-models/*"
+      ]
+    },
+    {
+      "Sid": "DenyHoldoutR1110",
+      "Effect": "Deny",
+      "Action": [
+        "s3:*"
+      ],
+      "Resource": [
+        "arn:aws:s3:::bhumisetu-holdout",
+        "arn:aws:s3:::bhumisetu-holdout/*"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+# BHUMISETU API — runtime dependencies.
+# Stack fixed by design §3 / "Language and stack": Python 3.11, FastAPI,
+# SQLAlchemy 2.0, Alembic, Celery on Redis, PostgreSQL 15 + PostGIS 3.3.
+# Versions are pinned exactly; the same pins are used by the workers so that
+# api and workers import identical service modules (§3.3).
+
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.4
+pydantic-settings==2.7.0
+SQLAlchemy==2.0.36
+alembic==1.14.0
+psycopg[binary]==3.2.3
+celery[redis]==5.4.0
+redis==5.2.1

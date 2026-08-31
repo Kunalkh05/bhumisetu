@@ -1,0 +1,13 @@
+[project]
+name = "bhumisetu-api"
+version = "0.1.0"
+description = "BHUMISETU land acquisition management platform — API and domain services"
+requires-python = "==3.11.*"
+
+[tool.pytest.ini_options]
+# `app` is imported as a top-level package, matching the compose command
+# `uvicorn app.main:app` and the worker `celery -A app.workers.celery_app`.
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+# Hypothesis profiles and the shared domain generators land in task 1.4 (§20.8).

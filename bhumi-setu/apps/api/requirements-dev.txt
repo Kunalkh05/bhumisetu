@@ -1,0 +1,11 @@
+-r requirements.txt
+
+# Test tooling. Hypothesis is configured properly in task 1.4 (§20.8); it is
+# pinned here because the atomicity boundary in §5.2 is worth exercising over
+# generated operation sequences from the start.
+pytest==8.3.4
+hypothesis==6.123.2
+httpx==0.28.1
+# Read by tests/test_settings.py to compare the settings field names against the
+# variable names committed in docker-compose.yml.
+PyYAML==6.0.3
