@@ -123,6 +123,7 @@ class PolicyConfig(Base):
 
     justification_report_id: Mapped[int | None] = mapped_column(
         BigInteger,
+        ForeignKey("extraction_accuracy_report.id", ondelete="RESTRICT"),
         nullable=True,
         comment=(
             "R28.9: an OCR threshold change must cite the Extraction_Accuracy_"
