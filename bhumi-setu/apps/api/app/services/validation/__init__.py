@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Callable, Iterable, Mapping, Protocol, Sequence
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -70,6 +70,13 @@ class DbRuleContext:
         self.case_id = case_id
 
     def values(self, entity_type: str) -> Sequence[Mapping[str, object]]:
+        if entity_type == "parcel_overlap":
+            return tuple(
+                self.session.execute(
+                    _parcel_overlap_statement(),
+                    {"case_id": self.case_id},
+                ).mappings()
+            )
         stmt = _db_context_statement(entity_type, self.case_id)
         if stmt is None:
             # Document extraction lands later; unknown lookups fail closed instead
@@ -129,6 +136,34 @@ def _db_context_statement(entity_type: str, case_id: int):
     if entity_type == "validation_issue":
         return select(ValidationIssue).where(ValidationIssue.case_id == case_id)
     return None
+
+
+def _parcel_overlap_statement():
+    return text(
+        """
+        WITH parcels AS (
+            SELECT lp.id,
+                   lp.geom,
+                   NULLIF(lp.geodesic_area_sqm, 0) AS area_sqm
+              FROM land_parcel lp
+              JOIN case_parcel cp ON cp.parcel_id = lp.id
+             WHERE cp.case_id = :case_id
+               AND lp.geom IS NOT NULL
+               AND lp.geodesic_area_sqm IS NOT NULL
+        )
+        SELECT left_parcel.id AS left_parcel_id,
+               right_parcel.id AS right_parcel_id,
+               ST_Area(
+                   ST_Intersection(left_parcel.geom, right_parcel.geom)::geography
+               ) / LEAST(left_parcel.area_sqm, right_parcel.area_sqm)
+                   AS overlap_fraction
+          FROM parcels left_parcel
+          JOIN parcels right_parcel
+            ON left_parcel.id < right_parcel.id
+           AND left_parcel.geom && right_parcel.geom
+           AND ST_Intersects(left_parcel.geom, right_parcel.geom)
+        """
+    )
 
 
 def _public_mapping(row: Any) -> Mapping[str, object]:

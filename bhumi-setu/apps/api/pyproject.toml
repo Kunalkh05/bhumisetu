@@ -10,4 +10,7 @@ requires-python = "==3.11.*"
 pythonpath = ["."]
 testpaths = ["tests"]
 addopts = "-q --strict-markers"
+markers = [
+    "perf: performance benchmarks that may skip locally without required services",
+]
 # Hypothesis profiles and the shared domain generators land in task 1.4 (§20.8).

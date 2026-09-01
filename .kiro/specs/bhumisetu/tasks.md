@@ -439,7 +439,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 11.11, 11.12, 11.13, 11.14, 11.15, 12.1, 12.2, 12.3, 12.4, 12.7, 12.8, 12.9_
     - _Properties 21, 22, 23, 24, 25, 26, 27, 88_
 
-- [ ] 17. GIS geometry, bbox query, tiles, and clustering
+- [x] 17. GIS geometry, bbox query, tiles, and clustering
   - [x] 17.1 Geometry storage and validation
     - `apps/api/app/services/gis.py`: `store_geometry()` checking `ST_IsValid`, returning `ST_IsValidReason` and `ST_IsValidDetail` on rejection so the response carries a coordinate of the first detected invalidity; accepting polygon and multipolygon for parcels and projects and point for notice service locations; transforming to SRID 4326 on store and returning GeoJSON in WGS 84 regardless of the submitted reference system
     - `geodesic_area_sqm` from `ST_Area` on a `geography` cast — planar area in EPSG:4326 would be square degrees and meaningless
@@ -457,16 +457,16 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - `GET /gis/tiles/{z}/{x}/{y}.mvt` via `ST_AsMVT`, cached in Redis keyed by scope hash and a parcel-geometry generation counter, with counter bump on any geometry write scoped to the affected area path so a stale tile cannot outlive a boundary correction
     - _Requirements: 16.1, 16.2, 16.3_
     - _Property 33_
-  - [~] 17.4 Geometry validation rules wired into the engine
+  - [x] 17.4 Geometry validation rules wired into the engine
     - Area-divergence rule raising the configured severity when the geodesic area differs from the recorded extent by more than the configured fraction, converting via `extent_unit`; same-case parcel overlap rule naming both parcels above the configured fraction. Both use the shared tolerance-rule implementation from 13.3
     - _Requirements: 15.6, 15.7_
     - _Property 14_
-  - [~] 17.5 PostGIS benchmark, seeded and plan-capturing
+  - [x] 17.5 PostGIS benchmark, seeded and plan-capturing
     - `apps/api/tests/perf/test_gis.py` per §20.4: session fixture generating 50 000 parcels with realistic cadastral geometry (20–80 vertices, village-clustered, overlapping bounding boxes) then `ANALYZE`; 100 bounding boxes each containing 5000 parcels; assert p95 ≤ 2 s and assert the boxes really did contain 5000
     - Capture `EXPLAIN (ANALYZE, BUFFERS)` on failure — a regression here is almost always a plan change and the plan is the diagnosis
     - Nightly at 50 000; a 5000-parcel smoke variant per PR because seeding is the slow part
     - _Requirements: 15.8_
-  - [~] 17.6 Geometry property tests
+  - [x] 17.6 Geometry property tests
     - Property test over `st_cadastral_polygon()` including deliberately self-intersecting inputs: a write succeeds exactly when the type is accepted and the geometry is topologically valid, a rejection returns a coordinate of the first invalidity, and returned geometry is in WGS 84 whatever it was submitted in
     - Property test: the returned parcels are exactly those intersecting the box and in scope, and where the count exceeds the threshold the cluster counts sum to that same count
     - Integration test of `ST_Area` on `geography` against known reference polygons (§20.9)

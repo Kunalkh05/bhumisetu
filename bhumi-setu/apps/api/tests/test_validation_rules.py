@@ -11,14 +11,19 @@ from hypothesis import strategies as st
 from app.services.validation import ChunkRuleContext
 from app.services.validation.rules import (
     AWARD_TOTAL_RULE_ID,
+    AREA_DIVERGENCE_RULE_ID,
+    DEFAULT_RULES,
     DUPLICATE_OWNERSHIP_RULE_ID,
     DUPLICATE_PARCEL_RULE_ID,
+    PARCEL_OVERLAP_RULE_ID,
     SHARE_SUM_RULE_ID,
+    area_divergence_rule,
     award_total_rule,
     cross_document_consistency_rule,
     date_chronology_rule,
     duplicate_ownership_overlap_rule,
     duplicate_parcel_identity_rule,
+    parcel_overlap_rule,
     required_field_rule,
     share_sum_rule,
 )
@@ -153,6 +158,77 @@ def test_award_total_rule_uses_cent_tolerance_and_names_award_and_components() -
     assert violations[0].observed_values["delta"] == "0.02"
 
 
+def test_area_divergence_rule_converts_recorded_extent_to_square_metres() -> None:
+    rule = area_divergence_rule()
+    inside = ChunkRuleContext(
+        case_id=1,
+        rows={
+            "land_parcel": (
+                {
+                    "id": 7,
+                    "extent": Decimal("2"),
+                    "extent_unit": "hectare",
+                    "geodesic_area_sqm": Decimal("21000"),
+                },
+            )
+        },
+    )
+    outside = ChunkRuleContext(
+        case_id=1,
+        rows={
+            "land_parcel": (
+                {
+                    "id": 7,
+                    "extent": Decimal("2"),
+                    "extent_unit": "acre",
+                    "geodesic_area_sqm": Decimal("9000"),
+                },
+            )
+        },
+    )
+
+    assert list(rule.evaluate(inside)) == []
+    violations = list(rule.evaluate(outside))
+    assert violations[0].rule_id == AREA_DIVERGENCE_RULE_ID
+    assert violations[0].offending_entities == (("land_parcel", 7),)
+    assert violations[0].observed_values["tolerance"] == "0.05"
+
+
+def test_parcel_overlap_rule_names_both_parcels_above_fraction() -> None:
+    rule = parcel_overlap_rule()
+    ctx = ChunkRuleContext(
+        case_id=1,
+        rows={
+            "parcel_overlap": (
+                {
+                    "left_parcel_id": 4,
+                    "right_parcel_id": 5,
+                    "overlap_fraction": Decimal("0.0100"),
+                },
+                {
+                    "left_parcel_id": 5,
+                    "right_parcel_id": 6,
+                    "overlap_fraction": Decimal("0.0101"),
+                },
+            )
+        },
+    )
+
+    violations = list(rule.evaluate(ctx))
+
+    assert len(violations) == 1
+    assert violations[0].rule_id == PARCEL_OVERLAP_RULE_ID
+    assert violations[0].offending_entities == (("land_parcel", 5), ("land_parcel", 6))
+    assert violations[0].observed_values["tolerance"] == "0.01"
+
+
+def test_default_rules_include_geometry_validation_rules() -> None:
+    rule_ids = {rule.rule_id for rule in DEFAULT_RULES}
+
+    assert AREA_DIVERGENCE_RULE_ID in rule_ids
+    assert PARCEL_OVERLAP_RULE_ID in rule_ids
+
+
 def test_cross_document_consistency_groups_same_case_field() -> None:
     rule = cross_document_consistency_rule()
     ctx = ChunkRuleContext(
@@ -241,6 +317,44 @@ def test_property_award_total_issue_exists_exactly_outside_tolerance(total: Deci
             assert violation.offending_entities[0] == ("award", 10)
             assert violation.observed_values["tolerance"] == "0.01"
             assert violation.observed_values["delta"] == str(bump)
+
+
+@given(
+    extent=st.decimals(
+        min_value=Decimal("1.0000"),
+        max_value=Decimal("10000.0000"),
+        places=4,
+        allow_nan=False,
+        allow_infinity=False,
+    )
+)
+def test_property_area_divergence_issue_exists_exactly_outside_tolerance(
+    extent: Decimal,
+) -> None:
+    recorded_sqm = extent * Decimal("10000")
+    for multiplier, should_violate in (
+        (Decimal("1.05"), False),
+        (Decimal("1.050001"), True),
+    ):
+        ctx = ChunkRuleContext(
+            case_id=1,
+            rows={
+                "land_parcel": (
+                    {
+                        "id": 7,
+                        "extent": extent,
+                        "extent_unit": "hectare",
+                        "geodesic_area_sqm": recorded_sqm * multiplier,
+                    },
+                )
+            },
+        )
+
+        violations = list(area_divergence_rule().evaluate(ctx))
+
+        assert bool(violations) is should_violate
+        if violations:
+            assert violations[0].offending_entities == (("land_parcel", 7),)
 
 
 def _parcel(

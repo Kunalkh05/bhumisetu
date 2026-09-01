@@ -15,6 +15,7 @@ from app.services.validation import (
     RESOLUTION_OPEN,
     RESOLUTION_WAIVED,
     ChunkRuleContext,
+    DbRuleContext,
     Rule,
     ValidationEngine,
     Violation,
@@ -64,6 +65,29 @@ class FakeSession:
         yield
 
 
+class FakeMappingRows:
+    def mappings(self):  # type: ignore[no-untyped-def]
+        return iter(
+            [
+                {
+                    "left_parcel_id": 1,
+                    "right_parcel_id": 2,
+                    "overlap_fraction": 0.02,
+                }
+            ]
+        )
+
+
+class FakeOverlapSession:
+    statement = ""
+    params: dict | None = None
+
+    def execute(self, stmt, params=None):  # type: ignore[no-untyped-def]
+        self.statement = str(stmt)
+        self.params = params
+        return FakeMappingRows()
+
+
 def _case() -> AcquisitionCase:
     return AcquisitionCase(
         id=1,
@@ -99,6 +123,25 @@ def test_chunk_context_reads_preloaded_rows_and_fails_closed_for_unknown_entity(
 
     assert ctx.values("ownership_record") == ({"id": 1, "share": "1.0"},)
     assert ctx.values("award") == ()
+
+
+def test_db_context_supplies_postgis_parcel_overlap_rows() -> None:
+    session = FakeOverlapSession()
+    ctx = DbRuleContext(session, case_id=10)  # type: ignore[arg-type]
+
+    rows = ctx.values("parcel_overlap")
+
+    assert rows == (
+        {
+            "left_parcel_id": 1,
+            "right_parcel_id": 2,
+            "overlap_fraction": 0.02,
+        },
+    )
+    assert "ST_Intersection" in session.statement
+    assert "left_parcel.geom && right_parcel.geom" in session.statement
+    assert "ST_Intersects(left_parcel.geom, right_parcel.geom)" in session.statement
+    assert session.params == {"case_id": 10}
 
 
 def test_evaluate_case_resolves_severity_from_policy_and_updates_blocking_count(monkeypatch) -> None:

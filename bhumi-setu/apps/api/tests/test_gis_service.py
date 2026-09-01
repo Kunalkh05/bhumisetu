@@ -5,6 +5,9 @@ from __future__ import annotations
 from decimal import Decimal
 
 import pytest
+from hypothesis import given
+from hypothesis import strategies as st
+from sqlalchemy import text
 
 from app.api.routers import officer_router
 from app.services.gis import (
@@ -17,6 +20,7 @@ from app.services.gis import (
     store_geometry,
     vector_tile,
 )
+from tests.postgres import skip_without_postgres
 
 
 POLYGON = {
@@ -293,6 +297,101 @@ def test_geometry_generation_bump_is_scoped_to_affected_area_path() -> None:
     assert cache.values["gis:parcel-geom-generation:IN.MH.PUNE"] == b"1"
 
 
+@given(
+    target=st.sampled_from(["parcel", "project", "notice_service_location"]),
+    geometry_type=st.sampled_from(["Polygon", "MultiPolygon", "Point"]),
+    valid=st.booleans(),
+)
+def test_property_store_geometry_succeeds_exactly_for_accepted_valid_shapes(
+    target: str,
+    geometry_type: str,
+    valid: bool,
+) -> None:
+    geometry = _geometry_of_type(geometry_type)
+    accepted = {
+        "parcel": {"Polygon", "MultiPolygon"},
+        "project": {"Polygon", "MultiPolygon"},
+        "notice_service_location": {"Point"},
+    }[target]
+    session = FakeGisSession(
+        validation={
+            "valid": valid,
+            "reason": None if valid else "Self-intersection",
+            "location": None if valid else {"type": "Point", "coordinates": [73, 18]},
+            "geometry_type": f"ST_{geometry_type}",
+            "srid": 4326,
+            "geodesic_area_sqm": Decimal("10") if target in {"parcel", "project"} else None,
+            "geojson": {"type": geometry_type, "coordinates": []},
+        }
+    )
+
+    if geometry_type in accepted and valid:
+        result = store_geometry(
+            session,  # type: ignore[arg-type]
+            target=target,
+            entity_id=1,
+            geometry=geometry,
+        )
+        assert result.srid == 4326
+    else:
+        with pytest.raises(InvalidGeometry):
+            store_geometry(
+                session,  # type: ignore[arg-type]
+                target=target,
+                entity_id=1,
+                geometry=geometry,
+            )
+
+
+@given(
+    counts=st.lists(st.integers(min_value=1, max_value=100), min_size=1, max_size=10)
+)
+def test_property_cluster_counts_sum_to_intersecting_count(counts: list[int]) -> None:
+    total = sum(counts)
+    session = FakeGisSession(
+        results=[
+            total,
+            [
+                {"lon": 73.0 + index, "lat": 18.0, "count": count}
+                for index, count in enumerate(counts)
+            ],
+        ]
+    )
+
+    result = get_parcel_map_payload(
+        session,  # type: ignore[arg-type]
+        bbox=Bbox(73.0, 18.0, 73.5, 18.5),
+        scope_paths=("IN.MH.PUNE",),
+        simplification_tolerance=0.00001,
+        cluster_threshold=max(0, total - 1),
+        cluster_cell_size_deg=0.05,
+    )
+
+    assert result.mode == "clusters"
+    assert sum(cluster.count for cluster in result.clusters) == result.count
+
+
+def test_integration_geography_area_uses_square_metres(migrated_engine) -> None:
+    skip_without_postgres()
+    with migrated_engine.connect() as conn:
+        has_postgis = conn.execute(
+            text("SELECT EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'postgis')")
+        ).scalar_one()
+        if not has_postgis:
+            pytest.skip("PostGIS extension is not installed in the migrated database")
+        area = conn.execute(
+            text(
+                """
+                SELECT ST_Area(
+                    ST_MakeEnvelope(0, 0, 1, 1, 4326)::geography
+                )
+                """
+            )
+        ).scalar_one()
+
+    assert 12_000_000_000 < area < 12_500_000_000
+
+
 class FakeMappingResult:
     def __init__(self, rows) -> None:  # type: ignore[no-untyped-def]
         self.rows = rows if isinstance(rows, list) else [rows]
@@ -342,3 +441,11 @@ class FakeTileCache:
         value = int(self.values.get(key, b"0")) + 1
         self.values[key] = str(value).encode("ascii")
         return value
+
+
+def _geometry_of_type(geometry_type: str) -> dict:
+    if geometry_type == "Point":
+        return POINT
+    if geometry_type == "MultiPolygon":
+        return {"type": "MultiPolygon", "coordinates": [[POLYGON["coordinates"]]]}
+    return POLYGON

@@ -17,15 +17,19 @@ from app.services.validation import Rule, RuleContext, Violation
 
 __all__ = [
     "AWARD_TOTAL_RULE_ID",
+    "AREA_DIVERGENCE_RULE_ID",
     "DEFAULT_RULES",
     "DUPLICATE_OWNERSHIP_RULE_ID",
     "DUPLICATE_PARCEL_RULE_ID",
+    "PARCEL_OVERLAP_RULE_ID",
     "SHARE_SUM_RULE_ID",
+    "area_divergence_rule",
     "award_total_rule",
     "cross_document_consistency_rule",
     "date_chronology_rule",
     "duplicate_ownership_overlap_rule",
     "duplicate_parcel_identity_rule",
+    "parcel_overlap_rule",
     "required_field_rule",
     "share_sum_rule",
     "tolerance_rule",
@@ -35,9 +39,15 @@ SHARE_SUM_RULE_ID = "share_sum"
 AWARD_TOTAL_RULE_ID = "award_total"
 DUPLICATE_PARCEL_RULE_ID = "duplicate_parcel_identity"
 DUPLICATE_OWNERSHIP_RULE_ID = "duplicate_ownership_overlap"
+AREA_DIVERGENCE_RULE_ID = "area_divergence"
+PARCEL_OVERLAP_RULE_ID = "parcel_overlap"
 
 SHARE_SUM_TOLERANCE = Decimal("0.0001")
 AWARD_TOTAL_TOLERANCE = Decimal("0.01")
+AREA_DIVERGENCE_FRACTION = Decimal("0.05")
+PARCEL_OVERLAP_FRACTION = Decimal("0.01")
+SQM_PER_HECTARE = Decimal("10000")
+SQM_PER_ACRE = Decimal("4046.8564224")
 ONE = Decimal("1")
 
 
@@ -265,11 +275,63 @@ def award_total_rule() -> Rule:
     )
 
 
+def area_divergence_rule() -> Rule:
+    def rows(context: RuleContext) -> Iterable[Sequence[Mapping[str, object]]]:
+        return tuple((row,) for row in context.values("land_parcel"))
+
+    def observed(group_rows: Sequence[Mapping[str, object]]) -> Decimal | None:
+        [row] = group_rows
+        recorded_sqm = _extent_to_sqm(row.get("extent"), row.get("extent_unit"))
+        geodesic_sqm = _to_decimal(row.get("geodesic_area_sqm"))
+        if recorded_sqm is None or geodesic_sqm is None or recorded_sqm == 0:
+            return None
+        return abs(geodesic_sqm - recorded_sqm) / recorded_sqm
+
+    return tolerance_rule(
+        rule_id=AREA_DIVERGENCE_RULE_ID,
+        entity_type="land_parcel",
+        observed_label="area_divergence_fraction",
+        target=Decimal("0"),
+        tolerance=AREA_DIVERGENCE_FRACTION,
+        rows=rows,
+        observed=observed,
+    )
+
+
+def parcel_overlap_rule() -> Rule:
+    def evaluate(context: RuleContext) -> Iterable[Violation]:
+        for row in context.values("parcel_overlap"):
+            fraction = _to_decimal(row.get("overlap_fraction"))
+            if fraction is None or fraction <= PARCEL_OVERLAP_FRACTION:
+                continue
+            left_id = int(row["left_parcel_id"])
+            right_id = int(row["right_parcel_id"])
+            yield Violation(
+                PARCEL_OVERLAP_RULE_ID,
+                (("land_parcel", left_id), ("land_parcel", right_id)),
+                {
+                    "left_parcel_id": left_id,
+                    "right_parcel_id": right_id,
+                    "overlap_fraction": str(fraction),
+                    "tolerance": str(PARCEL_OVERLAP_FRACTION),
+                },
+            )
+
+    return Rule(
+        PARCEL_OVERLAP_RULE_ID,
+        "tolerance",
+        _severity_key(PARCEL_OVERLAP_RULE_ID),
+        evaluate,
+    )
+
+
 DEFAULT_RULES: tuple[Rule, ...] = (
     duplicate_parcel_identity_rule(),
     duplicate_ownership_overlap_rule(),
     share_sum_rule(),
     award_total_rule(),
+    area_divergence_rule(),
+    parcel_overlap_rule(),
     cross_document_consistency_rule(),
 )
 
@@ -295,6 +357,18 @@ def _decimal_sum(values: Iterable[object]) -> Decimal | None:
             return None
         total += decimal
     return total
+
+
+def _extent_to_sqm(extent: object, unit: object) -> Decimal | None:
+    value = _to_decimal(extent)
+    if value is None or not isinstance(unit, str):
+        return None
+    normalised = unit.strip().lower()
+    if normalised in {"hectare", "hectares", "ha"}:
+        return value * SQM_PER_HECTARE
+    if normalised in {"acre", "acres"}:
+        return value * SQM_PER_ACRE
+    return None
 
 
 def _normalise_value(value: object) -> object:
