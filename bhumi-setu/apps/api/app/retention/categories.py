@@ -173,9 +173,38 @@ CATEGORY_MAP: dict[tuple[str, str], str | Discriminated | Reference] = {
     ("ownership_record", "contact_mobile_hash"): OWNER_CONTACT,
     # objection — the objector is a person.
     ("objection", "objector_name"): OWNER_IDENTITY,
+    # document — the object itself contains record scans and OCR source content.
+    ("document", "object_key"): DOCUMENT_CONTENT,
+    ("document", "original_filename"): LAND_RECORD,
     # extracted_field — value-dependent: the category is decided by which field
     # was extracted, so it is resolved from the row.
     ("extracted_field", "extracted_value"): Discriminated(
+        on="field_name",
+        by_value={
+            "owner_name": OWNER_IDENTITY,
+            "father_name": OWNER_IDENTITY,
+            "mobile": OWNER_CONTACT,
+            "aadhaar": OWNER_IDENTITY,
+            "survey_number": LAND_RECORD,
+            "extent": LAND_RECORD,
+        },
+        default=LAND_RECORD,
+    ),
+    ("extracted_field", "original_extracted_value"): Discriminated(
+        on="field_name",
+        by_value={
+            "owner_name": OWNER_IDENTITY,
+            "father_name": OWNER_IDENTITY,
+            "mobile": OWNER_CONTACT,
+            "aadhaar": OWNER_IDENTITY,
+            "survey_number": LAND_RECORD,
+            "extent": LAND_RECORD,
+        },
+        default=LAND_RECORD,
+    ),
+    ("extraction", "full_text"): DOCUMENT_CONTENT,
+    ("holdout_document", "object_key"): DOCUMENT_CONTENT,
+    ("holdout_label", "expected_value"): Discriminated(
         on="field_name",
         by_value={
             "owner_name": OWNER_IDENTITY,
