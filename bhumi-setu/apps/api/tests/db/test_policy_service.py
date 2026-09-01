@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import date
+import json
 
 import pytest
 from sqlalchemy import Connection, text
@@ -295,17 +296,36 @@ def test_an_ocr_threshold_without_a_report_is_refused_with_the_requirement(
     assert row_count(db_connection, "ocr.threshold.auto_accept") == 0
 
 
-def test_an_ocr_threshold_with_a_report_defers_to_task_16_7(
-    service: PolicyService, actor
+def test_an_ocr_threshold_with_a_supporting_report_is_written(
+    db_connection: Connection, service: PolicyService, actor
 ) -> None:
-    """The seam, asserted rather than glossed.
+    report_id = _insert_accuracy_report(
+        db_connection,
+        precision_at_threshold={"0.95": {"overall": 0.99}},
+    )
 
-    §13.6's checks — report not superseded, matching model version and script set,
-    precision stated at the new threshold — need extraction_accuracy_report, which
-    task 16.7 creates. Raising here means the first threshold change after 16.7 lands
-    cannot go unvalidated unnoticed; passing silently would guarantee it does.
-    """
-    with pytest.raises(ReportAssertionUnavailable, match="task 16.7"):
+    result = service.set(
+        "ocr.threshold.auto_accept",
+        0.95,
+        state=STATE,
+        act=ACT,
+        effective_from=APR,
+        actor=actor,
+        justification_report_id=report_id,
+    )
+
+    assert result.policy_config_id > 0
+
+
+def test_an_ocr_threshold_requires_reported_precision_at_that_threshold(
+    db_connection: Connection, service: PolicyService, actor
+) -> None:
+    report_id = _insert_accuracy_report(
+        db_connection,
+        precision_at_threshold={"0.90": {"overall": 0.99}},
+    )
+
+    with pytest.raises(ReportAssertionUnavailable, match="does not state precision"):
         service.set(
             "ocr.threshold.auto_accept",
             0.95,
@@ -313,8 +333,42 @@ def test_an_ocr_threshold_with_a_report_defers_to_task_16_7(
             act=ACT,
             effective_from=APR,
             actor=actor,
-            justification_report_id=1,
+            justification_report_id=report_id,
         )
+
+
+def _insert_accuracy_report(
+    connection: Connection,
+    *,
+    precision_at_threshold: dict,
+    superseded: bool = False,
+) -> int:
+    return connection.execute(
+        text(
+            """
+            INSERT INTO extraction_accuracy_report
+                (extraction_model_version, script_set_version, holdout_manifest_hash,
+                 accuracy_by_field, accuracy_by_script, holdout_document_count,
+                 labelled_instance_count_by_field, precision_at_threshold,
+                 measurement_date, superseded_at)
+            VALUES
+                ('tesseract-5', 'dev-eng', :manifest,
+                 CAST(:by_field AS jsonb), CAST(:by_script AS jsonb), 2,
+                 CAST(:counts AS jsonb), CAST(:precision AS jsonb),
+                 DATE '2024-04-01',
+                 CASE WHEN :superseded THEN now() ELSE NULL END)
+            RETURNING id
+            """
+        ),
+        {
+            "manifest": f"manifest-{len(str(precision_at_threshold))}-{superseded}",
+            "by_field": json.dumps({"owner_name": 1.0}),
+            "by_script": json.dumps({"dev": 1.0}),
+            "counts": json.dumps({"owner_name": 2}),
+            "precision": json.dumps(precision_at_threshold),
+            "superseded": superseded,
+        },
+    ).scalar_one()
 
 
 # ---------------------------------------------------------------------------
