@@ -204,160 +204,160 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
 - [x] 6. Checkpoint — load-bearing mechanisms
   - Ensure all tests pass, ask the user if questions arise. Before proceeding, confirm the AST lint, the schema guards, the route-table test, the field-coverage test, the same-version race test, and the feature/personal-data disjointness test all run in CI and all fail when deliberately violated. Everything after this point is written on top of these four mechanisms.
 
-- [ ] 7. Sessions, authentication, and citizen access
-  - [~] 7.1 Redis-backed opaque officer sessions
+- [x] 7. Sessions, authentication, and citizen access
+  - [x] 7.1 Redis-backed opaque officer sessions
     - `apps/api/app/security/auth.py`: 256-bit opaque token in an `HttpOnly; Secure; SameSite=Strict` cookie, Redis record with 60-minute **sliding** expiry, deleted on sign-out; double-submit CSRF token on all mutations
     - Not JWT, per the §3.4 deviation: R1.5 needs immediate revocation and R2.6 needs a role change to apply on the next request, and a self-contained token satisfies neither without a revocation list, which is a session store with a larger cookie
     - `OFFICER_SIGNED_IN` and `OFFICER_SIGNIN_FAILED` events; unauthenticated responses omit every case attribute
     - _Requirements: 1.1, 1.2, 1.4, 1.5, 1.6_
     - _Properties 1, 7_
-  - [~] 7.2 Redis token-bucket rate limits and lockouts
+  - [x] 7.2 Redis token-bucket rate limits and lockouts
     - `auth:fail:{officer_id}` at 5 per 15 minutes then a 15-minute lock with an `OFFICER_ACCOUNT_LOCKED` event; `otp:mobile:{hmac}` at 5 per 60 minutes; `otp:verify:{case_ref}` at 10 per 24 hours with a `CITIZEN_ACCESS_LOCKED` event; per-session ceiling
     - Keys are always over an HMAC of the identifier so raw mobile numbers never land in Redis
     - _Requirements: 1.3, 3.5, 3.6_
     - _Property 3_
-  - [~] 7.3 Sign-in indistinguishability test
+  - [x] 7.3 Sign-in indistinguishability test
     - Assert a submission for a non-existent identifier and a wrong credential for an existing one return identical status, body, and header set (§20.6)
     - _Requirements: 1.2_
     - _Property 2_
-  - [~] 7.4 Citizen access service: passcode issue on a constant-time path
+  - [x] 7.4 Citizen access service: passcode issue on a constant-time path
     - `apps/api/app/services/citizen_access.py` per §19.2: generate and Argon2id-hash the passcode **unconditionally** so the dominant CPU cost is branch-independent; send SMS through the outbox in both branches so the provider's latency never appears in either path; `pad_to_floor` absorbing the residual insert cost, with `OTP_RESPONSE_FLOOR_MS` calibrated from the measured positive-path p50
     - `ownership_record.contact_mobile_hash` lookup, 6-digit passcode, 10-minute validity, single use, per-case-reference attempt counter
     - `CITIZEN_PASSCODE_ISSUED` and `CITIZEN_PASSCODE_REFUSED` events; identical response body in both branches
     - _Requirements: 3.1, 3.4, 3.8_
     - _Property 87_
-  - [~] 7.5 Citizen sessions with 15-minute absolute expiry
+  - [x] 7.5 Citizen sessions with 15-minute absolute expiry
     - Same token shape, Redis `EX 900`, **absolute not sliding**, so a session cannot be extended indefinitely by activity; value carries `case_id` and the owner record ids the session may see
     - `Access_Control` rejects any request from the session for a different case (R3.7)
     - Events for every session issue, every citizen document retrieval, and every refused access attempt
     - _Requirements: 3.2, 3.3, 3.7, 3.8_
     - _Properties 1, 4, 7_
-  - [~] 7.6 OTP timing property test
+  - [x] 7.6 OTP timing property test
     - 200 samples on each of the matching and non-matching paths, asserting the medians are within 200 ms and the bodies and statuses are identical (§20.6). A perfectly constant-time response is not achievable in Python against PostgreSQL; the requirement asks for within 200 ms of the median, which is measurable
     - Property test over the lockout boundaries: refused exactly once the configured count is reached inside the window, refused for the configured duration, permitted afterwards
     - _Requirements: 1.3, 3.4, 3.5, 3.6_
     - _Properties 3, 87_
 
-- [ ] 8. Projects, acquisition cases, and stage transitions
+- [x] 8. Projects, acquisition cases, and stage transitions
   - [x] 8.1 `project` and `acquisition_case` migrations
     - `project` with `area_code`, `purpose_category`, `sanctioned_extent`, `geom geometry(MultiPolygon, 4326)` and its GiST index
     - `acquisition_case` per §6.1 including `stage_key text` with no enum and no CHECK, `stage_set_effective_from`, `stage_entered_on`, `stage_deadline`, `deadline_breached`, `is_terminal`, `terminal_event_id`, the four denormalised counters, the `risk_*` and `priority_*` columns, and the `case_queue` and `case_rescore` partial indexes
     - _Requirements: 5.1, 5.2_
-  - [~] 8.2 Case creation and the stage transition service
+  - [x] 8.2 Case creation and the stage transition service
     - `apps/api/app/services/case.py`: unique `Case_Reference` assignment, first stage from the resolved stage set, `CASE_CREATED` event, `stage_set_effective_from` pinned at creation
     - Transition validated against the resolved stage graph, rejecting with `STAGE_TRANSITION_INVALID` carrying the permitted successor set; rejecting with `BLOCKING_ISSUES_OPEN` carrying issue identifiers when `open_blocking_count > 0`; refusing a transition out of the first stage with no associated parcel
     - Transition event carries prior stage, new stage, the officer-entered occurrence date, and the officer; deadline recomputed from the config effective on the transition occurrence date
     - Routed through `VersionedRepository.update` with the strengthened stage predicate, gated on `case.transition`
     - _Requirements: 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 14.2, 29.7_
     - _Properties 7, 11, 15_
-  - [~] 8.3 Case list, case read, and officer timeline endpoints
+  - [x] 8.3 Case list, case read, and officer timeline endpoints
     - `GET /cases` and `GET /cases/{id}` through `scoped()`; `GET /cases/{id}/timeline` reading the event log with `OCCURRED_BY` ordering
     - _Requirements: 2.2, 2.3, 23.4_
     - _Properties 4, 9, 31_
-  - [~] 8.4 Stage transition and scope property tests
+  - [x] 8.4 Stage transition and scope property tests
     - Property test over `st_stage_graph()`: a transition succeeds exactly when the target is a declared successor, no open `BLOCKING` issue exists, and the first-stage parcel guard is satisfied; a rejection returns the permitted successors or the blocking issue ids
     - Property test: every element of every scope-restricted collection lies within the principal's scope, no in-scope element is omitted, and an out-of-scope request carries no resource attribute
     - _Requirements: 2.2, 2.3, 5.3, 5.4, 5.7, 5.8, 14.2_
     - _Properties 4, 11_
 
-- [ ] 9. Land parcels and ownership records
+- [x] 9. Land parcels and ownership records
   - [x] 9.1 `land_parcel`, `case_parcel`, and `ownership_record` migrations
     - `land_parcel` with the six-column identity, `village_norm` generated with `normalize(village, NFC)` **for matching only, never display or export**, `extent`/`extent_unit`, `geom`, `geodesic_area_sqm`; the `parcel_identity` unique index over `coalesce(sub_division, '')` serving R6.2, R6.3, and R30.9 from one constraint; `parcel_geom_gist`; `parcel_dup_scan`
     - `ownership_record` with `validity daterange GENERATED ALWAYS AS (daterange(valid_from, valid_to, '[]')) STORED`, `ownership_validity_gist` on `(parcel_id, validity)`, `ownership_mobile_hash`
     - **No exclusion constraint on `(parcel_id, owner_identity_key, validity)`**, per §6.1's explicit rejection: R13.5 requires an overlapping same-owner validity period to raise a Validation_Issue, and an exclusion constraint would reject the write instead, contradicting the requirement and breaking the import's partial-commit semantics. The GiST index exists for querying and for the detection rule
     - _Requirements: 6.1, 6.2, 6.4_
-  - [~] 9.2 Parcel and ownership write paths
+  - [x] 9.2 Parcel and ownership write paths
     - Parcel creation rejecting a duplicate identity with `DUPLICATE_PARCEL` carrying the matching identifier; ownership creation recording owner name, interest type, share, validity start, optional validity end, and contact details
     - Supersession setting `valid_to` and retaining the superseded record retrievably
     - _Requirements: 6.1, 6.3, 6.4, 6.7_
     - _Properties 12, 13_
-  - [~] 9.3 Ownership-as-of-date query
+  - [x] 9.3 Ownership-as-of-date query
     - `GET /parcels/{id}/ownership?on={date}` using `validity @> :d::date` over the GiST index; the `'[]'` bounds make an open-ended record an unbounded range, so the still-current case needs no `COALESCE` or `OR`
     - _Requirements: 6.8_
     - _Property 13_
-  - [~] 9.4 Identity-uniqueness and temporal-retrieval property tests
+  - [x] 9.4 Identity-uniqueness and temporal-retrieval property tests
     - Property test: a parcel write succeeds exactly when the six-column identity does not match a stored parcel, and a rejection returns the matching identifier — asserted identically for manual entry and (once task 26 lands) for a row inside a batch and two rows inside one batch
     - Property test: for any parcel and date D the returned ownership records are exactly those whose validity includes D, and superseded records remain retrievable with their end date set
     - _Requirements: 6.2, 6.3, 6.7, 6.8_
     - _Properties 12, 13_
 
-- [ ] 10. Statutory notices and the deadline sweep
+- [x] 10. Statutory notices and the deadline sweep
   - [x] 10.1 `statutory_notice`, `notice_parcel`, and `notice_service_record` migrations
     - `response_deadline` frozen at issue with `policy_snapshot_hash` recording which configuration produced it — this is what makes R7.8 structural rather than a rule someone has to remember
     - `notice_service_record.service_location geometry(Point, 4326)` (R15.2)
     - _Requirements: 7.3, 7.5, 15.2_
-  - [~] 10.2 Notice issue and service recording
+  - [x] 10.2 Notice issue and service recording
     - `apps/api/app/services/notice.py`: issue records notice type, issuing authority, issue date, publication mode, and affected parcels with a `NOTICE_ISSUED` event; deadline computed as the issue date advanced by the period effective **on the issue date**
     - Service recording captures service date, service mode, and the recipient ownership record
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5_
     - _Properties 7, 15_
-  - [~] 10.3 `deadline_sweep` on the `maintenance` queue
+  - [x] 10.3 `deadline_sweep` on the `maintenance` queue
     - Hourly via beat: mark `deadline_breached` and append `DEADLINE_BREACHED` while the current date is at or after the stage deadline and the case remains in that stage; append exactly one `DEADLINE_APPROACHING` per crossed 30/14/7-day boundary carrying the remaining day count
     - Idempotent by construction so redelivery cannot double-append
     - _Requirements: 7.6, 7.7_
     - _Property 16_
-  - [~] 10.4 Notice ordering, deadline-freezing, and deadline-state property tests
+  - [x] 10.4 Notice ordering, deadline-freezing, and deadline-state property tests
     - Property test: a computed deadline equals the governing event date advanced by the period effective on that event date, and a later change to that period leaves deadlines for earlier events unchanged while later events use the new value
     - Property test: breach state is set exactly while the condition holds, and exactly one approaching event exists per crossed boundary with the correct remaining count
     - `GET` returning the ordered notice set with issue date, service date, response deadline, and breach state
     - _Requirements: 7.1, 7.4, 7.6, 7.7, 7.8, 7.9, 28.6_
     - _Properties 15, 16_
 
-- [ ] 11. Objections
-  - [~] 11.1 `objection` migration and intake
+- [x] 11. Objections
+  - [x] 11.1 `objection` migration and intake
     - Objecting person, related ownership record where one exists, receipt date, grounds category, free-text substance, governing notice, `window_state`, `disposal_deadline`, `is_disposal_overdue`
     - Receipt date evaluated against the governing notice's response deadline to set within-window or out-of-window
     - _Requirements: 8.1, 8.2_
     - _Property 15_
-  - [~] 11.2 Disposal, overdue marking, and counts
+  - [x] 11.2 Disposal, overdue marking, and counts
     - Disposal records outcome, date, reasons, deciding officer, and an `OBJECTION_DISPOSED` event; a disposal without recorded reasons is rejected with the missing-field identifier
     - Overdue marking while undisposed and past the configured disposal deadline, via the same `maintenance` sweep as 10.3
     - Per-case counts by disposal state and overdue count, maintained on `acquisition_case.undisposed_objection_count` in the same transaction as the change
     - _Requirements: 8.3, 8.4, 8.5, 8.6_
     - _Properties 7, 15, 16_
 
-- [ ] 12. Awards and payouts
-  - [~] 12.1 `award`, `award_component`, and `payout` migrations
+- [x] 12. Awards and payouts
+  - [x] 12.1 `award`, `award_component`, and `payout` migrations
     - `numeric(18,2)` throughout, never floating point; `disbursement_state`; `ON DELETE RESTRICT` on components
     - _Requirements: 9.1_
-  - [~] 12.2 Award recording and arithmetic consistency
+  - [x] 12.2 Award recording and arithmetic consistency
     - Itemised components with label and amount, total, currency, determination date, determining authority. BHUMISETU records amounts determined outside the platform and verifies internal consistency only (Q9) — no market value, multiplier, or solatium computation
     - Total-versus-components tolerance of 0.01 checked with `Decimal`, so the comparison is exact rather than subject to binary representation error
     - _Requirements: 9.1, 9.2_
-  - [~] 12.3 Payout recording, ceiling enforcement, and derived disbursement state
+  - [x] 12.3 Payout recording, ceiling enforcement, and derived disbursement state
     - `PAYOUT_RECORDED` event; a payout that would push the running sum past the award total is rejected with `PAYOUT_EXCEEDS_AWARD` carrying the remaining disbursable amount
     - `UNPAID` / `PART_PAID` / `FULLY_PAID` derived from the payout sum; per-case aggregate awarded and disbursed maintained transactionally on `acquisition_case`
     - Property test over any payout sequence: each is accepted exactly while the running sum would not exceed the total, and at every prefix the derived state matches
     - _Requirements: 9.4, 9.5, 9.6, 9.7_
     - _Properties 7, 17_
 
-- [ ] 13. Validation engine
-  - [~] 13.1 `validation_issue` and `validation_issue_history` migrations
+- [x] 13. Validation engine
+  - [x] 13.1 `validation_issue` and `validation_issue_history` migrations
     - `fingerprint text` plus the **partial unique index** `validation_issue_open_unique (case_id, rule_id, fingerprint) WHERE resolution_state = 'OPEN'` — making idempotence a constraint rather than a service-layer check-then-insert removes the race between two concurrent evaluations and removes the possibility of a rule author forgetting the check
     - `validation_issue_queue` partial index for the ordered queue
     - _Requirements: 13.6, 13.8, 14.1, 14.7_
-  - [~] 13.2 `Rule`, `RuleContext`, and the two context implementations
+  - [x] 13.2 `Rule`, `RuleContext`, and the two context implementations
     - `apps/api/app/services/validation/`: frozen `Rule` with `rule_id`, `kind`, `severity_key` resolved through `PolicyResolver` (never a literal — R28.1 puts per-rule severity in configuration), `evaluate`, and a deterministic `fingerprint` over `(rule_id, sorted entity refs)`
     - `RuleContext` protocol with `DbRuleContext` (queries per lookup) and `ChunkRuleContext` (answers from a preloaded dict). Building both now is what makes R30.3 possible without an import-specific validation path that would drift within a release or two
     - _Requirements: 13.6, 14.1, 28.1, 30.3_
-  - [~] 13.3 The rule set
+  - [x] 13.3 The rule set
     - Required-field rules over the fields the configured rule set marks mandatory at the current stage; date-chronology rules over declared predecessors; cross-document consistency over a field appearing in more than one document of the same case; duplicate detection over parcels sharing state/district/tehsil/village/survey number and over ownership records sharing an owner identity on one parcel with overlapping validity
     - The four tolerance rules — share sum 1 ± 0.0001, award total ± 0.01, geodesic area within 5 %, same-case parcel overlap within 1 % — share one implementation parameterised by tolerance key, which is why they collapse into a single property. The geometry two are wired in task 17.4 once PostGIS area exists
     - _Requirements: 6.5, 6.6, 9.2, 9.3, 13.2, 13.3, 13.4, 13.5_
     - _Properties 14, 29_
-  - [~] 13.4 Evaluation trigger, issue creation, and derived resolution
+  - [x] 13.4 Evaluation trigger, issue creation, and derived resolution
     - Evaluate the configured rule set on an extracted-field review-state change, an ownership change, a parcel change, an award change, or a stage change
     - After evaluation, any open issue whose `(rule_id, fingerprint)` is absent from the new violation set moves to `RESOLVED_BY_CORRECTION` with a history row and an event — resolution is derived from the rule passing, not from an officer asserting it passed
     - Swallow the benign duplicate-key from the partial unique index on a concurrent evaluation
     - Maintain `open_blocking_count` on `acquisition_case` in the same transaction
     - _Requirements: 13.1, 13.6, 13.7, 13.8, 14.4_
     - _Properties 28, 29_
-  - [~] 13.5 Issue queue, waiver, and resolution history
+  - [x] 13.5 Issue queue, waiver, and resolution history
     - `GET /issues` ordered by severity descending then detection time ascending, scoped; `POST /issues/{id}/waive` requiring a non-empty reason, setting `WAIVED`, appending an event with officer, reason, and occurrence time, and permitting a `BLOCKING` waiver only with `validation.waive.BLOCKING`
     - `GET` returning the ordered resolution history with each state change, acting officer, reason where recorded, and occurrence time; issues retained retrievably after resolution
     - _Requirements: 14.3, 14.5, 14.6, 14.7, 14.8_
     - _Properties 5, 30, 31_
-  - [~] 13.6 Validation property tests
+  - [x] 13.6 Validation property tests
     - Property test: a second evaluation over unchanged data produces an identical issue set with no additional issue created, and an issue becomes `RESOLVED_BY_CORRECTION` exactly on the first evaluation at which its rule no longer violates
     - Property test over `st_share_vector()` and generated award component vectors: for each configured tolerance rule, an issue of the severity declared in config exists exactly when the tolerance is exceeded and names the offending entities
     - Property test: exactly one severity from the four is assigned and the issue carries rule id, offending entity ids, observed values, and detection time
@@ -365,65 +365,65 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - _Requirements: 6.5, 6.6, 9.2, 9.3, 13.1, 13.2, 13.3, 13.4, 13.5, 13.6, 13.7, 13.8, 14.1, 14.3, 14.4, 14.5, 14.7, 14.8_
     - _Properties 14, 28, 29, 30, 31_
 
-- [~] 14. Checkpoint — core domain and validation
+- [x] 14. Checkpoint — core domain and validation
   - Ensure all tests pass, ask the user if questions arise. At this point a case can be created, progressed against a configured stage graph, blocked by a `BLOCKING` issue, and every write carries a version check and an event.
 
-- [ ] 15. Documents and MinIO access grants
-  - [~] 15.1 `document` migration and `Document_Service.store()`
+- [x] 15. Documents and MinIO access grants
+  - [x] 15.1 `document` migration and `Document_Service.store()`
     - `document` per §6.1 with `checksum_sha256 bytea`, `object_key`, `processing_state`, `failure_reason`, `detected_script`, the `CHECK (case_id IS NOT NULL OR parcel_id IS NOT NULL)`, and the partial unique index `document_case_checksum (case_id, checksum_sha256) WHERE case_id IS NOT NULL` scoping duplicate rejection per case
     - `store()` admitting PDF, JPEG, PNG, TIFF up to 25 MB, rejecting with the applicable limit or the accepted set, rejecting a duplicate checksum with `DUPLICATE_DOCUMENT` carrying the existing id, putting the object, inserting the row as `QUEUED`, appending `DOCUMENT_UPLOADED`, and inserting the extraction task into the outbox — all in one transaction so nothing is enqueued if the transaction rolls back
     - This is the single function the officer endpoint and the import path both call, so R30.10 is the same code rather than a re-implementation
     - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 30.10_
     - _Properties 7, 12, 20_
-  - [~] 15.2 Presigned grants and grant events
+  - [x] 15.2 Presigned grants and grant events
     - `GET /documents/{id}/grant` issuing a MinIO presigned URL with `expires_in` at most 900 seconds; buckets deny anonymous access; a startup assertion and a test both check `PRESIGN_TTL_SECONDS <= 900` because the requirement is a number in configuration and configuration drifts
     - Every grant issue appends an event carrying the requesting actor and the document
     - _Requirements: 10.6, 10.7, 25.6_
     - _Properties 7, 19_
-  - [~] 15.3 Byte immutability
+  - [x] 15.3 Byte immutability
     - Uploaded bytes are never rewritten; extraction output is separate rows referencing the immutable object
     - Property test: a checksum recomputed over the stored object reproduces the recorded checksum, before and after extraction
     - Integration test against a real MinIO for presigned-URL expiry (§20.9)
     - _Requirements: 10.8, 11.9_
     - _Properties 18, 19_
-  - [~] 15.4 Upload admission property test
+  - [x] 15.4 Upload admission property test
     - Property test: an upload is accepted exactly when the content type is in the accepted set and the size is within the limit, a rejection returns the limit or the set, and the decision is identical for an officer upload and a batch document row
     - _Requirements: 10.2, 10.3, 30.10_
     - _Property 20_
 
-- [ ] 16. OCR worker, confidence routing, holdout set, and accuracy reports
-  - [~] 16.1 `extraction` and `extracted_field` migrations
+- [x] 16. OCR worker, confidence routing, holdout set, and accuracy reports
+  - [x] 16.1 `extraction` and `extracted_field` migrations
     - `extraction` with `UNIQUE (document_id, extraction_model_version)` — the idempotency guard that makes a redelivered `extract_document` unable to write a second extraction
     - `extracted_field` with `extracted_value` (NULL when discarded), `original_extracted_value` and `original_confidence` retained across correction, `confidence CHECK BETWEEN 0 AND 1`, page number and four page-relative coordinates, `review_state`, `accuracy_report_id` as the R11.14 gate evidence
     - _Requirements: 11.2, 11.3, 12.3, 12.7_
-  - [~] 16.2 `Recognizer` protocol and the Tesseract baseline
+  - [x] 16.2 `Recognizer` protocol and the Tesseract baseline
     - `workers/ocr/`: `Recognizer` protocol with `version`, `detect_script`, `recognise`, so the engine is a deployment choice rather than an architectural one. **R11.8 is a hardware statement** (§2): CPU Tesseract with Devanagari runs 8–25 s for a 2 MB scan; a transformer recognizer needs a GPU. Choosing the deployment target is a precondition, not a task
     - Baseline: Tesseract 5 with `dev`, `eng`, and the deployment's configured third traineddata, preceded by deskew, denoise, and adaptive thresholding
     - Two-stage field extraction: full-page recognition with word-level boxes, then a field locator mapping configured target names to regions via label anchors and a per-document-type template, with field confidence aggregated from constituent word confidences
     - _Requirements: 11.2, 11.3, 11.4_
-  - [~] 16.3 `extract_document` task, script gating, and retries
+  - [x] 16.3 `extract_document` task, script gating, and retries
     - Conditional state transition `WHERE processing_state IN ('QUEUED','PROCESSING')`; `EXTRACTION_STARTED` event; `UNSUPPORTED_SCRIPT` with the detected script recorded and no retry for a script outside the configured set
     - `autoretry_for=(TransientExtractionError,)`, `retry_backoff=1`, `max_retries=3` giving four total executions at 1 s / 2 s / 4 s with jitter on so a batch failing on one transient cause does not retry in lockstep; terminal handler setting `EXTRACTION_FAILED` with the reason. A corrupt file or unsupported script is terminal on the first attempt — retrying a deterministic failure three times only delays the officer's feedback
     - _Requirements: 11.1, 11.4, 11.5, 11.6, 11.7_
     - _Properties 25, 88_
-  - [~] 16.4 `review_state_for` — the only place a Review_State is assigned
+  - [x] 16.4 `review_state_for` — the only place a Review_State is assigned
     - Pure function per §13.5 returning `(review_state, reason)`: below review → `MANUAL_ENTRY_REQUIRED` with the value discarded to NULL while `original_extracted_value` and `original_confidence` are retained; below auto-accept → `PENDING_REVIEW`; at or above auto-accept → `AUTO_ACCEPTED` **only** where a non-superseded accuracy report for the current model version and script set admits that threshold, otherwise `PENDING_REVIEW` with `NO_CURRENT_ACCURACY_REPORT` or `REPORT_DOES_NOT_COVER_THRESHOLD`
     - The gate degrades to human review rather than blocking extraction; refusing to extract would strand the whole document
     - Mean-confidence below the document-rejection threshold sets `REJECTED_LOW_QUALITY` and records a re-upload request against the case
     - _Requirements: 11.14, 12.1, 12.2, 12.3, 12.4_
     - _Properties 21, 22_
-  - [~] 16.5 Officer review, correction, and admission gating
+  - [x] 16.5 Officer review, correction, and admission gating
     - Confirm without change → `CONFIRMED` with an event carrying the officer; change → `CORRECTED` retaining the original value and confidence, with an event carrying prior value, new value, and officer; routed through `VersionedRepository` so a double review is a conflict (R29.8)
     - `Case_Service` admits an extracted value into a case, parcel, or ownership record only while the review state is `AUTO_ACCEPTED`, `CONFIRMED`, or `CORRECTED`
     - Per-case counts of `PENDING_REVIEW` and `MANUAL_ENTRY_REQUIRED`, maintained on `pending_review_count`
     - _Requirements: 12.6, 12.7, 12.8, 12.9, 29.8_
     - _Properties 7, 26, 27_
-  - [~] 16.6 Holdout set: separate bucket, separate credential, labels in PostgreSQL
+  - [x] 16.6 Holdout set: separate bucket, separate credential, labels in PostgreSQL
     - `holdout_document` and `holdout_label` migrations; bytes in `bhumisetu-holdout` whose key is present only in the measurement task's environment. R11.10's withholding is enforced by credentials, not by a policy note
     - `ml/data/holdout/manifest.json` in git holds only document ids, script, type, and a manifest hash used to key reports — never label values, which are transcribed owner names and survey numbers and therefore live under the retention regime
     - **Hand-labelling the holdout set is a human precondition**: R11.10 requires values recorded independently of any OCR output, so the labels cannot be bootstrapped from the recognizer
     - _Requirements: 11.10_
-  - [~] 16.7 `measure_extraction_accuracy` and the report
+  - [x] 16.7 `measure_extraction_accuracy` and the report
     - `extraction_accuracy_report` migration; task on `ocr_bulk` (separate queue, prefetch 1, so a 200-document measurement cannot starve interactive extraction)
     - Report states per-field exact-match accuracy, per-script accuracy, holdout document count, per-field labelled instance count, measurement date, extraction model version, and **precision at every threshold held in config**, computed over exactly the fields that threshold admits — which is not the same as overall accuracy
     - `exact_match` is `extracted.strip() == expected.strip()`: no case folding and no unicode normalisation, because a normalised match is not a character match
@@ -431,7 +431,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - Idempotent by `(extraction_model_version, script_set_version, holdout_manifest_hash)`
     - _Requirements: 11.11, 11.12, 11.13, 11.14, 11.15, 28.9_
     - _Properties 23, 24_
-  - [~] 16.8 OCR property tests
+  - [x] 16.8 OCR property tests
     - Property test over `st_confidence()` weighted to threshold boundaries: exactly one review state is assigned for any confidence in [0, 1] and any valid threshold pair, a higher confidence never yields a state requiring more intervention, the value is absent where `MANUAL_ENTRY_REQUIRED`, and `AUTO_ACCEPTED` requires a current admitting report
     - Property test over `st_devanagari_text()` including combining marks, NFC and NFD forms, and ZWJ: the match predicate is character equality after trimming
     - Property test: report figures equal an independent recount over the same inputs
@@ -440,18 +440,18 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - _Properties 21, 22, 23, 24, 25, 26, 27, 88_
 
 - [ ] 17. GIS geometry, bbox query, tiles, and clustering
-  - [~] 17.1 Geometry storage and validation
+  - [x] 17.1 Geometry storage and validation
     - `apps/api/app/services/gis.py`: `store_geometry()` checking `ST_IsValid`, returning `ST_IsValidReason` and `ST_IsValidDetail` on rejection so the response carries a coordinate of the first detected invalidity; accepting polygon and multipolygon for parcels and projects and point for notice service locations; transforming to SRID 4326 on store and returning GeoJSON in WGS 84 regardless of the submitted reference system
     - `geodesic_area_sqm` from `ST_Area` on a `geography` cast — planar area in EPSG:4326 would be square degrees and meaningless
     - _Requirements: 15.1, 15.2, 15.3, 15.4, 15.5_
     - _Property 32_
-  - [~] 17.2 Bbox intersection endpoint with declared simplification
+  - [x] 17.2 Bbox intersection endpoint with declared simplification
     - `GET /gis/parcels?bbox=` per §12.1: `&&` against `ST_MakeEnvelope` for the index-backed candidate reduction, then `ST_Intersects` for the exact filter, then ltree scope disjunction, `LIMIT 5000`
     - `ST_SimplifyPreserveTopology` at a viewport-derived tolerance with 6-decimal coordinate truncation. **This is what makes R15.8 achievable at all** (§2): 5000 full-fidelity cadastral polygons are ~5 MB of GeoJSON and over 8 s of transfer at 5 Mbps before serialization; simplified they are ~250–400 KB. The endpoint contract states the simplification and the tolerance in the response so a client is never misled into treating the geometry as survey-grade
     - A separate single-parcel endpoint serves full-fidelity geometry with no simplification
     - _Requirements: 15.4, 15.8_
     - _Property 33_
-  - [~] 17.3 Server-side grid clustering and vector tiles
+  - [x] 17.3 Server-side grid clustering and vector tiles
     - Cluster query per §12.2 grouping on `ST_SnapToGrid(ST_Centroid(geom), :cell_size_deg)`. **Grid snap, not `ST_ClusterKMeans`**: KMeans assignments are not stable across a small pan or zoom so markers visibly jump; grid snap is deterministic in the viewport-derived cell size. Less even cluster sizes accepted for stable rendering
     - Server-side mode switch: count first, return clusters above `gis.cluster_threshold` (config, so R16.2's 200 is not a literal) and individual features below
     - `GET /gis/tiles/{z}/{x}/{y}.mvt` via `ST_AsMVT`, cached in Redis keyed by scope hash and a parcel-geometry generation counter, with counter bump on any geometry write scoped to the affected area path so a stale tile cannot outlive a boundary correction
