@@ -53,8 +53,12 @@ from app.settings import CoreSettings
 # rest are FastAPI's schema and interactive-docs routes, present only outside production.
 # ``/redoc`` is disabled by ``create_app`` but listed so a fresh ``FastAPI()`` (which
 # enables it by default, as the meta-tests below use) needs no special-casing.
+# ``/api/officer/gis/tiles/{z}/{x}/{y}.mvt`` is a binary vector-tile endpoint:
+# access is still through the officer router and authentication dependency, but
+# there is no JSON response model for the redaction gate to annotate.
 EXEMPT_PATHS: frozenset[str] = frozenset(
     {
+        "/api/officer/gis/tiles/{z}/{x}/{y}.mvt",
         "/healthz",
         "/openapi.json",
         "/docs",
