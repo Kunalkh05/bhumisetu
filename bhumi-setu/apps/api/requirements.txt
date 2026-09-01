@@ -17,3 +17,5 @@ alembic==1.14.0
 psycopg[binary]==3.2.3
 celery[redis]==5.4.0
 redis==5.2.1
+# Citizen passcodes are Argon2id-hashed before being stored (§19.2).
+argon2-cffi==23.1.0
