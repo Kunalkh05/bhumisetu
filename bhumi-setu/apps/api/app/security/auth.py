@@ -31,10 +31,13 @@ from app.security.access import (
 __all__ = [
     "CSRF_COOKIE",
     "CSRF_HEADER",
+    "CITIZEN_SESSION_SECONDS",
+    "CitizenSessionBundle",
     "OFFICER_SESSION_SECONDS",
     "OfficerAuthService",
     "OfficerSessionBundle",
     "RedisOfficerSessionBackend",
+    "set_citizen_session_cookie",
     "csrf_matches",
     "new_opaque_token",
     "sign_in_refused_response",
@@ -42,6 +45,7 @@ __all__ = [
 ]
 
 OFFICER_SESSION_SECONDS = 60 * 60
+CITIZEN_SESSION_SECONDS = 15 * 60
 CSRF_COOKIE = "bhumisetu_csrf"
 CSRF_HEADER = "x-csrf-token"
 SIGN_IN_REFUSED_BODY = {"code": "SIGN_IN_REFUSED", "message": "Invalid credentials", "details": {}}
@@ -73,6 +77,16 @@ class OfficerSessionBundle:
 
 
 @dataclass(frozen=True)
+class CitizenSessionBundle:
+    """The opaque token returned after a citizen passcode verifies."""
+
+    session_token: str
+    subject_id: str
+    case_id: int
+    owner_record_ids: tuple[int, ...]
+
+
+@dataclass(frozen=True)
 class _SystemActor:
     kind: str = "SYSTEM"
     id: str = "auth-service"
@@ -94,8 +108,22 @@ def _key(token: str) -> str:
     return f"officer:session:{token}"
 
 
+def _citizen_key(token: str) -> str:
+    return f"citizen:session:{token}"
+
+
 def _encode(officer_id: uuid.UUID, csrf_token: str) -> str:
     return json.dumps({"officer_id": str(officer_id), "csrf_token": csrf_token})
+
+
+def _encode_citizen(subject_id: str, case_id: int, owner_record_ids: tuple[int, ...]) -> str:
+    return json.dumps(
+        {
+            "subject_id": subject_id,
+            "case_id": case_id,
+            "owner_record_ids": list(owner_record_ids),
+        }
+    )
 
 
 def _decode(raw: bytes | str) -> tuple[uuid.UUID, str] | None:
@@ -104,6 +132,21 @@ def _decode(raw: bytes | str) -> tuple[uuid.UUID, str] | None:
     try:
         data = json.loads(raw)
         return uuid.UUID(data["officer_id"]), str(data["csrf_token"])
+    except (KeyError, TypeError, ValueError, json.JSONDecodeError):
+        return None
+
+
+def _decode_citizen(raw: bytes | str) -> CitizenSession | None:
+    if isinstance(raw, bytes):
+        raw = raw.decode("utf-8")
+    try:
+        data = json.loads(raw)
+        owner_record_ids = tuple(int(value) for value in data["owner_record_ids"])
+        return CitizenSession(
+            subject_id=str(data["subject_id"]),
+            case_id=int(data["case_id"]),
+            owner_record_ids=owner_record_ids,
+        )
     except (KeyError, TypeError, ValueError, json.JSONDecodeError):
         return None
 
@@ -149,8 +192,31 @@ class RedisOfficerSessionBackend(AuthBackend):
     def invalidate_officer_session(self, token: str) -> None:
         self._redis.delete(_key(token))
 
+    def create_citizen_session(
+        self, *, subject_id: str, case_id: int, owner_record_ids: tuple[int, ...]
+    ) -> CitizenSessionBundle:
+        session_token = new_opaque_token()
+        self._redis.setex(
+            _citizen_key(session_token),
+            CITIZEN_SESSION_SECONDS,
+            _encode_citizen(subject_id, case_id, owner_record_ids),
+        )
+        return CitizenSessionBundle(
+            session_token=session_token,
+            subject_id=subject_id,
+            case_id=case_id,
+            owner_record_ids=owner_record_ids,
+        )
+
     def citizen_session(self, token: str) -> CitizenSession | None:
-        return None
+        raw = self._redis.get(_citizen_key(token))
+        if raw is None:
+            return None
+        decoded = _decode_citizen(raw)
+        if decoded is None:
+            self._redis.delete(_citizen_key(token))
+            return None
+        return decoded
 
     def service_identity(self, token: str) -> ServiceIdentity | None:
         return None
@@ -173,6 +239,18 @@ def set_officer_session_cookies(
         bundle.csrf_token,
         max_age=OFFICER_SESSION_SECONDS,
         httponly=False,
+        secure=True,
+        samesite="strict",
+    )
+
+
+def set_citizen_session_cookie(response: Response, bundle: CitizenSessionBundle) -> None:
+    """Attach the absolute-expiry citizen session cookie."""
+    response.set_cookie(
+        CITIZEN_SESSION_COOKIE,
+        bundle.session_token,
+        max_age=CITIZEN_SESSION_SECONDS,
+        httponly=True,
         secure=True,
         samesite="strict",
     )
