@@ -52,10 +52,11 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Any, Protocol, Sequence
 
-from sqlalchemy import text
+from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
 from app.errors import DomainError, ErrorCode
+from app.models.extraction_accuracy_report import ExtractionAccuracyReport
 from app.services.policy import PLATFORM_WIDE, resolve_raw
 from app.services.policy_validators import validate_policy_value
 
@@ -126,30 +127,30 @@ class PolicyWriteResult:
 def _assert_report_supports_threshold(
     session: Session, *, policy_key: str, value: Any, report_id: int
 ) -> None:
-    """§13.6's assertions beyond the CHECK constraint. Completed by task 16.7.
+    """§13.6's assertions beyond the CHECK constraint.
 
     A CHECK can only require the reference to be non-null. What R28.9 is really
     asking is that the referenced report *supports* the threshold being set, which
     means reading the report.
     """
-    exists = session.execute(
-        text(
-            "SELECT 1 FROM information_schema.tables "
-            "WHERE table_schema = 'public' AND table_name = 'extraction_accuracy_report'"
-        )
+    report = session.execute(
+        select(ExtractionAccuracyReport).where(ExtractionAccuracyReport.id == report_id)
     ).scalar_one_or_none()
-    if not exists:
+    threshold_key = f"{float(value):g}"
+    if report is None:
         raise ReportAssertionUnavailable(
-            f"cannot validate {policy_key} against report {report_id}: "
-            "extraction_accuracy_report does not exist yet (task 16.7). R28.9's "
-            "non-null reference is already enforced by the CHECK constraint from "
-            "task 2.1; the report-content assertions land with that table."
+            f"cannot validate {policy_key}: report {report_id} does not exist"
         )
-    raise ReportAssertionUnavailable(  # pragma: no cover - task 16.7 replaces this
-        "extraction_accuracy_report exists; implement the §13.6 assertions "
-        "(not superseded, matching model version and script set, precision stated "
-        "at the new threshold) as part of task 16.7."
-    )
+    if report.superseded_at is not None:
+        raise ReportAssertionUnavailable(
+            f"cannot validate {policy_key}: report {report_id} is superseded"
+        )
+    precision = report.precision_at_threshold.get(threshold_key)
+    if precision is None:
+        raise ReportAssertionUnavailable(
+            f"cannot validate {policy_key}: report {report_id} does not state "
+            f"precision at threshold {threshold_key}"
+        )
 
 
 class PolicyService:
