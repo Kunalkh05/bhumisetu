@@ -81,7 +81,11 @@ QUEUE_NAMES: tuple[str, ...] = ("ocr", "ocr_bulk", "ml", "import", "maintenance"
 #: ``app.db.outbox`` — whose ``dispatch_outbox`` the beat schedule below drives.
 #: A task whose module is absent here is never registered, and its beat entry
 #: fails loudly at dispatch rather than silently no-opping.
-TASK_MODULES: tuple[str, ...] = ("app.db.outbox",)
+TASK_MODULES: tuple[str, ...] = (
+    "app.db.outbox",
+    "app.services.notice",
+    "app.services.ocr",
+)
 
 #: Task name -> queue. Routing is explicit for every task in §13.7 so that a
 #: task's queue is a property of the topology rather than of its call site.
