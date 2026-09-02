@@ -674,7 +674,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
   - Ensure all tests pass, ask the user if questions arise. Verify the nightly re-derivation job, the leakage guard, and the label/feature disjointness test all run against the synthetic dataset from task 21, and that a deliberately leaking extractor fails the build.
 
 - [ ] 24. Priority score, intervention queue, and dashboard
-  - [~] 24.1 `Priority_Engine`
+  - [x] 24.1 `Priority_Engine`
     - `apps/api/app/services/priority.py`: weighted combination of risk, deadline pressure as remaining days normalised against the configured stage period, and case value normalised against the configured reference amount, all weights from config with `priority_weight_version` stored per score
     - Normalising by `weights.total()` keeps the output in [0, 100] for any non-negative weight set, which is why the validator in 2.4 only rejects negatives and an all-zero set; `pressure` clamps at 1 past the deadline where remaining days go negative, so the score is non-decreasing in both risk and pressure by construction
     - Recompute on a risk, deadline, or case-value change
