@@ -25,6 +25,7 @@ EXPECTED_BEAT_TASKS = {
     "ml.tasks.monitor_drift",
     "ml.tasks.verify_train_serve_equality",
     "app.services.dashboard.refresh_dashboard_snapshot",
+    "app.services.intervention.reconcile_case_counters",
     "app.retention.tasks.run_retention_sweep",
     "app.db.outbox.dispatch_outbox",
 }

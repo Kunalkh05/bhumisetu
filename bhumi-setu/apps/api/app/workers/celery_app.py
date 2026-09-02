@@ -85,6 +85,7 @@ TASK_MODULES: tuple[str, ...] = (
     "app.db.outbox",
     "app.services.notice",
     "app.services.ocr",
+    "app.services.intervention",
     "ml.tasks",
 )
 
@@ -108,6 +109,7 @@ TASK_ROUTES: dict[str, dict[str, str]] = {
     # maintenance — everything scheduled or fired from the outbox (§5.2, §13.7)
     "app.db.outbox.dispatch_outbox": {"queue": "maintenance"},
     "app.services.dashboard.refresh_dashboard_snapshot": {"queue": "maintenance"},
+    "app.services.intervention.reconcile_case_counters": {"queue": "maintenance"},
     "app.services.notice.deadline_sweep": {"queue": "maintenance"},
     "app.retention.tasks.run_retention_sweep": {"queue": "maintenance"},
     "app.security.otp.send_otp": {"queue": "maintenance"},
@@ -163,6 +165,11 @@ def _beat_schedule() -> dict[str, dict[str, object]]:
         "refresh-dashboard-snapshot": {
             "task": "app.services.dashboard.refresh_dashboard_snapshot",
             "schedule": crontab(minute="*/5"),
+        },
+        # R21.10 — denormalised counter reconciliation for intervention signals.
+        "reconcile-case-counters-nightly": {
+            "task": "app.services.intervention.reconcile_case_counters",
+            "schedule": crontab(hour="2", minute="30"),
         },
         # R32.10 — daily, and inert until `retention.sweep_enabled` is true.
         "run-retention-sweep-daily": {

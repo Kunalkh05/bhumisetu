@@ -680,7 +680,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - Recompute on a risk, deadline, or case-value change
     - _Requirements: 21.1, 21.2, 21.3, 21.4, 21.5, 21.6_
     - _Property 51_
-  - [~] 24.2 Live intervention queue and recommended actions
+  - [x] 24.2 Live intervention queue and recommended actions
     - Live indexed query over the `case_queue` partial index ordered by `priority_score DESC NULLS LAST` with `LIMIT/OFFSET` — at 10 000 cases this is an index-ordered scan of the first 50 rows, far inside 3 s, so no materialization is needed
     - Recommended actions attached only for the returned page, matched by the configured action rules against the denormalised counters and the deadline state, so attaching them costs no per-case queries
     - Disposition recording (accept, reject, defer) with officer and occurrence time, action retained retrievably
