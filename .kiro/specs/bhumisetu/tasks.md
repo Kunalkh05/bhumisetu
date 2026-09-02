@@ -578,7 +578,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
   - [x] 22.1 ML table migrations
     - `ml_feature_row` with `reference_t`, `as_of_mode`, `feature_set_version`, `label_definition_version`, `features jsonb`, `consumed_event_ids bigint[]`, `content_hash`, `purpose`, and the uniqueness tuple; `ml_training_row`; `ml_model_version` including `feature_reference_bins` and `baseline_metrics`; `ml_prediction` with its idempotency unique constraint and history index; `ml_explanation_factor`; `ml_monitor_run`
     - _Requirements: 17.4, 18.6, 18.8, 18.16, 19.3, 19.10, 31.10_
-  - [~] 22.2 `AsOfView` and the two as-of predicates
+  - [x] 22.2 `AsOfView` and the two as-of predicates
     - `ml/src/features/asof.py`: `build_as_of_view(session, case_id, t, mode)` fetching events ordered by `(occurrence_time, id)` with the mode's clause applied **in SQL**, then folding into a frozen `AsOfView` with stage history, notices, objections, parcels, awards, issues, documents, and `consumed_event_ids`. The fold is pure with no further I/O
     - A conventional feature table cannot satisfy R17.5 or R17.2 because it stores derived state rather than the evidence the state was derived from (§14.1); the stored `ml_feature_row` is a cache of a pure function's output, never a source of truth
     - _Requirements: 17.1, 17.2_
