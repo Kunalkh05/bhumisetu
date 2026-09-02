@@ -563,7 +563,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - `scripts/seed/synthetic.py` generating a district of 10 000 cases across the configured stage graph, with per-case event timelines where `recording_time` lags `occurrence_time` by a realistic distribution and a fraction of events are **backdated** — appended with an occurrence time earlier than an already-stored event for the same entity
     - Backdated events are what make the `KNOWABLE_AT` versus `OCCURRED_BY` distinction observable; without them a point-in-time replay test cannot distinguish the two predicates and passes vacuously
     - _Requirements: 4.4, 17.1, 17.2_
-  - [~] 21.2 Enough closed cases to train and evaluate
+  - [x] 21.2 Enough closed cases to train and evaluate
     - Generate at least the volume needed for a temporal split with a non-degenerate base rate on both sides: cases reaching a terminal stage with varied stage durations relative to their configured deadlines, so labelling yields `DELAYED`, `NOT_DELAYED`, and `CENSORED` rows in meaningful proportions, plus per-district counts spanning the minimum district calibration count so R19.6 and R19.7 are both exercisable
     - Parcels with cadastral geometry, ownership vectors summing inside and outside tolerance, awards with consistent and inconsistent component sums, documents with extractions across the confidence range
     - _Requirements: 18.7, 19.6, 19.7, 19.8_
