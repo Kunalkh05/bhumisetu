@@ -9,14 +9,17 @@ from pathlib import Path
 from app.db.session import unit_of_work
 from app.workers.celery_app import celery_app
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parents[3]
 ML_SRC = REPO_ROOT / "ml" / "src"
 if str(ML_SRC) not in sys.path:
     sys.path.insert(0, str(ML_SRC))
 
 from features.equality import verify_recent_inference_rows  # noqa: E402
+from prediction.service import current_promoted_model  # noqa: E402
 from prediction.service import score_case as score_one_case  # noqa: E402
 from prediction.service import stale_case_ids  # noqa: E402
+from monitoring.monitor import monitor_calibration as run_calibration_monitor  # noqa: E402
+from monitoring.monitor import monitor_drift as run_drift_monitor  # noqa: E402
 
 
 class ArtifactScorer:
@@ -51,3 +54,34 @@ def score_stale_cases() -> dict[str, object]:
         for case_id in case_ids:
             score_one_case(session, case_id, ArtifactScorer(), now=now)
         return {"scored_count": len(case_ids), "case_ids": list(case_ids)}
+
+
+@celery_app.task(name="ml.tasks.monitor_calibration")
+def monitor_calibration() -> dict[str, object]:
+    with unit_of_work() as session:
+        model = current_promoted_model(session)
+        if model is None:
+            return {"not_monitored": True, "reason": "NO_PROMOTED_MODEL"}
+        groups = run_calibration_monitor(
+            session,
+            model_version=model,
+            observations=(),
+            divergence_threshold=0.0,
+            min_evaluable_count=1,
+        )
+        return {"groups": len(groups)}
+
+
+@celery_app.task(name="ml.tasks.monitor_drift")
+def monitor_drift() -> dict[str, object]:
+    with unit_of_work() as session:
+        model = current_promoted_model(session)
+        if model is None:
+            return {"not_monitored": True, "reason": "NO_PROMOTED_MODEL"}
+        drifted = run_drift_monitor(
+            session,
+            model_version=model,
+            drift_results=(),
+            min_drifted_feature_count=1,
+        )
+        return {"drifted_features": len(drifted)}

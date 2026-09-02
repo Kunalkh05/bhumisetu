@@ -57,6 +57,26 @@ class PredictionView:
     risk_generated_at: datetime | None
     risk_is_stale: bool
     risk_cutoff_source: str | None
+    monitoring_state: str | None = None
+    monitoring_last_successful_at: datetime | None = None
+
+    def with_monitoring_state(
+        self,
+        *,
+        state: str,
+        last_successful_at: datetime | None,
+    ) -> "PredictionView":
+        return PredictionView(
+            case_id=self.case_id,
+            risk_probability=self.risk_probability,
+            risk_band=self.risk_band,
+            risk_model_version=self.risk_model_version,
+            risk_generated_at=self.risk_generated_at,
+            risk_is_stale=self.risk_is_stale,
+            risk_cutoff_source=self.risk_cutoff_source,
+            monitoring_state=state,
+            monitoring_last_successful_at=last_successful_at,
+        )
 
     def to_response(self) -> dict[str, object]:
         response: dict[str, object] = {
@@ -75,6 +95,9 @@ class PredictionView:
                 "risk_cutoff_source": self.risk_cutoff_source,
             }
         )
+        if self.monitoring_state is not None:
+            response["monitoring_state"] = self.monitoring_state
+            response["monitoring_last_successful_at"] = self.monitoring_last_successful_at
         return response
 
 

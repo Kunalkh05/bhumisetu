@@ -646,7 +646,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - **Static test asserting `ml/src/` and `app/services/{prediction,priority,intervention}.py` import no mutating domain service**, so the intervention service cannot transition a stage, dispose an objection, or record a payout because it holds no reference to the code that can
     - _Requirements: 20.1, 20.2, 20.3, 20.4, 20.5, 20.6, 20.7, 20.8_
     - _Properties 49, 50, 60_
-  - [~] 22.12 `Model_Monitor`: calibration, drift, triggers, and the watchdog
+  - [x] 22.12 `Model_Monitor`: calibration, drift, triggers, and the watchdog
     - Grouped by **the band assigned at prediction time** read from `ml_prediction.risk_band`, not the case's current band which may have been rebanded since; divergence as the absolute difference between realized rate and mean predicted; withheld with the observed count and reason below the configured minimum evaluable count
     - PSI over the stored 10 quantile edges with an `EPS` floor so an empty bin cannot make `ln()` infinite, plus an **11th bucket for the missing rate** — a feature that silently stops being derivable is one of the most likely real failure modes and binning only present values would hide it entirely
     - Three retraining paths each recording `RETRAINING_TRIGGERED` with the triggering condition and enqueueing one training run: calibration divergence, drifted feature count at or above the configured minimum within one computation, and model age reaching the configured maximum from `training_window_end`

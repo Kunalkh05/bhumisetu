@@ -65,6 +65,8 @@ def get_prediction(
             priority_score=float(case.priority_score) if case.priority_score is not None else None,
             model_version=payload["model_version"],
             generated_at=payload["generated_at"],
+            monitoring_state=None,
+            monitoring_last_successful_at=None,
             explanation_factors=[
                 ExplanationFactorOut.model_validate(factor)
                 for factor in payload["factors"]

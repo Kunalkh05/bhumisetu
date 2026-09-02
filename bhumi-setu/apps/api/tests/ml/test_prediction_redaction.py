@@ -28,6 +28,8 @@ def test_prediction_fields_are_excluded_from_citizen_response() -> None:
         priority_score=0.91,
         model_version="model-v3",
         generated_at=generated_at,
+        monitoring_state="UNAVAILABLE",
+        monitoring_last_successful_at=generated_at,
         explanation_factors=[
             ExplanationFactorOut(
                 rank=1,
@@ -46,6 +48,7 @@ def test_prediction_fields_are_excluded_from_citizen_response() -> None:
     assert officer_body["risk_probability"] == 0.72
     assert officer_body["risk_band"] == "HIGH"
     assert officer_body["priority_score"] == 0.91
+    assert officer_body["monitoring_state"] == "UNAVAILABLE"
     assert officer_body["explanation_factors"][0]["label_key"] == "ml.feature.notice_count"
 
 

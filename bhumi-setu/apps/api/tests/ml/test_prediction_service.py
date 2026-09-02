@@ -105,6 +105,25 @@ def test_not_scored_response_omits_probability() -> None:
     assert response == {"case_id": 42, "risk_is_stale": False, "not_scored": True}
 
 
+def test_scored_response_carries_monitoring_state_when_attached() -> None:
+    response = PredictionView(
+        case_id=42,
+        risk_probability=0.72,
+        risk_band="HIGH",
+        risk_model_version="model-v3",
+        risk_generated_at=NOW,
+        risk_is_stale=False,
+        risk_cutoff_source="PLATFORM",
+    ).with_monitoring_state(
+        state="UNAVAILABLE",
+        last_successful_at=NOW - timedelta(days=2),
+    ).to_response()
+
+    assert response["risk_probability"] == pytest.approx(0.72)
+    assert response["monitoring_state"] == "UNAVAILABLE"
+    assert response["monitoring_last_successful_at"] == NOW - timedelta(days=2)
+
+
 def test_score_case_returns_not_scored_when_no_model_is_promoted(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

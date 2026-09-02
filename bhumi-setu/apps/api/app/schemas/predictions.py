@@ -36,6 +36,11 @@ class PredictionExplanationOut(GatedModel):
     priority_score: float | None = Sensitive(Visibility.OFFICER_ONLY, default=None)
     model_version: str | None = Sensitive(Visibility.OFFICER_ONLY, default=None)
     generated_at: datetime | None = Sensitive(Visibility.OFFICER_ONLY, default=None)
+    monitoring_state: str | None = Sensitive(Visibility.OFFICER_ONLY, default=None)
+    monitoring_last_successful_at: datetime | None = Sensitive(
+        Visibility.OFFICER_ONLY,
+        default=None,
+    )
     explanation_factors: list[ExplanationFactorOut] = Sensitive(
         Visibility.OFFICER_ONLY,
         default_factory=list,
