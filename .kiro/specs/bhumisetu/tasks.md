@@ -610,7 +610,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - `label_definition_version` travels on every row, and the trainer refuses a split containing more than one version, so a mixed-definition training set is detectable rather than silently averaged
     - _Requirements: 18.1, 18.2, 18.3, 18.4_
     - _Property 41_
-  - [~] 22.7 `Model_Trainer`: splits, calibration, metrics, and the promotion gate
+  - [x] 22.7 `Model_Trainer`: splits, calibration, metrics, and the promotion gate
     - `ml/src/training/`: candidate reference points, labelling, censored exclusion from both splits with the count and rate recorded, temporal split where every eval `reference_t` is later than every train `reference_t`
     - Isotonic calibration so the reported probability is calibrated; AUPRC, AUROC, Brier, and ECE over 10 equal-width bins; PR-lift as `(auprc − eval_base_rate) / (1 − eval_base_rate)`; both base rates and both row counts reported beside every metric; the deadline-rule baseline metric set recorded alongside
     - `LABEL_BASE_RATE_SHIFT` event with both rates when they differ by more than 0.10, its id stated in the report; promotion gated on all four configured thresholds, otherwise `WITHHELD` with the report retained and a `MODEL_PROMOTION_WITHHELD` event
