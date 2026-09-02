@@ -10,6 +10,8 @@ const distRoot = path.join(appRoot, 'dist');
 const resultPath = path.join(appRoot, '.benchmarks', 'map-render.json');
 const runs = Number(process.env.MAP_BENCHMARK_RUNS ?? 5);
 const maxP95Ms = Number(process.env.MAP_RENDER_P95_MS ?? 4000);
+const browserChannel = process.env.MAP_BENCHMARK_BROWSER_CHANNEL;
+const executablePath = process.env.MAP_BENCHMARK_EXECUTABLE_PATH;
 const downloadThroughput = (5 * 1024 * 1024) / 8;
 const emptyVectorTile = Buffer.alloc(0);
 
@@ -77,7 +79,11 @@ async function serveDist() {
 }
 
 async function runOnce(baseUrl) {
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({
+    headless: true,
+    ...(browserChannel ? { channel: browserChannel } : {}),
+    ...(executablePath ? { executablePath } : {}),
+  });
   try {
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
     const page = await context.newPage();

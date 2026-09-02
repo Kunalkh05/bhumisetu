@@ -16,6 +16,7 @@ node_modules/
 dist/
 .vite/
 *.tsbuildinfo
+.benchmarks/
 
 # Environment and secrets
 .env

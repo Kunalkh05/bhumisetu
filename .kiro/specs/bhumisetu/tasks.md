@@ -555,7 +555,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - _Requirements: 24.5, 24.6, 24.7, 24.8, 24.9, 24.10, 25.2, 25.3, 25.5, 25.7, 25.8, 26.1, 26.2, 26.5, 26.6_
     - _Properties 56, 57, 58, 59, 60, 61_
 
-- [~] 20. Checkpoint — both portals
+- [x] 20. Checkpoint — both portals
   - Ensure all tests pass, ask the user if questions arise. Confirm the citizen transfer budget test and the officer map benchmark are both green in CI and both fail when a regression is introduced deliberately.
 
 - [ ] 21. Synthetic dataset for point-in-time replay and training
