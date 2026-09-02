@@ -583,7 +583,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - A conventional feature table cannot satisfy R17.5 or R17.2 because it stores derived state rather than the evidence the state was derived from (§14.1); the stored `ml_feature_row` is a cache of a pure function's output, never a source of truth
     - _Requirements: 17.1, 17.2_
     - _Property 35_
-  - [~] 22.3 `FeatureExtractor` protocol and the leakage guards
+  - [x] 22.3 `FeatureExtractor` protocol and the leakage guards
     - Complete the registry stubbed in 3.3: `name`, `source_attributes`, `compute(view, t)` — **no `Session`, no `Engine`, no connection in scope**, so an extractor that wants current state has nothing to ask
     - `no_database_access(session)` context manager registering a `before_cursor_execute` listener that raises `LeakageGuardViolation`, **active in production and not only in tests**, so a lazy load that sneaks in during a refactor raises on the first inference call rather than leaking quietly for six months
     - _Requirements: 17.1, 17.2, 17.3_

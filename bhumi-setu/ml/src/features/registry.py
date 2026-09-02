@@ -18,15 +18,17 @@ Both guards can only see a dependency the extractor names. An extractor that
 declared nothing would pass both vacuously, so the guard also refuses an extractor
 that declares no sources — the seam is built to fail closed.
 
-This module is the seam only. The ``AsOfView``/``FeatureValue`` types and the
-concrete extractors arrive with the ML pipeline (task 14); ``compute`` is typed
-loosely here so the seam can exist first without pulling those in.
+This module is the seam only. Concrete extractors and ``FeatureValue`` arrive
+with the ML pipeline, but the point-in-time ``AsOfView`` exists now, so the seam
+can close over that pure view rather than over a database session.
 """
 
 from __future__ import annotations
 
 from datetime import datetime
 from typing import Any, Protocol, runtime_checkable
+
+from features.asof import AsOfView
 
 __all__ = ["FeatureExtractor", "FeatureRegistry", "FEATURE_REGISTRY"]
 
@@ -47,11 +49,11 @@ class FeatureExtractor(Protocol):
     #: not a valid declaration: the guards treat "declares nothing" as a failure.
     source_attributes: frozenset[str]
 
-    def compute(self, view: Any, t: datetime) -> Any:
+    def compute(self, view: AsOfView, t: datetime) -> Any:
         """Compute the feature value from an as-of ``view`` at time ``t``.
 
-        Typed with ``Any`` deliberately: the concrete ``AsOfView`` and
-        ``FeatureValue`` types land with task 14. The seam needs only the shape.
+        No ``Session``, ``Engine``, connection, or repository is passed here:
+        all database I/O must finish before extractors run.
         """
         ...
 
