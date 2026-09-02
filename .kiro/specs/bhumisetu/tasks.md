@@ -639,7 +639,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - Responses state whether the band came from district or platform cutoffs
     - _Requirements: 19.4, 19.5, 19.6, 19.7, 19.8, 19.9, 19.11_
     - _Properties 45, 46, 47_
-  - [~] 22.11 Explanations, override recording, and the no-action guarantee
+  - [x] 22.11 Explanations, override recording, and the no-action guarantee
     - TreeSHAP factors persisted as ranked `ml_explanation_factor` rows with `label_key` resolved through the Localization_Service, so the plain-language label is translatable rather than an English string baked into the model artifact; top 5 presented with the model version and generation time
     - `POST /predictions/{case}/override` recording officer, overridden value, stated reason, and occurrence time, with the model output retained in the view alongside the override
     - Risk probability, band, explanation factors, and priority score excluded from every citizen response (enforced by the gate)
