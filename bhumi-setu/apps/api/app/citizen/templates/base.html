@@ -58,6 +58,9 @@
   </head>
   <body>
     <!--STALE-->
+    <template id="stale-banner">
+      <section class="panel" data-stale-at="">{{ stale_banner_text }}</section>
+    </template>
     <header>
       <h1>{{ title }}</h1>
       <p class="muted">BHUMISETU</p>
@@ -83,7 +86,7 @@
     </main>
     <footer>Content is text-first and remains readable without images or web fonts.</footer>
     <script>
-      // The service worker helps from the second visit onward — a first visit with no
+      // The service worker helps from the second visit onward; a first visit with no
       // connectivity shows the browser's own error page. This is inherent to service
       // workers and cannot be worked around without losing the offline budget benefit.
       if ("serviceWorker" in navigator) {

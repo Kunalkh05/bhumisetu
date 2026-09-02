@@ -286,13 +286,15 @@ def test_service_worker_retries_at_most_3_times_with_strictly_increasing_delays(
 
 def test_service_worker_stale_marker_is_replaced(monkeypatch) -> None:
     """Property 57: when serving stale cached content, the <!--STALE--> marker
-    is replaced with a data-stale-at attribute."""
+    is replaced with server-rendered stale banner text and a data-stale-at attribute."""
     sw_path = Path(__file__).resolve().parents[2] / "api" / "app" / "citizen" / "static" / "sw.js"
     source = sw_path.read_text(encoding="utf-8")
 
     # The staleResponse function must replace <!--STALE-->.
     assert "<!--STALE-->" in source
     assert "data-stale-at" in source
+    assert "stale-banner" in source
+    assert "Showing saved content" not in source
 
 
 # ---------------------------------------------------------------------------

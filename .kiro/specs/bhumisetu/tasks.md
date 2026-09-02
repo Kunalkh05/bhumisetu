@@ -507,7 +507,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - Throttled harness asserting initial map render p95 ≤ 4 s at ≥ 5 Mbps downlink, landing **in this task** rather than a later hardening pass, with the tile payload sizes recorded so a regression is attributable
     - _Requirements: 16.7_
 
-- [ ] 19. Citizen portal — server-rendered, inside the transfer budget
+- [x] 19. Citizen portal — server-rendered, inside the transfer budget
   - [x] 19.1 Jinja2 templates and the `/c/*` routes
     - `apps/api/app/citizen/` templates rendering the **gated** payload; routes `GET /c/`, `POST /c/request-code`, `POST /c/verify`, `GET /c/case`, `GET /c/timeline?page=`, `GET /c/documents`, `GET /c/documents/{id}/confirm`, `GET /c/documents/{id}`, `GET /c/notices`, `GET /c/objections`, `POST /c/language` on `citizen_html` with `route_class=GatedRoute`
     - Not a React SPA, per §10.1: React 18 + React DOM alone is ~45 KB compressed before any application code, and an SPA pays two serial round trips before first paint, which at 2000 ms RTT costs 4 s before rendering can start
@@ -526,26 +526,26 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - Every citizen data retrieval appends an event carrying session id, case id, and retrieval time
     - _Requirements: 24.9, 25.6, 26.2, 26.8_
     - _Properties 7, 19, 58, 61_
-  - [~] 19.4 Service worker — the entire JavaScript budget
+  - [x] 19.4 Service worker — the entire JavaScript budget
     - `apps/api/app/citizen/static/sw.js` per §10.2: `fetchWithRetry` with one initial attempt plus 3 retries at 1 s / 2 s / 4 s; on failure serve the Cache Storage hit with the `<!--STALE-->` marker replaced by a `data-stale-at` timestamp; with no hit, serve the precached `/c/offline` route naming the action to retry
     - The stale banner text is server-rendered in the citizen's selected language, so the worker ships no translation strings. Minified and brotli-compressed this is ~1.4 KB against a 10 KB budget line
     - **The worker only helps from the second visit onward.** A first-ever visit with no connectivity gets the browser's own error page; this is inherent to service workers and is documented in the template comment rather than implied to work
     - _Requirements: 24.6, 24.7, 24.8_
     - _Property 57_
-  - [~] 19.5 Transfer budget enforced in CI, in this task
+  - [x] 19.5 Transfer budget enforced in CI, in this task
     - `apps/api/tests/perf/test_citizen_budget.py` per §10.5: brotli quality 11 to match the proxy, subresources discovered from the rendered HTML rather than a hand-maintained list, run for **every** configured citizen language since a Devanagari page is larger than an English one
     - Assert total ≤ 150 000 B, any font file ≤ 40 000 B, and every citizen JSON response ≤ 50 000 B; a size-assertion middleware enforces the 50 KB bound in test and staging
     - `maximal_case` fixture built adversarially: the configured maximum parcels per case, longest-permitted Devanagari owner names, a full 20-event timeline page, every optional field populated. A budget test that passes on a small fixture and fails in production is worse than no test
     - Runs on every PR and fails the build. This lands here, not in a later hardening pass
     - _Requirements: 24.1, 24.2, 27.6_
     - _Property 55_
-  - [~] 19.6 Font strategy with a build-step cap
+  - [x] 19.6 Font strategy with a build-step cap
     - Default path ships **no font**: the stack is `system-ui, "Noto Sans Devanagari", "Noto Sans", sans-serif`, and Android has shipped Devanagari system fonts since 4.x. Cost 0 KB, and R27.6 is satisfied trivially because no font file is transferred
     - Where a deployment requires a typeface, a glyph-subset WOFF2 restricted to the Unicode block plus the required conjunct set with hinting and unused OpenType features stripped, declared `unicode-range` and `font-display: swap` so it never blocks first paint; a build step fails if the produced file exceeds 40 KB
     - Content-based subsetting is unavailable because the page renders arbitrary owner and village names. **If a confirmed Q7 regional script has no viable ≤ 40 KB subset and weak device coverage, R27.6 and R24.1 conflict for that deployment** — the build step failing is the signal to raise it, not to quietly ship an oversized file
     - _Requirements: 27.6_
     - _Property 55_
-  - [~] 19.7 Citizen property tests
+  - [x] 19.7 Citizen property tests
     - Property test: rendered without images and without web fonts, every declared content item is present as text; timeline pages of 20 cover the citizen-visible event set exactly once with no gap and no duplicate
     - Property test: a failing request retries at most 3 times with strictly increasing delays from 1 s, and the presented cached content equals what was cached, with its retrieval time and a stale label
     - Property test: the byte size presented before transfer equals the recorded size and no bytes transfer without explicit confirmation

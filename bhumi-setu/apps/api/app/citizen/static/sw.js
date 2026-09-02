@@ -34,8 +34,12 @@ async function fetchWithRetry(request) {
 async function staleResponse(response) {
   const html = await response.text();
   const staleAt = new Date().toISOString();
+  const banner = html.match(/<template id="stale-banner">([\s\S]*?)<\/template>/);
+  const staleHtml = banner
+    ? banner[1].replace('data-stale-at=""', `data-stale-at="${staleAt}"`)
+    : `<section class="panel" data-stale-at="${staleAt}"></section>`;
   return new Response(
-    html.replace("<!--STALE-->", `<div class="panel" data-stale-at="${staleAt}"></div>`),
+    html.replace("<!--STALE-->", staleHtml),
     {
       headers: {
         "content-type": "text/html; charset=utf-8",
@@ -65,7 +69,7 @@ self.addEventListener("fetch", (event) => {
         if (cached) {
           return staleResponse(cached);
         }
-        return cache.match(OFFLINE_URL);
+        return (await cache.match(OFFLINE_URL)) || Response.error();
       }
     })(),
   );

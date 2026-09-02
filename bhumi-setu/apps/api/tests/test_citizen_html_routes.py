@@ -90,6 +90,51 @@ def test_base_template_registers_the_service_worker() -> None:
     assert response.status_code == 200
     assert "/c/static/sw.js" in response.text
     assert "serviceWorker.register" in response.text
+    assert "first visit with no" in response.text
+
+
+def test_offline_page_names_the_action_to_retry() -> None:
+    """Task 19.4: no-cache fallback is the precached /c/offline action page."""
+    app = FastAPI()
+    app.include_router(citizen_html)
+
+    with TestClient(app) as client:
+        response = client.get("/c/offline")
+
+    assert response.status_code == 200
+    assert "Open your case again when the connection returns." in response.text
+    assert "<img" not in response.text
+    assert re.search(r'<script[^>]+src=', response.text) is None
+
+
+def test_service_worker_uses_server_rendered_stale_banner_text() -> None:
+    """Task 19.4: worker carries no translation strings for stale UI text."""
+    app = FastAPI()
+    app.include_router(citizen_html)
+
+    with TestClient(app) as client:
+        page = client.get("/c/")
+        worker = client.get("/c/static/sw.js")
+
+    assert page.status_code == 200
+    assert worker.status_code == 200
+    assert '<template id="stale-banner">' in page.text
+    assert "Showing saved content from this device." in page.text
+    assert "stale-banner" in worker.text
+    assert "data-stale-at" in worker.text
+    assert "Showing saved content from this device." not in worker.text
+
+
+def test_stale_banner_text_is_rendered_in_selected_language() -> None:
+    app = FastAPI()
+    app.include_router(citizen_html)
+
+    with TestClient(app, cookies={"bhumisetu_citizen_language": "hi"}) as client:
+        response = client.get("/c/")
+
+    assert response.status_code == 200
+    assert citizen_routes.STALE_BANNER_TEXT["hi"] in response.text
+    assert citizen_routes.STALE_BANNER_TEXT["en"] not in response.text
 
 
 def test_timeline_pagination_uses_plain_links(monkeypatch) -> None:
