@@ -56,9 +56,23 @@ from app.settings import CoreSettings
 # ``/api/officer/gis/tiles/{z}/{x}/{y}.mvt`` is a binary vector-tile endpoint:
 # access is still through the officer router and authentication dependency, but
 # there is no JSON response model for the redaction gate to annotate.
+# ``/c/*`` routes are server-rendered HTML. They must render through
+# app.citizen.templating.render_gated before Jinja sees any payload, so there is
+# no JSON response model for the route-level gate to walk after rendering.
 EXEMPT_PATHS: frozenset[str] = frozenset(
     {
         "/api/officer/gis/tiles/{z}/{x}/{y}.mvt",
+        "/c/",
+        "/c/request-code",
+        "/c/verify",
+        "/c/case",
+        "/c/timeline",
+        "/c/documents",
+        "/c/documents/{document_id}/confirm",
+        "/c/documents/{document_id}",
+        "/c/notices",
+        "/c/objections",
+        "/c/language",
         "/healthz",
         "/openapi.json",
         "/docs",

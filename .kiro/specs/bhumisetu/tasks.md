@@ -508,7 +508,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - _Requirements: 16.7_
 
 - [ ] 19. Citizen portal — server-rendered, inside the transfer budget
-  - [~] 19.1 Jinja2 templates and the `/c/*` routes
+  - [x] 19.1 Jinja2 templates and the `/c/*` routes
     - `apps/api/app/citizen/` templates rendering the **gated** payload; routes `GET /c/`, `POST /c/request-code`, `POST /c/verify`, `GET /c/case`, `GET /c/timeline?page=`, `GET /c/documents`, `GET /c/documents/{id}/confirm`, `GET /c/documents/{id}`, `GET /c/notices`, `GET /c/objections`, `POST /c/language` on `citizen_html` with `route_class=GatedRoute`
     - Not a React SPA, per §10.1: React 18 + React DOM alone is ~45 KB compressed before any application code, and an SPA pays two serial round trips before first paint, which at 2000 ms RTT costs 4 s before rendering can start
     - Timeline pagination at 20 events as plain `<a href>`; language selection as a `<form method="post">`; single-column CSS legible at 320 CSS pixels with no media queries needed below 480 px; no images in the content path and a system font stack first, so the content reads with images and web fonts failing

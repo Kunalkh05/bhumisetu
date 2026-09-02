@@ -1,0 +1,179 @@
+"""Server-rendered citizen routes (task 19.1)."""
+
+from __future__ import annotations
+
+from fastapi import Depends, Request
+from starlette.responses import RedirectResponse
+from starlette.templating import _TemplateResponse
+
+from app.api.routers import citizen_html
+from app.citizen.templating import render_gated
+from app.security.access import Principal, authenticate
+
+__all__ = []
+
+TIMELINE_PAGE_SIZE = 20
+SUPPORTED_LANGUAGES = ("en", "hi", "mr")
+
+
+def _redirect(path: str) -> RedirectResponse:
+    return RedirectResponse(path, status_code=303)
+
+
+async def _form_value(request: Request, key: str, default: str = "") -> str:
+    form = await request.form()
+    value = form.get(key, default)
+    return str(value)
+
+
+@citizen_html.get("/")
+def citizen_home(request: Request) -> _TemplateResponse:
+    return render_gated(
+        request,
+        "home.html",
+        None,
+        None,
+        title="Citizen access",
+        languages=SUPPORTED_LANGUAGES,
+        selected_language=request.cookies.get("bhumisetu_citizen_language", "en"),
+    )
+
+
+@citizen_html.post("/request-code")
+async def request_code(request: Request) -> RedirectResponse:
+    await _form_value(request, "case_reference")
+    await _form_value(request, "mobile")
+    return _redirect("/c/?requested=1")
+
+
+@citizen_html.post("/verify")
+async def verify_code(request: Request) -> RedirectResponse:
+    await _form_value(request, "case_reference")
+    await _form_value(request, "passcode")
+    return _redirect("/c/case")
+
+
+@citizen_html.get("/case")
+def citizen_case(
+    request: Request,
+    principal: Principal = Depends(authenticate),
+) -> _TemplateResponse:
+    return render_gated(
+        request,
+        "case.html",
+        None,
+        principal,
+        title="Case status",
+        languages=SUPPORTED_LANGUAGES,
+        selected_language=request.cookies.get("bhumisetu_citizen_language", "en"),
+    )
+
+
+@citizen_html.get("/timeline")
+def citizen_timeline(
+    request: Request,
+    page: int = 1,
+    principal: Principal = Depends(authenticate),
+) -> _TemplateResponse:
+    page = max(1, page)
+    return render_gated(
+        request,
+        "timeline.html",
+        None,
+        principal,
+        title="Timeline",
+        page=page,
+        page_size=TIMELINE_PAGE_SIZE,
+        previous_page=page - 1 if page > 1 else None,
+        next_page=page + 1,
+        languages=SUPPORTED_LANGUAGES,
+        selected_language=request.cookies.get("bhumisetu_citizen_language", "en"),
+    )
+
+
+@citizen_html.get("/documents")
+def citizen_documents(
+    request: Request,
+    principal: Principal = Depends(authenticate),
+) -> _TemplateResponse:
+    return render_gated(
+        request,
+        "documents.html",
+        None,
+        principal,
+        title="Documents",
+        languages=SUPPORTED_LANGUAGES,
+        selected_language=request.cookies.get("bhumisetu_citizen_language", "en"),
+    )
+
+
+@citizen_html.get("/documents/{document_id}/confirm")
+def citizen_document_confirm(
+    request: Request,
+    document_id: int,
+    principal: Principal = Depends(authenticate),
+) -> _TemplateResponse:
+    return render_gated(
+        request,
+        "document_confirm.html",
+        None,
+        principal,
+        title="Confirm document",
+        document_id=document_id,
+        languages=SUPPORTED_LANGUAGES,
+        selected_language=request.cookies.get("bhumisetu_citizen_language", "en"),
+    )
+
+
+@citizen_html.get("/documents/{document_id}")
+def citizen_document(
+    document_id: int,
+    principal: Principal = Depends(authenticate),
+) -> RedirectResponse:
+    return _redirect(f"/c/documents/{document_id}/confirm")
+
+
+@citizen_html.get("/notices")
+def citizen_notices(
+    request: Request,
+    principal: Principal = Depends(authenticate),
+) -> _TemplateResponse:
+    return render_gated(
+        request,
+        "notices.html",
+        None,
+        principal,
+        title="Notices",
+        languages=SUPPORTED_LANGUAGES,
+        selected_language=request.cookies.get("bhumisetu_citizen_language", "en"),
+    )
+
+
+@citizen_html.get("/objections")
+def citizen_objections(
+    request: Request,
+    principal: Principal = Depends(authenticate),
+) -> _TemplateResponse:
+    return render_gated(
+        request,
+        "objections.html",
+        None,
+        principal,
+        title="Objections",
+        languages=SUPPORTED_LANGUAGES,
+        selected_language=request.cookies.get("bhumisetu_citizen_language", "en"),
+    )
+
+
+@citizen_html.post("/language")
+async def citizen_language(request: Request) -> RedirectResponse:
+    language = await _form_value(request, "language", "en")
+    response = _redirect(request.headers.get("referer", "/c/"))
+    response.set_cookie(
+        "bhumisetu_citizen_language",
+        language if language in SUPPORTED_LANGUAGES else "en",
+        httponly=True,
+        samesite="strict",
+        secure=True,
+    )
+    return response

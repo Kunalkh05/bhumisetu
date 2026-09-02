@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="{{ selected_language or 'en' }}">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ title }} - BHUMISETU</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #17202a;
+        --muted: #5b6673;
+        --line: #d8dee5;
+        --paper: #fff;
+        --wash: #f5f7f9;
+        --accent: #126149;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--wash);
+        color: var(--ink);
+        font-family: system-ui, "Noto Sans Devanagari", "Noto Sans", sans-serif;
+        line-height: 1.5;
+      }
+      header, main, footer { width: min(100%, 42rem); margin: 0 auto; }
+      header { padding: 1rem; border-bottom: 1px solid var(--line); background: var(--paper); }
+      main { padding: 1rem; }
+      footer { padding: 1rem; color: var(--muted); font-size: .875rem; }
+      h1 { margin: 0; font-size: 1.45rem; line-height: 1.2; }
+      h2 { margin: 1.25rem 0 .5rem; font-size: 1rem; }
+      p { margin: .5rem 0; }
+      a { color: var(--accent); }
+      nav { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .75rem; }
+      nav a, button, input, select {
+        min-height: 2.75rem;
+        border: 1px solid var(--line);
+        border-radius: .25rem;
+        background: var(--paper);
+        color: var(--ink);
+        font: inherit;
+      }
+      nav a { padding: .55rem .7rem; text-decoration: none; }
+      label { display: block; margin-top: .75rem; font-weight: 600; }
+      input, select, button { width: 100%; padding: .55rem .65rem; }
+      button { background: var(--accent); color: white; font-weight: 700; }
+      .panel { margin-top: 1rem; padding: 1rem; border: 1px solid var(--line); background: var(--paper); }
+      .muted { color: var(--muted); }
+      .row { display: flex; justify-content: space-between; gap: 1rem; border-top: 1px solid var(--line); padding: .75rem 0; }
+      .row:first-child { border-top: 0; }
+      .language { margin-top: .75rem; display: grid; grid-template-columns: 1fr auto; gap: .5rem; align-items: end; }
+      .language select { min-width: 8rem; }
+      .language button { width: auto; }
+      @media (max-width: 360px) {
+        header, main, footer { padding-left: .75rem; padding-right: .75rem; }
+        .row { display: block; }
+      }
+    </style>
+  </head>
+  <body>
+    <!--STALE-->
+    <header>
+      <h1>{{ title }}</h1>
+      <p class="muted">BHUMISETU</p>
+      <nav aria-label="Citizen sections">
+        <a href="/c/case">Case</a>
+        <a href="/c/timeline?page=1">Timeline</a>
+        <a href="/c/documents">Documents</a>
+        <a href="/c/notices">Notices</a>
+        <a href="/c/objections">Objections</a>
+      </nav>
+      <form class="language" method="post" action="/c/language">
+        <label for="language">Language</label>
+        <select id="language" name="language">
+          {% for language in languages or ["en"] %}
+          <option value="{{ language }}" {% if language == selected_language %}selected{% endif %}>{{ language }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit">Set</button>
+      </form>
+    </header>
+    <main>
+      {% block content %}{% endblock %}
+    </main>
+    <footer>Content is text-first and remains readable without images or web fonts.</footer>
+  </body>
+</html>

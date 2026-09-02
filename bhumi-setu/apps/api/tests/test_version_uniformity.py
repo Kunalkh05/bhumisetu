@@ -31,6 +31,13 @@ from app.settings import CoreSettings
 
 MUTATING_METHODS = frozenset({"POST", "PUT", "PATCH", "DELETE"})
 APP_ROOT = Path(__file__).resolve().parents[1] / "app"
+NON_VERSIONED_FORM_POSTS = frozenset(
+    {
+        "/c/request-code",
+        "/c/verify",
+        "/c/language",
+    }
+)
 
 
 def _core() -> CoreSettings:
@@ -87,6 +94,8 @@ def _version_contract_offences(app: FastAPI) -> list[str]:
             continue
         methods = set(route.methods or ())
         if not methods.intersection(MUTATING_METHODS):
+            continue
+        if route.path in NON_VERSIONED_FORM_POSTS:
             continue
         if _route_body_has_expected_version(route) or _route_depends_on_if_match(route):
             continue

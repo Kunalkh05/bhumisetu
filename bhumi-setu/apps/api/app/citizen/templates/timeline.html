@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel">
+  <h2>Timeline page {{ page }}</h2>
+  <p class="muted">Showing up to {{ page_size }} events per page.</p>
+  <nav aria-label="Timeline pages">
+    {% if previous_page %}
+    <a href="/c/timeline?page={{ previous_page }}">Previous</a>
+    {% endif %}
+    <a href="/c/timeline?page={{ next_page }}">Next</a>
+  </nav>
+</section>
+{% endblock %}

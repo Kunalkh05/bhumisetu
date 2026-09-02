@@ -70,3 +70,4 @@ from app.api import i18n  # noqa: E402,F401
 from app.api import issues  # noqa: E402,F401
 from app.api import notices  # noqa: E402,F401
 from app.api import parcels  # noqa: E402,F401
+from app.citizen import routes  # noqa: E402,F401

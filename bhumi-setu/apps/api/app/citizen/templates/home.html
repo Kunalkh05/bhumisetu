@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel">
+  <h2>Request access</h2>
+  <form method="post" action="/c/request-code">
+    <label for="case_reference">Case reference</label>
+    <input id="case_reference" name="case_reference" autocomplete="off" required>
+    <label for="mobile">Registered mobile</label>
+    <input id="mobile" name="mobile" inputmode="tel" autocomplete="tel" required>
+    <button type="submit">Send code</button>
+  </form>
+</section>
+<section class="panel">
+  <h2>Verify code</h2>
+  <form method="post" action="/c/verify">
+    <label for="verify_case_reference">Case reference</label>
+    <input id="verify_case_reference" name="case_reference" autocomplete="off" required>
+    <label for="passcode">Passcode</label>
+    <input id="passcode" name="passcode" inputmode="numeric" autocomplete="one-time-code" required>
+    <button type="submit">Continue</button>
+  </form>
+</section>
+{% endblock %}
