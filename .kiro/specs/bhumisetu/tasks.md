@@ -625,7 +625,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - Example test on the synthetic dataset that isotonic calibration measurably reduces ECE versus the uncalibrated estimator (R18.9 is a quality claim, not a property)
     - _Requirements: 18.5, 18.6, 18.7, 18.8, 18.9, 18.10, 18.11, 18.12, 18.13, 18.14, 18.15, 18.17_
     - _Properties 41, 42, 43, 44_
-  - [~] 22.9 `Prediction_Service`: scoring, triggers, and failure handling
+  - [x] 22.9 `Prediction_Service`: scoring, triggers, and failure handling
     - `score_case` on the `ml` queue triggered by an event whose type is in the feature registry's declared source set, plus the hourly stale sweep with a 24-hour age filter; idempotent by `UNIQUE (case_id, model_version_id, feature_row_id)`
     - Record probability, model version, feature set version, reference timestamp, and generation time; every generated probability retained
     - While no version is promoted, return **no** probability and omit the field entirely rather than nulling it, because a null could be read as "scored zero"; the portal renders not-scored
