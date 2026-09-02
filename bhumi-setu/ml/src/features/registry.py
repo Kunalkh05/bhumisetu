@@ -26,9 +26,10 @@ can close over that pure view rather than over a database session.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Protocol, runtime_checkable
+from typing import Protocol, runtime_checkable
 
 from features.asof import AsOfView
+from features.value import FeatureValue
 
 __all__ = ["FeatureExtractor", "FeatureRegistry", "FEATURE_REGISTRY"]
 
@@ -49,7 +50,7 @@ class FeatureExtractor(Protocol):
     #: not a valid declaration: the guards treat "declares nothing" as a failure.
     source_attributes: frozenset[str]
 
-    def compute(self, view: AsOfView, t: datetime) -> Any:
+    def compute(self, view: AsOfView, t: datetime) -> FeatureValue:
         """Compute the feature value from an as-of ``view`` at time ``t``.
 
         No ``Session``, ``Engine``, connection, or repository is passed here:

@@ -588,7 +588,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - `no_database_access(session)` context manager registering a `before_cursor_execute` listener that raises `LeakageGuardViolation`, **active in production and not only in tests**, so a lazy load that sneaks in during a refactor raises on the first inference call rather than leaking quietly for six months
     - _Requirements: 17.1, 17.2, 17.3_
     - _Properties 35, 39_
-  - [~] 22.4 `FeatureValue`, the extractor set, and `build_feature_row`
+  - [x] 22.4 `FeatureValue`, the extractor set, and `build_feature_row`
     - `FeatureValue` with a constructor invariant that exactly one of `value` and `missing_reason` is set, so an ambiguous value cannot exist; a legitimate zero and a missing value have different JSON, different storage, and different model input. **The Feature_Builder never imputes** — trees receive `NaN` plus a parallel `_is_missing` indicator so the model can learn from missingness
     - Elapsed-duration extractors as whole-day differences between T and the relevant event's occurrence time; count and state extractors over the view. Every extractor declares `source_attributes`, which is what powers both the label-disjointness and personal-data tests
     - `build_feature_row` performing all I/O in `build_as_of_view` and nothing after, inside `no_database_access`, returning `content_hash` over `(feature_set_version, as_of_mode, sorted(consumed_event_ids), canonical values)` — including the event id set makes the cache exactly invalidatable, so a backdated append that changes what is knowable at T makes the cached row detectably stale rather than plausibly correct
