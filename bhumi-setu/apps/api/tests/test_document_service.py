@@ -11,9 +11,11 @@ from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
 
 import pytest
+from fastapi.routing import APIRoute
 from hypothesis import given
 from hypothesis import strategies as st
 
+from app.api.routers import officer_router
 from app.errors import ErrorCode
 from app.models.document import Document
 from app.services import document as document_service
@@ -231,6 +233,19 @@ def test_grant_caps_ttl_and_records_event(monkeypatch) -> None:
     assert grant.expires_in == PRESIGN_TTL_SECONDS
     assert store.presigned == [("cases/9/abcd", PRESIGN_TTL_SECONDS)]
     assert events == ["DOCUMENT_GRANT_ISSUED"]
+
+
+def test_officer_router_exposes_processing_documents_before_id_route() -> None:
+    document_routes = [
+        route.path
+        for route in officer_router.routes
+        if isinstance(route, APIRoute) and route.path.startswith("/api/officer/documents")
+    ]
+
+    assert "/api/officer/documents/processing" in document_routes
+    assert document_routes.index("/api/officer/documents/processing") < document_routes.index(
+        "/api/officer/documents/{document_id}/grant"
+    )
 
 
 def test_integration_minio_presigned_url_expires(clean_settings_cache) -> None:

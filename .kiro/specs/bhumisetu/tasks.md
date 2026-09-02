@@ -495,7 +495,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - Risk shading as a data-driven paint expression on the `risk_band` tile property with the band-to-shade legend; `risk_band: null` renders the distinct not-scored shade with its own labelled legend row
     - _Requirements: 16.1, 16.3, 16.4, 16.5, 16.6, 16.8_
     - _Property 34_
-  - [~] 18.5 Validation issue queue, timeline, and processing-state surfaces
+  - [x] 18.5 Validation issue queue, timeline, and processing-state surfaces
     - Ordered issue queue with waiver flow and resolution history; case timeline ordered by occurrence time; `QUEUED`/`PROCESSING` document states presented while the portal stays responsive to other requests
     - _Requirements: 11.7, 14.3, 14.5, 14.8, 23.4_
     - _Properties 30, 31_
