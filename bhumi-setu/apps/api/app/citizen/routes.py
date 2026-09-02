@@ -4,11 +4,12 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Iterator
 
 from fastapi import Depends, Request
 from sqlalchemy.orm import Session
-from starlette.responses import RedirectResponse
+from starlette.responses import FileResponse, RedirectResponse
 from starlette.templating import _TemplateResponse
 
 from app.api.routers import citizen_html
@@ -23,6 +24,7 @@ from app.settings import get_object_storage_settings
 
 __all__ = []
 
+STATIC_DIR = Path(__file__).resolve().parent / "static"
 TIMELINE_PAGE_SIZE = 20
 SUPPORTED_LANGUAGES = ("en", "hi", "mr")
 
@@ -87,6 +89,29 @@ def citizen_home(request: Request) -> _TemplateResponse:
         title="Citizen access",
         languages=SUPPORTED_LANGUAGES,
         selected_language=request.cookies.get("bhumisetu_citizen_language", "en"),
+    )
+
+
+@citizen_html.get("/offline")
+def citizen_offline(request: Request) -> _TemplateResponse:
+    return render_gated(
+        request,
+        "offline.html",
+        None,
+        None,
+        title="Offline",
+        action_to_retry="Open your case again when the connection returns.",
+        languages=SUPPORTED_LANGUAGES,
+        selected_language=request.cookies.get("bhumisetu_citizen_language", "en"),
+    )
+
+
+@citizen_html.get("/static/sw.js")
+def citizen_service_worker() -> FileResponse:
+    return FileResponse(
+        STATIC_DIR / "sw.js",
+        media_type="text/javascript",
+        headers={"Service-Worker-Allowed": "/c/"},
     )
 
 

@@ -82,5 +82,15 @@
       {% block content %}{% endblock %}
     </main>
     <footer>Content is text-first and remains readable without images or web fonts.</footer>
+    <script>
+      // The service worker helps from the second visit onward — a first visit with no
+      // connectivity shows the browser's own error page. This is inherent to service
+      // workers and cannot be worked around without losing the offline budget benefit.
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/c/static/sw.js").catch(function() {
+          // SW registration failure is silent: the page still renders without it.
+        });
+      }
+    </script>
   </body>
 </html>
