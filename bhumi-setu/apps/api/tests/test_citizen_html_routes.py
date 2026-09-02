@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import date
@@ -40,6 +41,9 @@ EXPECTED_ROUTES = {
     ("GET", "/c/notices"),
     ("GET", "/c/objections"),
     ("POST", "/c/language"),
+    # Task 19.4 — offline support.
+    ("GET", "/c/offline"),
+    ("GET", "/c/static/sw.js"),
 }
 
 
@@ -69,9 +73,23 @@ def test_home_page_is_text_first_without_image_font_or_script_subresources() -> 
     body = response.text
     assert "Request access" in body
     assert "<img" not in body
-    assert "<script" not in body
+    # Inline service-worker registration is allowed; no external script src.
+    assert re.search(r'<script[^>]+src=', body) is None
     assert "@font-face" not in body
     assert "system-ui" in body
+
+
+def test_base_template_registers_the_service_worker() -> None:
+    """Task 19.4: the base template must register /c/static/sw.js so the worker runs."""
+    app = FastAPI()
+    app.include_router(citizen_html)
+
+    with TestClient(app) as client:
+        response = client.get("/c/")
+
+    assert response.status_code == 200
+    assert "/c/static/sw.js" in response.text
+    assert "serviceWorker.register" in response.text
 
 
 def test_timeline_pagination_uses_plain_links(monkeypatch) -> None:

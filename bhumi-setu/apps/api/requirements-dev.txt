@@ -6,6 +6,8 @@
 pytest==8.3.4
 hypothesis==6.123.2
 httpx==0.28.1
+# Brotli compression at quality 11, matching the Caddy proxy's encoding (§10.5).
+brotli==1.1.0
 # Read by tests/test_settings.py to compare the settings field names against the
 # variable names committed in docker-compose.yml.
 PyYAML==6.0.3
