@@ -670,7 +670,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - An analysis job proposing district-specific cutoff values from that district's labelled history, for an administrator to review and write through `PUT /policy/{key}`. Optional because the **enforcement** of R19.6–19.8 lives in 22.10 and is covered by Property 46; only the value-proposing tool is discretionary
     - _Requirements: none beyond 19.6, 19.7 already covered in 22.10_
 
-- [~] 23. Checkpoint — ML pipeline
+- [x] 23. Checkpoint — ML pipeline
   - Ensure all tests pass, ask the user if questions arise. Verify the nightly re-derivation job, the leakage guard, and the label/feature disjointness test all run against the synthetic dataset from task 21, and that a deliberately leaking extractor fails the build.
 
 - [ ] 24. Priority score, intervention queue, and dashboard

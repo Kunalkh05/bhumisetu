@@ -61,9 +61,8 @@ OFFLINE_RETRY_ACTION_TEXT = {
 
 
 class _CitizenCaseEntity:
-    __tablename__ = "acquisition_case"
-
     def __init__(self, case_id: int) -> None:
+        self.__tablename__ = "acquisition_case"
         self.id = case_id
 
 
