@@ -11,6 +11,7 @@ export const paths = {
   dashboard: '/',
   cases: '/cases',
   case: (id = ':caseId') => `/cases/${id}`,
+  document: (id = ':documentId') => `/documents/${id}`,
   map: '/map',
   queue: '/queue',
   issues: '/issues',

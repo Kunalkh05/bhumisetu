@@ -4,6 +4,7 @@ import { paths } from './paths';
 import { DashboardPage } from '../pages/DashboardPage';
 import { CaseListPage } from '../pages/CaseListPage';
 import { CaseWorkspacePage } from '../pages/CaseWorkspacePage';
+import { DocumentViewerPage } from '../pages/DocumentViewerPage';
 import { MapPage } from '../pages/MapPage';
 import { InterventionQueuePage } from '../pages/InterventionQueuePage';
 import { ValidationIssuesPage } from '../pages/ValidationIssuesPage';
@@ -24,6 +25,7 @@ export const router = createBrowserRouter(
         { index: true, element: <DashboardPage /> },
         { path: 'cases', element: <CaseListPage /> },
         { path: 'cases/:caseId', element: <CaseWorkspacePage /> },
+        { path: 'documents/:documentId', element: <DocumentViewerPage /> },
         { path: 'map', element: <MapPage /> },
         { path: 'queue', element: <InterventionQueuePage /> },
         { path: 'issues', element: <ValidationIssuesPage /> },

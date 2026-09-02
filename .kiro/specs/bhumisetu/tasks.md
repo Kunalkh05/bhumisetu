@@ -485,7 +485,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - Three distinct card states rendered from explicit response fields and never inferred from a null: scored, not-scored, and scored-but-unmonitored
     - _Requirements: 16.8, 23.1, 23.5, 18.18, 19.12, 31.13_
     - _Properties 34, 54, 60_
-  - [~] 18.3 Document viewer with bounding-box highlight
+  - [x] 18.3 Document viewer with bounding-box highlight
     - PDF.js for PDFs, canvas for raster; page navigation and zoom; boxes drawn from the stored page-relative coordinates so a highlight cannot drift from the recorded value
     - Extracted-field review surface presenting the value beside the source region, wired to `PATCH /fields/{id}`
     - _Requirements: 12.5, 23.2, 23.3_
