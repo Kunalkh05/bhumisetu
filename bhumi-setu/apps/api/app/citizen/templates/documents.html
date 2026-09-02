@@ -4,7 +4,7 @@
   <h2>Documents</h2>
   {% for document in documents %}
   <div class="row">
-    <span>{{ document.document_type }}<br><span class="muted">{{ document.uploaded_at }}</span></span>
+    <span>{{ document.original_filename }}<br><span class="muted">{{ document.document_type }} · {{ document.uploaded_at }}</span></span>
     <strong>{{ document.byte_size }} bytes · <a href="/c/documents/{{ document.id }}/confirm">Open</a></strong>
   </div>
   {% else %}
