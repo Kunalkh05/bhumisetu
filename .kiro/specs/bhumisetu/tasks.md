@@ -559,7 +559,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
   - Ensure all tests pass, ask the user if questions arise. Confirm the citizen transfer budget test and the officer map benchmark are both green in CI and both fail when a regression is introduced deliberately.
 
 - [ ] 21. Synthetic dataset for point-in-time replay and training
-  - [~] 21.1 Event-timeline generator with realistic recording lag
+  - [x] 21.1 Event-timeline generator with realistic recording lag
     - `scripts/seed/synthetic.py` generating a district of 10 000 cases across the configured stage graph, with per-case event timelines where `recording_time` lags `occurrence_time` by a realistic distribution and a fraction of events are **backdated** — appended with an occurrence time earlier than an already-stored event for the same entity
     - Backdated events are what make the `KNOWABLE_AT` versus `OCCURRED_BY` distinction observable; without them a point-in-time replay test cannot distinguish the two predicates and passes vacuously
     - _Requirements: 4.4, 17.1, 17.2_
