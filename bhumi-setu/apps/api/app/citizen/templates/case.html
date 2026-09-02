@@ -21,6 +21,10 @@
     <span>{{ record.village }} / {{ record.survey_number }}</span>
     <strong>{{ record.extent }} {{ record.extent_unit }} · share {{ record.share }}</strong>
   </div>
+  <div class="row">
+    <span>Co-owners</span>
+    <strong>{{ record.co_owner_count }} · other share {{ record.other_share_total }}</strong>
+  </div>
   {% else %}
   <p class="muted">No ownership records are visible for this session.</p>
   {% endfor %}
