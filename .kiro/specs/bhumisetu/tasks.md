@@ -594,7 +594,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - `build_feature_row` performing all I/O in `build_as_of_view` and nothing after, inside `no_database_access`, returning `content_hash` over `(feature_set_version, as_of_mode, sorted(consumed_event_ids), canonical values)` — including the event id set makes the cache exactly invalidatable, so a backdated append that changes what is knowable at T makes the cached row detectably stale rather than plausibly correct
     - _Requirements: 17.4, 17.5, 17.6, 17.7_
     - _Properties 36, 38, 40_
-  - [~] 22.5 Train/serve equality, tested three ways, in this task
+  - [x] 22.5 Train/serve equality, tested three ways, in this task
     - `build_training_row` and `build_inference_row` as two deliberately identical entry points differing only in `purpose` on the persisted record; keeping two named entry points that provably agree is more honest than one function with a flag a future change could branch on
     - Hypothesis property test over arbitrary `(case, T)` asserting `content_hash` equality and canonical JSON equality
     - Hypothesis property test asserting a post-T append (later occurrence time, or later recording time) leaves the row's hash unchanged

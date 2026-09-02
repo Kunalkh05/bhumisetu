@@ -85,6 +85,7 @@ TASK_MODULES: tuple[str, ...] = (
     "app.db.outbox",
     "app.services.notice",
     "app.services.ocr",
+    "ml.tasks",
 )
 
 #: Task name -> queue. Routing is explicit for every task in §13.7 so that a
@@ -101,6 +102,7 @@ TASK_ROUTES: dict[str, dict[str, str]] = {
     "ml.tasks.train_model": {"queue": "ml"},
     "ml.tasks.monitor_calibration": {"queue": "ml"},
     "ml.tasks.monitor_drift": {"queue": "ml"},
+    "ml.tasks.verify_train_serve_equality": {"queue": "ml"},
     # import — chunked bulk import (§16)
     "app.services.import_service.process_import_chunk": {"queue": "import"},
     # maintenance — everything scheduled or fired from the outbox (§5.2, §13.7)
@@ -151,6 +153,11 @@ def _beat_schedule() -> dict[str, dict[str, object]]:
         "monitor-drift-daily": {
             "task": "ml.tasks.monitor_drift",
             "schedule": crontab(hour="1", minute="30"),
+        },
+        # R17.8 — deployed train/serve equality over real inference rows.
+        "verify-train-serve-equality-nightly": {
+            "task": "ml.tasks.verify_train_serve_equality",
+            "schedule": crontab(hour="2", minute="0"),
         },
         # R22.5 — the dashboard is materialized, refreshed every 5 minutes.
         "refresh-dashboard-snapshot": {

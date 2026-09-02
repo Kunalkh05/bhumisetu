@@ -23,6 +23,7 @@ EXPECTED_BEAT_TASKS = {
     "ml.tasks.score_stale_cases",
     "ml.tasks.monitor_calibration",
     "ml.tasks.monitor_drift",
+    "ml.tasks.verify_train_serve_equality",
     "app.services.dashboard.refresh_dashboard_snapshot",
     "app.retention.tasks.run_retention_sweep",
     "app.db.outbox.dispatch_outbox",
@@ -118,6 +119,14 @@ def test_the_outbox_dispatcher_is_the_first_registered_task_module() -> None:
     """
     assert "app.db.outbox" in TASK_MODULES
     assert "app.db.outbox" in celery_app.conf.include
+
+
+def test_the_train_serve_rederivation_task_is_registered() -> None:
+    assert "ml.tasks" in TASK_MODULES
+    assert "ml.tasks" in celery_app.conf.include
+    assert (
+        TASK_ROUTES["ml.tasks.verify_train_serve_equality"]["queue"] == "ml"
+    )
 
 
 def test_broker_is_the_committed_redis_url() -> None:

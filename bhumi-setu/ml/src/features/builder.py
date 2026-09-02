@@ -31,6 +31,7 @@ class FeatureRow:
     reference_t: datetime
     as_of_mode: str
     feature_set_version: str
+    purpose: str
     values: Mapping[str, dict[str, object]]
     model_input: Mapping[str, float]
     consumed_event_ids: tuple[int, ...]
@@ -44,6 +45,7 @@ def build_feature_row(
     mode: AsOfMode | str,
     feature_set_version: str = CURRENT_FEATURE_SET_VERSION,
     *,
+    purpose: str = "TRAINING",
     registry: FeatureRegistry = FEATURE_REGISTRY,
 ) -> FeatureRow:
     """Build one feature row; all database I/O is confined to as-of replay."""
@@ -61,6 +63,7 @@ def build_feature_row(
         reference_t=t,
         as_of_mode=str(mode),
         feature_set_version=feature_set_version,
+        purpose=purpose,
         values=serialized,
         model_input=_model_input(values),
         consumed_event_ids=consumed,

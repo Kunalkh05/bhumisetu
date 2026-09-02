@@ -6,6 +6,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
+from hypothesis import given, settings
+from hypothesis import strategies as st
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -19,6 +21,7 @@ if str(ML_SRC) not in sys.path:
 
 from features.asof import AsOfView, AwardState, NoticeState, StageEntry  # noqa: E402
 from features.builder import build_feature_row, canonical_hash  # noqa: E402
+from features.api import build_inference_row, build_training_row  # noqa: E402
 from features.leakage import LeakageGuardViolation  # noqa: E402
 from features.registry import FeatureRegistry  # noqa: E402
 from features.value import FeatureValue  # noqa: E402
@@ -54,6 +57,22 @@ def _view(*, event_ids: tuple[int, ...] = (3, 1, 2)) -> AsOfView:
                 {},
             ),
         ),
+        issues=(),
+        documents=(),
+        consumed_event_ids=event_ids,
+    )
+
+
+def _empty_view(*, event_ids: tuple[int, ...] = ()) -> AsOfView:
+    return AsOfView(
+        case_id=42,
+        t=T,
+        mode=AsOfMode.KNOWABLE_AT,
+        stage_history=(),
+        notices=(),
+        objections=(),
+        parcels=(),
+        awards=(),
         issues=(),
         documents=(),
         consumed_event_ids=event_ids,
@@ -141,3 +160,59 @@ def test_build_feature_row_runs_extractors_inside_database_guard(
 
     with pytest.raises(LeakageGuardViolation, match="SELECT 1"):
         build_feature_row(session, 42, T, AsOfMode.KNOWABLE_AT, registry=registry)
+
+
+@given(event_ids=st.lists(st.integers(min_value=1, max_value=500), unique=True))
+@settings(max_examples=40)
+def test_training_and_inference_rows_are_content_equal(
+    event_ids: list[int],
+    monkeypatch: pytest.MonkeyPatch,
+    transactional_sqlite_engine,
+) -> None:
+    import features.builder as builder
+
+    monkeypatch.setattr(
+        builder,
+        "build_as_of_view",
+        lambda *args, **kwargs: _view(event_ids=tuple(event_ids)),
+    )
+    session = Session(bind=transactional_sqlite_engine)
+
+    training = build_training_row(session, 42, T)
+    inference = build_inference_row(session, 42, T)
+
+    assert training.purpose == "TRAINING"
+    assert inference.purpose == "INFERENCE"
+    assert training.content_hash == inference.content_hash
+    assert training.values == inference.values
+    assert training.model_input == inference.model_input
+
+
+@given(
+    future_event_id=st.integers(min_value=501, max_value=1000),
+    future_by_recording=st.booleans(),
+)
+@settings(max_examples=30)
+def test_post_t_events_do_not_change_the_feature_hash(
+    future_event_id: int,
+    future_by_recording: bool,
+    monkeypatch: pytest.MonkeyPatch,
+    transactional_sqlite_engine,
+) -> None:
+    import features.builder as builder
+
+    visible_ids = [1, 2, 3]
+    events = list(visible_ids)
+
+    def replay(*args, **kwargs) -> AsOfView:
+        return _view(event_ids=tuple(event for event in events if event in visible_ids))
+
+    monkeypatch.setattr(builder, "build_as_of_view", replay)
+    session = Session(bind=transactional_sqlite_engine)
+
+    before = build_training_row(session, 42, T).content_hash
+    events.append(future_event_id)
+    after = build_training_row(session, 42, T).content_hash
+
+    assert future_by_recording in {True, False}
+    assert after == before
