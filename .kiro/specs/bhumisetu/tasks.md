@@ -632,7 +632,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - On failure retain the previous probability, set `risk_is_stale`, and append `SCORING_FAILED`; the portal shows the retained band with its original generation time and a stale marker
     - _Requirements: 18.18, 19.1, 19.2, 19.3, 19.10, 19.12_
     - _Properties 34, 48_
-  - [~] 22.10 Banding, district cutoffs, and rebanding
+  - [x] 22.10 Banding, district cutoffs, and rebanding
     - `band_for(p, case, *, resolver)` returning `(band, cutoff_source, cutoff_set_version)`; `classify` is total and monotone because the config validator in 2.4 rejects any set that is not a contiguous partition of [0, 1] — guaranteed by validation rather than re-checked per call
     - District-specific cutoffs applied only where the district's count of `DELAYED`/`NOT_DELAYED` labelled cases is at or above the configured minimum; below it, platform cutoffs apply and a `DISTRICT_CUTOFFS_WITHHELD` event records the district, observed count, and minimum. `CENSORED` rows never contribute to that count
     - Reband pass triggered by 2.5 updating `risk_band` and `cutoff_set_version` on stored predictions while leaving `risk_probability` and `generated_at` untouched

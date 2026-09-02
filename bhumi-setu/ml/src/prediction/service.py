@@ -15,6 +15,7 @@ from app.models.event import ActorType, Event, Provenance
 from app.models.ml import MLFeatureRow, MLModelVersion, MLPrediction
 from features.api import build_inference_row
 from features.registry import FEATURE_REGISTRY, FeatureRegistry
+from prediction.banding import band_for as configured_band_for
 
 __all__ = [
     "BandingDecision",
@@ -152,7 +153,7 @@ def score_case(
         probability = _checked_probability(
             scorer.predict_probability(model, feature_row.model_input)
         )
-        banding = band_for(probability, case) if band_for else _unbanded()
+        banding = band_for(probability, case) if band_for else _configured_banding(session, probability, case)
         stored_feature = _store_feature_row(session, feature_row)
         session.flush()
         prediction = MLPrediction(
@@ -189,6 +190,23 @@ def _unbanded() -> BandingDecision:
         cutoff_source="PENDING_CUTOFFS",
         cutoff_set_version="PENDING",
     )
+
+
+def _configured_banding(
+    session: Session,
+    probability: float,
+    case: AcquisitionCase,
+) -> BandingDecision:
+    from app.services.policy import PolicyResolver
+
+    result = configured_band_for(
+        probability,
+        case,
+        session=session,
+        resolver=PolicyResolver(session),
+        now=datetime.now(UTC).date(),
+    )
+    return BandingDecision(result.band, result.cutoff_source, result.cutoff_set_version)
 
 
 def _store_feature_row(session: Session, feature_row) -> MLFeatureRow:
