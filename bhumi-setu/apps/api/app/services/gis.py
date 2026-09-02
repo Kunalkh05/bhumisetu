@@ -403,6 +403,10 @@ def vector_tile(
                     ),
                     mvtgeom AS (
                         SELECT lp.id,
+                               lp.survey_number,
+                               lp.extent,
+                               lp.extent_unit,
+                               c.id AS case_id,
                                c.case_reference,
                                c.stage_key,
                                c.risk_band,

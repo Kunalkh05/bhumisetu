@@ -490,7 +490,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - Extracted-field review surface presenting the value beside the source region, wired to `PATCH /fields/{id}`
     - _Requirements: 12.5, 23.2, 23.3_
     - _Property 54_
-  - [~] 18.4 Map view with risk overlay
+  - [x] 18.4 Map view with risk overlay
     - MapLibre GL over the MVT endpoint; viewport-scoped requests only; selection navigating to the case workspace; parcel identity, extent, Case_Reference, and stage presented for a selection without a further viewport request
     - Risk shading as a data-driven paint expression on the `risk_band` tile property with the band-to-shade legend; `risk_band: null` renders the distinct not-scored shade with its own labelled legend row
     - _Requirements: 16.1, 16.3, 16.4, 16.5, 16.6, 16.8_

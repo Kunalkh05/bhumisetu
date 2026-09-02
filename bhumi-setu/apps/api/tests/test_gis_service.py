@@ -285,6 +285,9 @@ def test_vector_tile_uses_mvt_sql_and_caches_by_scope_hash_and_generation() -> N
     assert "ST_AsMVTGeom" in session.statements[0]
     assert "ST_AsMVT(mvtgeom.*, 'parcels', 4096, 'geom')" in session.statements[0]
     assert "risk_band" in session.statements[0]
+    assert "survey_number" in session.statements[0]
+    assert "extent_unit" in session.statements[0]
+    assert "c.id AS case_id" in session.statements[0]
     [tile_key] = [key for key in cache.values if key.startswith("gis:mvt:")]
     assert "parcel_geom_generation=3" in tile_key
     assert cache.ttls[tile_key] == 60
