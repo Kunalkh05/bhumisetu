@@ -602,7 +602,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - `test_label_and_feature_sources_are_disjoint` asserting the label function's declared sources and the union of extractor sources do not intersect
     - _Requirements: 17.3, 17.5, 17.8_
     - _Properties 35, 36, 37, 39_
-  - [~] 22.6 `LabelDefinition`, `LabelOutcome`, and the pure label function
+  - [x] 22.6 `LabelDefinition`, `LabelOutcome`, and the pure label function
     - `ml/src/labelling/definition.py`: `LabelDefinition` carrying `formulation`, `stage_transitions_in_scope`, `deadline_baseline`, `baseline_fallback`, `horizon_days`, and `censoring` — **all four Q1-sensitive knobs are config fields, none is a literal**
     - `label_row(view, t, *, definition, deadline, now)` pure: no config lookup, no clock, no database, everything an argument, so it is exercised in a unit test with a synthetic timeline and no fixtures. `CENSORED` for `HORIZON_NOT_ELAPSED` and for `DEADLINE_BEYOND_HORIZON`
     - `LabelOutcome` populates `time_to_event_days` and `event_observed` **even in binary mode**, so a move to a survival formulation reads two fields that are already there and the labeller is untouched
