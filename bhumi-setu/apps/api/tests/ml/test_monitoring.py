@@ -7,6 +7,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 API_ROOT = Path(__file__).resolve().parents[2]
 REPO_ROOT = API_ROOT.parents[1]
@@ -235,3 +237,166 @@ def test_supersession_updates_state_and_keeps_versions_referenced() -> None:
     assert prior.promotion_state == "SUPERSEDED"
     assert prior.superseded_by == 8
     assert session.flushed
+
+
+@given(
+    band=st.sampled_from(["LOW", "MEDIUM", "HIGH", "CRITICAL"]),
+    probabilities=st.lists(
+        st.floats(min_value=0, max_value=1, allow_nan=False, allow_infinity=False),
+        min_size=1,
+        max_size=20,
+    ),
+    outcomes=st.lists(st.booleans(), min_size=1, max_size=20),
+)
+@settings(max_examples=50)
+def test_property_calibration_divergence_matches_reference(
+    band: str,
+    probabilities: list[float],
+    outcomes: list[bool],
+) -> None:
+    size = min(len(probabilities), len(outcomes))
+    observations = [
+        CalibrationObservation(index, band, probabilities[index], outcomes[index])
+        for index in range(size)
+    ]
+
+    group = calibration_groups(observations)[0]
+
+    realized = sum(outcomes[:size]) / size
+    predicted = sum(probabilities[:size]) / size
+    assert group.risk_band == band
+    assert group.realized_delay_rate == pytest.approx(realized)
+    assert group.mean_risk_probability == pytest.approx(predicted)
+    assert group.divergence == pytest.approx(abs(realized - predicted))
+
+
+@given(
+    training=st.lists(
+        st.one_of(
+            st.none(),
+            st.floats(min_value=-10, max_value=10, allow_nan=False, allow_infinity=False),
+        ),
+        min_size=1,
+        max_size=30,
+    ),
+    inference=st.lists(
+        st.one_of(
+            st.none(),
+            st.floats(min_value=-10, max_value=10, allow_nan=False, allow_infinity=False),
+        ),
+        min_size=1,
+        max_size=30,
+    ),
+    edges=st.lists(
+        st.floats(min_value=-10, max_value=10, allow_nan=False, allow_infinity=False),
+        min_size=1,
+        max_size=6,
+        unique=True,
+    ),
+)
+@settings(max_examples=50)
+def test_property_psi_is_finite_and_zero_for_identical_inputs(
+    training: list[float | None],
+    inference: list[float | None],
+    edges: list[float],
+) -> None:
+    sorted_edges = sorted(edges)
+
+    value = psi(training, inference, sorted_edges)
+
+    assert math.isfinite(value)
+    assert value >= 0
+    assert psi(training, training, sorted_edges) == pytest.approx(0.0)
+
+
+@given(
+    drift_count=st.integers(min_value=1, max_value=5),
+    minimum=st.integers(min_value=1, max_value=5),
+)
+@settings(max_examples=30)
+def test_property_drift_training_trigger_fires_exactly_at_threshold(
+    drift_count: int,
+    minimum: int,
+) -> None:
+    session = _Session()
+    enqueued = []
+    results = [
+        DriftResult(
+            feature_name=f"feature_{index}",
+            drift=0.5,
+            threshold=0.1,
+            training_window_start=NOW - timedelta(days=30),
+            training_window_end=NOW - timedelta(days=20),
+            inference_window_start=NOW - timedelta(days=7),
+            inference_window_end=NOW,
+        )
+        for index in range(drift_count)
+    ]
+
+    monitor_drift(
+        session,
+        model_version=_Model(),
+        drift_results=results,
+        min_drifted_feature_count=minimum,
+        now=NOW,
+        enqueue_training=lambda *args: enqueued.append(args),
+    )
+
+    triggers = _events(session, "RETRAINING_TRIGGERED")
+    assert len(triggers) == (1 if drift_count >= minimum else 0)
+    assert len(enqueued) == len(triggers)
+
+
+@given(
+    elapsed_days=st.integers(min_value=0, max_value=100),
+    maximum_days=st.integers(min_value=1, max_value=100),
+)
+@settings(max_examples=50)
+def test_property_model_age_trigger_fires_exactly_at_age_threshold(
+    elapsed_days: int,
+    maximum_days: int,
+) -> None:
+    session = _Session()
+    enqueued = []
+
+    triggered = maybe_trigger_model_age(
+        session,
+        model_version=_Model(training_window_end=NOW - timedelta(days=elapsed_days)),
+        max_model_age_days=maximum_days,
+        now=NOW,
+        enqueue_training=lambda *args: enqueued.append(args),
+    )
+
+    assert triggered is (elapsed_days >= maximum_days)
+    assert len(_events(session, "RETRAINING_TRIGGERED")) == (1 if triggered else 0)
+    assert len(enqueued) == (1 if triggered else 0)
+
+
+@given(
+    probability=st.floats(min_value=0, max_value=1, allow_nan=False, allow_infinity=False),
+    days_since_success=st.integers(min_value=0, max_value=30),
+)
+@settings(max_examples=30)
+def test_property_unavailable_state_is_visible_on_scored_responses(
+    probability: float,
+    days_since_success: int,
+) -> None:
+    from prediction.service import PredictionView
+
+    last_success = NOW - timedelta(days=days_since_success)
+    response = PredictionView(
+        case_id=42,
+        risk_probability=probability,
+        risk_band="HIGH",
+        risk_model_version="model-v7",
+        risk_generated_at=NOW,
+        risk_is_stale=False,
+        risk_cutoff_source="PLATFORM",
+    ).with_monitoring_state(
+        state="UNAVAILABLE",
+        last_successful_at=last_success,
+    ).to_response()
+
+    assert response["risk_probability"] == pytest.approx(probability)
+    assert response["monitoring_state"] == "UNAVAILABLE"
+    assert response["monitoring_last_successful_at"] == last_success

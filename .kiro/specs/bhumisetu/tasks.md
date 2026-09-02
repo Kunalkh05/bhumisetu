@@ -655,7 +655,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - Notify officers holding `model.administer` on divergence and on drift
     - _Requirements: 31.1, 31.2, 31.3, 31.4, 31.5, 31.6, 31.7, 31.8, 31.9, 31.10, 31.11, 31.13, 31.14_
     - _Properties 74, 75, 76, 77, 78, 79_
-  - [~] 22.13 Monitoring property tests
+  - [x] 22.13 Monitoring property tests
     - Property test: realized rate is computed per assigned-at-prediction band, divergence is the absolute difference, and the comparison is withheld with the observed count below the minimum
     - Property test: PSI equals the reference computation on the same edges, is zero for identical distributions, stays finite for disjoint supports, and accounts for the missing rate as a distinct bucket
     - Property test: each threshold breach produces the correctly-shaped event and notifies model administrators; each retraining condition triggers exactly once per detection
