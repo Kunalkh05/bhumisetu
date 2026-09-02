@@ -618,7 +618,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - Promotion records training window, feature set version, hyperparameters, metrics, both base rates, censored count and rate, and the promoting actor; gated on `model.administer`
     - _Requirements: 18.1, 18.5, 18.6, 18.7, 18.8, 18.9, 18.10, 18.11, 18.12, 18.13, 18.14, 18.15, 18.16, 18.17, 31.12_
     - _Properties 42, 43, 44_
-  - [~] 22.8 Trainer property tests and a calibration example test
+  - [x] 22.8 Trainer property tests and a calibration example test
     - Property test: no `CENSORED` row appears in either split, the temporal ordering holds, and the recorded censored count and rate equal a recount
     - Property test: each metric equals an independent reference computation, and PR-lift matches its formula
     - Property test: promotion happens exactly when all four thresholds are met, otherwise the report is retained and the withheld event exists; the base-rate-shift event and its report reference appear exactly when the rates differ by more than 0.10
