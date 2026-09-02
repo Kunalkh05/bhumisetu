@@ -473,7 +473,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - _Requirements: 15.1, 15.2, 15.3, 15.4, 15.5, 15.8, 16.1, 16.2, 16.3_
     - _Properties 32, 33_
 
-- [ ] 18. Officer portal
+- [x] 18. Officer portal
   - [x] 18.1 App shell, TanStack Query data layer, and the conflict dialog
     - `apps/web/src/officer/` on React 18 + Vite + TypeScript with `base: '/officer/'`
     - Entity fetches capture `entity_version` and the mutation hook replays it as `If-Match`, so R29.2 is satisfied by the data layer rather than by per-form discipline
@@ -503,7 +503,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - `react-i18next` with per-locale chunks loaded on demand; missing keys reported to `POST /internal/i18n/missing`; the recognised script of an extraction presented alongside its fields
     - _Requirements: 27.2, 27.4, 27.7_
     - _Property 63_
-  - [~] 18.7 Map render benchmark in CI
+  - [x] 18.7 Map render benchmark in CI
     - Throttled harness asserting initial map render p95 ≤ 4 s at ≥ 5 Mbps downlink, landing **in this task** rather than a later hardening pass, with the tile payload sizes recorded so a regression is attributable
     - _Requirements: 16.7_
 

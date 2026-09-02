@@ -4,6 +4,12 @@ import maplibregl, { type MapLayerMouseEvent } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { paths } from '../routes/paths';
 
+declare global {
+  interface Window {
+    __BHUMISETU_MAP_RENDER_MS?: number;
+  }
+}
+
 interface ParcelSelection {
   readonly parcel_id: number;
   readonly case_id: number;
@@ -86,6 +92,11 @@ export function MapPage() {
       },
     });
 
+    const startedAt = performance.now();
+    map.once('idle', () => {
+      window.__BHUMISETU_MAP_RENDER_MS = performance.now() - startedAt;
+      performance.mark('bhumisetu-map-idle');
+    });
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
     map.on('click', 'parcel-fill', (event: MapLayerMouseEvent) => {
       const feature = event.features?.[0];
@@ -132,6 +143,7 @@ export function MapPage() {
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
         <div
           ref={container}
+          data-testid="parcel-map"
           className="h-[min(70vh,48rem)] min-h-[30rem] rounded border border-surface-border bg-surface"
         />
         <aside className="rounded border border-surface-border bg-surface p-4">
