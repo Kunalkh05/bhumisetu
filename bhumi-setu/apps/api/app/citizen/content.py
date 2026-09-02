@@ -28,6 +28,7 @@ __all__ = [
     "CitizenNoticeRow",
     "CitizenObjectionRow",
     "CitizenOwnershipRow",
+    "load_citizen_document",
     "load_citizen_content",
 ]
 
@@ -52,6 +53,8 @@ class CitizenOwnershipRow:
     extent_unit: str
     share: Decimal
     interest_type: str
+    co_owner_count: int
+    other_share_total: Decimal
 
 
 @dataclass(frozen=True)
@@ -82,6 +85,7 @@ class CitizenObjectionRow:
 class CitizenDocumentRow:
     id: int
     document_type: str
+    original_filename: str
     uploaded_at: date
     byte_size: int
 
@@ -149,6 +153,8 @@ def load_citizen_content(session: Session, principal: Principal) -> CitizenConte
                 extent_unit=parcel.extent_unit,
                 share=record.share,
                 interest_type=record.interest_type,
+                co_owner_count=_co_owner_count(session, parcel_id=parcel.id, owner_id=record.id),
+                other_share_total=_other_share_total(session, parcel_id=parcel.id, owner_id=record.id),
             )
             for record, parcel in ownership_result
         )
@@ -204,6 +210,7 @@ def load_citizen_content(session: Session, principal: Principal) -> CitizenConte
             CitizenDocumentRow(
                 id=document.id,
                 document_type=document.document_type,
+                original_filename=document.original_filename,
                 uploaded_at=document.uploaded_at.date(),
                 byte_size=document.byte_size,
             )
@@ -234,3 +241,60 @@ def load_citizen_content(session: Session, principal: Principal) -> CitizenConte
 
 def service_date_order():
     return NoticeServiceRecord.service_date.desc(), NoticeServiceRecord.id.desc()
+
+
+def load_citizen_document(
+    session: Session,
+    principal: Principal,
+    document_id: int,
+) -> CitizenDocumentRow:
+    if principal.kind != "CITIZEN" or principal.case_id is None:
+        raise ValueError("citizen document retrieval requires a citizen principal with a case")
+    owner_ids = tuple(principal.owner_record_ids)
+    if not owner_ids:
+        raise LookupError(f"document {document_id} is not visible to this citizen session")
+
+    document = session.execute(
+        select(Document)
+        .join(LandParcel, LandParcel.id == Document.parcel_id)
+        .join(OwnershipRecord, OwnershipRecord.parcel_id == LandParcel.id)
+        .where(
+            Document.id == document_id,
+            OwnershipRecord.id.in_(owner_ids),
+            OwnershipRecord.valid_to.is_(None),
+        )
+    ).scalar_one_or_none()
+    if document is None:
+        raise LookupError(f"document {document_id} is not visible to this citizen session")
+    return CitizenDocumentRow(
+        id=document.id,
+        document_type=document.document_type,
+        original_filename=document.original_filename,
+        uploaded_at=document.uploaded_at.date(),
+        byte_size=document.byte_size,
+    )
+
+
+def _co_owner_count(session: Session, *, parcel_id: int, owner_id: int) -> int:
+    return len(
+        tuple(
+            session.execute(
+                select(OwnershipRecord.id).where(
+                    OwnershipRecord.parcel_id == parcel_id,
+                    OwnershipRecord.id != owner_id,
+                    OwnershipRecord.valid_to.is_(None),
+                )
+            ).scalars()
+        )
+    )
+
+
+def _other_share_total(session: Session, *, parcel_id: int, owner_id: int) -> Decimal:
+    shares = session.execute(
+        select(OwnershipRecord.share).where(
+            OwnershipRecord.parcel_id == parcel_id,
+            OwnershipRecord.id != owner_id,
+            OwnershipRecord.valid_to.is_(None),
+        )
+    ).scalars()
+    return sum(shares, Decimal("0"))
