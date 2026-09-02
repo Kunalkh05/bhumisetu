@@ -575,7 +575,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - _Requirements: 28.1, 28.5_
 
 - [ ] 22. Machine learning pipeline (internal order matters; each sub-task depends on the one before)
-  - [~] 22.1 ML table migrations
+  - [x] 22.1 ML table migrations
     - `ml_feature_row` with `reference_t`, `as_of_mode`, `feature_set_version`, `label_definition_version`, `features jsonb`, `consumed_event_ids bigint[]`, `content_hash`, `purpose`, and the uniqueness tuple; `ml_training_row`; `ml_model_version` including `feature_reference_bins` and `baseline_metrics`; `ml_prediction` with its idempotency unique constraint and history index; `ml_explanation_factor`; `ml_monitor_run`
     - _Requirements: 17.4, 18.6, 18.8, 18.16, 19.3, 19.10, 31.10_
   - [~] 22.2 `AsOfView` and the two as-of predicates
