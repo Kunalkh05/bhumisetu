@@ -2,18 +2,33 @@
 
 from __future__ import annotations
 
+from contextlib import contextmanager
+from typing import Iterator
+
 from fastapi import Depends, Request
+from sqlalchemy.orm import Session
 from starlette.responses import RedirectResponse
 from starlette.templating import _TemplateResponse
 
 from app.api.routers import citizen_html
+from app.citizen.content import load_citizen_content
 from app.citizen.templating import render_gated
+from app.db.session import get_engine
 from app.security.access import Principal, authenticate
 
 __all__ = []
 
 TIMELINE_PAGE_SIZE = 20
 SUPPORTED_LANGUAGES = ("en", "hi", "mr")
+
+
+@contextmanager
+def _read_session() -> Iterator[Session]:
+    session = Session(bind=get_engine())
+    try:
+        yield session
+    finally:
+        session.close()
 
 
 def _redirect(path: str) -> RedirectResponse:
@@ -58,12 +73,17 @@ def citizen_case(
     request: Request,
     principal: Principal = Depends(authenticate),
 ) -> _TemplateResponse:
+    with _read_session() as session:
+        content = load_citizen_content(session, principal)
     return render_gated(
         request,
         "case.html",
         None,
         principal,
         title="Case status",
+        case=content.case,
+        ownership_records=content.ownership_records,
+        awards=content.awards,
         languages=SUPPORTED_LANGUAGES,
         selected_language=request.cookies.get("bhumisetu_citizen_language", "en"),
     )
@@ -76,12 +96,15 @@ def citizen_timeline(
     principal: Principal = Depends(authenticate),
 ) -> _TemplateResponse:
     page = max(1, page)
+    with _read_session() as session:
+        content = load_citizen_content(session, principal)
     return render_gated(
         request,
         "timeline.html",
         None,
         principal,
         title="Timeline",
+        case=content.case,
         page=page,
         page_size=TIMELINE_PAGE_SIZE,
         previous_page=page - 1 if page > 1 else None,
@@ -96,12 +119,15 @@ def citizen_documents(
     request: Request,
     principal: Principal = Depends(authenticate),
 ) -> _TemplateResponse:
+    with _read_session() as session:
+        content = load_citizen_content(session, principal)
     return render_gated(
         request,
         "documents.html",
         None,
         principal,
         title="Documents",
+        documents=content.documents,
         languages=SUPPORTED_LANGUAGES,
         selected_language=request.cookies.get("bhumisetu_citizen_language", "en"),
     )
@@ -138,12 +164,15 @@ def citizen_notices(
     request: Request,
     principal: Principal = Depends(authenticate),
 ) -> _TemplateResponse:
+    with _read_session() as session:
+        content = load_citizen_content(session, principal)
     return render_gated(
         request,
         "notices.html",
         None,
         principal,
         title="Notices",
+        notices=content.notices,
         languages=SUPPORTED_LANGUAGES,
         selected_language=request.cookies.get("bhumisetu_citizen_language", "en"),
     )
@@ -154,12 +183,15 @@ def citizen_objections(
     request: Request,
     principal: Principal = Depends(authenticate),
 ) -> _TemplateResponse:
+    with _read_session() as session:
+        content = load_citizen_content(session, principal)
     return render_gated(
         request,
         "objections.html",
         None,
         principal,
         title="Objections",
+        objections=content.objections,
         languages=SUPPORTED_LANGUAGES,
         selected_language=request.cookies.get("bhumisetu_citizen_language", "en"),
     )

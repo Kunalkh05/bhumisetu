@@ -2,6 +2,13 @@
 {% block content %}
 <section class="panel">
   <h2>Documents</h2>
-  <p class="muted">Documents linked to your case will appear here after verification.</p>
+  {% for document in documents %}
+  <div class="row">
+    <span>{{ document.document_type }}<br><span class="muted">{{ document.uploaded_at }}</span></span>
+    <strong>{{ document.byte_size }} bytes · <a href="/c/documents/{{ document.id }}/confirm">Open</a></strong>
+  </div>
+  {% else %}
+  <p class="muted">No documents are visible for this session.</p>
+  {% endfor %}
 </section>
 {% endblock %}

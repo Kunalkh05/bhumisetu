@@ -514,7 +514,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - Timeline pagination at 20 events as plain `<a href>`; language selection as a `<form method="post">`; single-column CSS legible at 320 CSS pixels with no media queries needed below 480 px; no images in the content path and a system font stack first, so the content reads with images and web fonts failing
     - _Requirements: 24.4, 24.5, 24.10, 25.1, 25.4, 25.9, 27.3_
     - _Properties 56, 63_
-  - [~] 19.2 Citizen content views
+  - [x] 19.2 Citizen content views
     - Case status: Case_Reference, project name, current stage in plain language, the date the stage began, the next expected step, and the configured statutory period with remaining days as plain-language text
     - Own ownership records with parcel identity, recorded extent, and share; own award total and disbursement state; notices served on the citizen with type, service date, and response deadline; own objections with receipt date, disposal state, and disposal date
     - Documents list restricted to the citizen's own ownership records and parcels with type, upload date, and byte size

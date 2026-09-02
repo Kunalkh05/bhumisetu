@@ -2,6 +2,13 @@
 {% block content %}
 <section class="panel">
   <h2>Objections</h2>
-  <p class="muted">Objections raised by you will appear here after verification.</p>
+  {% for objection in objections %}
+  <div class="row">
+    <span>Received {{ objection.receipt_date }}</span>
+    <strong>{{ objection.disposal_state }}{% if objection.disposal_date %} · {{ objection.disposal_date }}{% endif %}</strong>
+  </div>
+  {% else %}
+  <p class="muted">No objections are visible for this session.</p>
+  {% endfor %}
 </section>
 {% endblock %}

@@ -2,6 +2,39 @@
 {% block content %}
 <section class="panel">
   <h2>Current status</h2>
-  <p class="muted">Case details will appear here after verification.</p>
+  <div class="row"><span>Case reference</span><strong>{{ case.case_reference }}</strong></div>
+  <div class="row"><span>Project</span><strong>{{ case.project_name }}</strong></div>
+  <div class="row"><span>Current stage</span><strong>{{ case.stage }}</strong></div>
+  <div class="row"><span>Stage began</span><strong>{{ case.stage_entered_on }}</strong></div>
+  <div class="row"><span>Next expected step</span><strong>{{ case.next_step }}</strong></div>
+  <div class="row"><span>Statutory period</span><strong>{{ case.statutory_period }}</strong></div>
+  <div class="row">
+    <span>Remaining days</span>
+    <strong>{% if case.remaining_days is not none %}{{ case.remaining_days }}{% else %}Not applicable{% endif %}</strong>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>Ownership records</h2>
+  {% for record in ownership_records %}
+  <div class="row">
+    <span>{{ record.village }} / {{ record.survey_number }}</span>
+    <strong>{{ record.extent }} {{ record.extent_unit }} · share {{ record.share }}</strong>
+  </div>
+  {% else %}
+  <p class="muted">No ownership records are visible for this session.</p>
+  {% endfor %}
+</section>
+
+<section class="panel">
+  <h2>Awards</h2>
+  {% for award in awards %}
+  <div class="row">
+    <span>Record {{ award.ownership_record_id }}</span>
+    <strong>{{ award.total_amount }} {{ award.currency }} · {{ award.disbursement_state }}</strong>
+  </div>
+  {% else %}
+  <p class="muted">No awards are visible for this session.</p>
+  {% endfor %}
 </section>
 {% endblock %}

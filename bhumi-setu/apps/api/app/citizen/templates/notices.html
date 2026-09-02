@@ -2,6 +2,13 @@
 {% block content %}
 <section class="panel">
   <h2>Notices</h2>
-  <p class="muted">Notices served to you will appear here after verification.</p>
+  {% for notice in notices %}
+  <div class="row">
+    <span>{{ notice.notice_type }}<br><span class="muted">Served {{ notice.service_date }}</span></span>
+    <strong>Respond by {{ notice.response_deadline }}</strong>
+  </div>
+  {% else %}
+  <p class="muted">No notices are visible for this session.</p>
+  {% endfor %}
 </section>
 {% endblock %}
