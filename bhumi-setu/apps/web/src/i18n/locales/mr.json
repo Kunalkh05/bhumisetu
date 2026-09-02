@@ -1,0 +1,17 @@
+{
+  "app.brand": "भूमिसेतू",
+  "app.portal": "अधिकारी पोर्टल",
+  "language.label": "भाषा",
+  "language.en": "इंग्रजी",
+  "language.hi": "हिंदी",
+  "language.mr": "मराठी",
+  "nav.dashboard": "डॅशबोर्ड",
+  "nav.cases": "प्रकरणे",
+  "nav.map": "नकाशा",
+  "nav.queue": "हस्तक्षेप रांग",
+  "nav.issues": "वैधता समस्या",
+  "nav.imports": "आयात बॅच",
+  "documents.script": "लिपी",
+  "documents.scriptUnknown": "ओळखलेली नाही",
+  "documents.detectedScript": "ओळखलेली लिपी: {{script}}"
+}

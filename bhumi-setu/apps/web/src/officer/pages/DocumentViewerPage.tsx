@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { request } from '../../api/client';
 import { useVersionedMutation, type Versioned } from '../../api/hooks/useVersionedMutation';
 import { ConflictDialog } from '../conflicts/ConflictDialog';
@@ -10,6 +11,7 @@ import { DocumentViewer, type ExtractedFieldBox } from '../documents/DocumentVie
 interface DocumentViewerPayload {
   readonly id: number;
   readonly content_type: string;
+  readonly detected_script?: string | null;
   readonly grant_url: string;
   readonly fields: readonly ExtractedFieldBox[];
 }
@@ -25,6 +27,7 @@ function fieldEntity(field: ExtractedFieldBox): Versioned {
 
 export function DocumentViewerPage() {
   const { documentId } = useParams();
+  const { t } = useTranslation();
   const [pageNumber, setPageNumber] = useState(1);
   const [pageCount, setPageCount] = useState(1);
   const [zoom, setZoom] = useState(1.25);
@@ -46,6 +49,8 @@ export function DocumentViewerPage() {
     () => query.data?.fields.filter((field) => field.page_number === pageNumber) ?? [],
     [pageNumber, query.data],
   );
+  const detectedScript =
+    query.data?.detected_script ?? query.data?.fields.find((field) => field.detected_script)?.detected_script ?? null;
 
   if (!documentId) {
     return <StatusMessage title="Document not selected" />;
@@ -66,6 +71,9 @@ export function DocumentViewerPage() {
             {query.data.id}
           </h1>
           <p className="mt-1 text-sm text-ink-muted">{query.data.content_type}</p>
+          <p className="mt-1 text-sm text-ink-muted">
+            {t('documents.detectedScript', { script: detectedScript ?? t('documents.scriptUnknown') })}
+          </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <button
@@ -126,6 +134,9 @@ export function DocumentViewerPage() {
                   <div>
                     <h2 className="font-mono text-sm text-ink">{field.field_name}</h2>
                     <p className="mt-1 text-sm text-ink-muted">{field.review_state}</p>
+                    <p className="mt-1 text-xs text-ink-subtle">
+                      {t('documents.script')}: {field.detected_script ?? detectedScript ?? t('documents.scriptUnknown')}
+                    </p>
                   </div>
                   <button
                     type="button"

@@ -9,6 +9,7 @@ export interface ExtractedFieldBox {
   readonly field_name: string;
   readonly extracted_value: string | null;
   readonly review_state: string;
+  readonly detected_script?: string | null;
   readonly entity_version: number;
   readonly page_number: number;
   readonly bbox_x1: number;

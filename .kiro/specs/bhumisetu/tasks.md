@@ -499,7 +499,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - Ordered issue queue with waiver flow and resolution history; case timeline ordered by occurrence time; `QUEUED`/`PROCESSING` document states presented while the portal stays responsive to other requests
     - _Requirements: 11.7, 14.3, 14.5, 14.8, 23.4_
     - _Properties 30, 31_
-  - [~] 18.6 Officer i18n and script display
+  - [x] 18.6 Officer i18n and script display
     - `react-i18next` with per-locale chunks loaded on demand; missing keys reported to `POST /internal/i18n/missing`; the recognised script of an extraction presented alongside its fields
     - _Requirements: 27.2, 27.4, 27.7_
     - _Property 63_

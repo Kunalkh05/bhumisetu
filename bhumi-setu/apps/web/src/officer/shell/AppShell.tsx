@@ -1,4 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { changeOfficerLanguage, supportedLanguages, type SupportedLanguage } from '../../i18n';
 import { navItems } from './navItems';
 
 /**
@@ -9,6 +11,8 @@ import { navItems } from './navItems';
  * so the shell is unaffected by it.
  */
 export function AppShell() {
+  const { i18n, t } = useTranslation();
+
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-[15rem_1fr]">
       <a
@@ -23,8 +27,23 @@ export function AppShell() {
         className="border-b border-surface-border bg-surface lg:border-b-0 lg:border-r"
       >
         <div className="px-4 py-4">
-          <span className="text-sm font-semibold tracking-wide text-ink">BHUMISETU</span>
-          <span className="mt-0.5 block text-xs text-ink-subtle">Officer portal</span>
+          <span className="text-sm font-semibold tracking-wide text-ink">{t('app.brand')}</span>
+          <span className="mt-0.5 block text-xs text-ink-subtle">{t('app.portal')}</span>
+          <label className="mt-3 block text-xs font-medium text-ink-subtle" htmlFor="officer-language">
+            {t('language.label')}
+          </label>
+          <select
+            id="officer-language"
+            className="mt-1 w-full rounded border border-surface-border bg-white px-2 py-1.5 text-sm text-ink"
+            value={i18n.resolvedLanguage ?? i18n.language}
+            onChange={(event) => void changeOfficerLanguage(event.target.value as SupportedLanguage)}
+          >
+            {supportedLanguages.map((language) => (
+              <option key={language} value={language}>
+                {t(`language.${language}`)}
+              </option>
+            ))}
+          </select>
         </div>
         <ul className="pb-2 lg:pb-0">
           {navItems.map((item) => (
@@ -41,7 +60,7 @@ export function AppShell() {
                   ].join(' ')
                 }
               >
-                {item.label}
+                {t(item.labelKey)}
               </NavLink>
             </li>
           ))}

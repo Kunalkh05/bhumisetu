@@ -1,0 +1,17 @@
+{
+  "app.brand": "BHUMISETU",
+  "app.portal": "Officer portal",
+  "language.label": "Language",
+  "language.en": "English",
+  "language.hi": "Hindi",
+  "language.mr": "Marathi",
+  "nav.dashboard": "Dashboard",
+  "nav.cases": "Cases",
+  "nav.map": "Map",
+  "nav.queue": "Intervention queue",
+  "nav.issues": "Validation issues",
+  "nav.imports": "Import batches",
+  "documents.script": "Script",
+  "documents.scriptUnknown": "Not detected",
+  "documents.detectedScript": "Detected script: {{script}}"
+}

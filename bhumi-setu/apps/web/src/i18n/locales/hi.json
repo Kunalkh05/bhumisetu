@@ -1,0 +1,17 @@
+{
+  "app.brand": "भूमिसेतु",
+  "app.portal": "अधिकारी पोर्टल",
+  "language.label": "भाषा",
+  "language.en": "अंग्रेजी",
+  "language.hi": "हिन्दी",
+  "language.mr": "मराठी",
+  "nav.dashboard": "डैशबोर्ड",
+  "nav.cases": "मामले",
+  "nav.map": "मानचित्र",
+  "nav.queue": "हस्तक्षेप कतार",
+  "nav.issues": "सत्यापन समस्याएं",
+  "nav.imports": "आयात बैच",
+  "documents.script": "लिपि",
+  "documents.scriptUnknown": "पहचानी नहीं गई",
+  "documents.detectedScript": "पहचानी गई लिपि: {{script}}"
+}
