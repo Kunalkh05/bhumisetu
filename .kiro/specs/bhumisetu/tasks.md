@@ -474,7 +474,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - _Properties 32, 33_
 
 - [ ] 18. Officer portal
-  - [~] 18.1 App shell, TanStack Query data layer, and the conflict dialog
+  - [x] 18.1 App shell, TanStack Query data layer, and the conflict dialog
     - `apps/web/src/officer/` on React 18 + Vite + TypeScript with `base: '/officer/'`
     - Entity fetches capture `entity_version` and the mutation hook replays it as `If-Match`, so R29.2 is satisfied by the data layer rather than by per-form discipline
     - A 409 renders `ConflictDialog` showing submitted versus current per attribute and requiring a resubmit against the current version

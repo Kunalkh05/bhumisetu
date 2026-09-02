@@ -1,14 +1,14 @@
 /**
  * The API error envelope (design §9.4).
  *
- * Every non-2xx response carries a machine-readable `code` plus a `detail`
+ * Every non-2xx response carries a machine-readable `code` plus a `details`
  * object whose shape depends on the code. The UI branches on `code`, never on
  * the human-readable message.
  */
 export interface ApiErrorEnvelope {
   readonly code: string;
   readonly message: string;
-  readonly detail?: Readonly<Record<string, unknown>>;
+  readonly details?: Readonly<Record<string, unknown>>;
 }
 
 /** A conflicting attribute, as returned on ENTITY_VERSION_CONFLICT (R29.4). */
@@ -40,14 +40,14 @@ export interface EntityVersionConflictDetail {
 export class ApiError extends Error {
   readonly status: number;
   readonly code: string;
-  readonly detail: Readonly<Record<string, unknown>> | undefined;
+  readonly details: Readonly<Record<string, unknown>> | undefined;
 
   constructor(status: number, envelope: ApiErrorEnvelope) {
     super(envelope.message);
     this.name = 'ApiError';
     this.status = status;
     this.code = envelope.code;
-    this.detail = envelope.detail;
+    this.details = envelope.details;
   }
 }
 
@@ -57,7 +57,7 @@ export class EntityVersionConflictError extends ApiError {
   constructor(status: number, envelope: ApiErrorEnvelope) {
     super(status, envelope);
     this.name = 'EntityVersionConflictError';
-    this.conflict = envelope.detail as unknown as EntityVersionConflictDetail;
+    this.conflict = envelope.details as unknown as EntityVersionConflictDetail;
   }
 }
 
