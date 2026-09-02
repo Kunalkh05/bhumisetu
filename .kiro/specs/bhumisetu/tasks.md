@@ -520,7 +520,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - Documents list restricted to the citizen's own ownership records and parcels with type, upload date, and byte size
     - _Requirements: 25.1, 25.2, 25.3, 25.5, 25.7, 25.8, 25.9_
     - _Property 59_
-  - [~] 19.3 Redaction shapes and grant-backed document retrieval
+  - [x] 19.3 Redaction shapes and grant-backed document retrieval
     - `CitizenParcelOut` with `co_owner_count` and `other_share_total` and **no collection of other owners at all** — R26.2 is a different shape, not a subset, so it is a distinct model rather than gate work (§8.4)
     - Document retrieval over a time-limited grant with an event carrying the citizen session id and the document id; the confirm interstitial presents the recorded byte size before any bytes transfer
     - Every citizen data retrieval appends an event carrying session id, case id, and retrieval time
