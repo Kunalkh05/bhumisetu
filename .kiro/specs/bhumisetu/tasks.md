@@ -479,7 +479,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - Entity fetches capture `entity_version` and the mutation hook replays it as `If-Match`, so R29.2 is satisfied by the data layer rather than by per-form discipline
     - A 409 renders `ConflictDialog` showing submitted versus current per attribute and requiring a resubmit against the current version
     - _Requirements: 29.2, 29.9_
-  - [~] 18.2 Case workspace
+  - [x] 18.2 Case workspace
     - Present Case_Reference, project, stage, stage deadline with remaining days, parcels, currently valid ownership records, notices, objections, awards with disbursement state, open validation issues, current risk band with explanation factors, and documents — correct for a case with empty collections
     - Internal officer notes rendered only for officer principals (enforced at the gate, so the field is absent rather than hidden)
     - Three distinct card states rendered from explicit response fields and never inferred from a null: scored, not-scored, and scored-but-unmonitored
