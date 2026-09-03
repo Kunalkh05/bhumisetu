@@ -42,6 +42,9 @@ class DataSubjectRequest(Base):
     )
     due_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    disposal_outcome: Mapped[str | None] = mapped_column(Text, nullable=True)
+    disposal_reasons: Mapped[str | None] = mapped_column(Text, nullable=True)
+    deciding_officer_id: Mapped[str | None] = mapped_column(Text, nullable=True)
     status: Mapped[str] = mapped_column(
         Text,
         nullable=False,

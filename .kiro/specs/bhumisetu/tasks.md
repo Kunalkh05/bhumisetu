@@ -744,7 +744,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - Property test: the computed erasure date uses the period effective at the retention start, not the current period
     - _Requirements: 28.10, 32.3, 32.4, 32.10, 32.11, 32.12, 32.13, 32.15_
     - _Properties 66, 81, 82, 83, 84_
-  - [~] 25.5 DSAR access and correction handlers
+  - [x] 25.5 DSAR access and correction handlers
     - `GET /c/my-data` assembling the response by **iterating `CATEGORY_MAP`** for personal-data attributes on the requester's own records so it cannot fall behind the schema; the government identifier masked under R26.5, with a `DATA_ACCESS_REQUEST_SERVED` event. **Q10 asks whether a DSAR response may carry it unmasked** — this design masks it until Q10 says otherwise, and unmasking is one change to the gate's `PERMISSION` visibility
     - `POST /c/correction` writing **only** to `data_subject_request`: target attribute, current value, asserted value, receipt time; routed to officers whose scope contains the case
     - `GET /dsar` and `POST /dsar/{id}/disposal` gated on `dsar.dispose`, recording outcome, reasons, deciding officer, and disposal time with a `CORRECTION_REQUEST_DISPOSED` event

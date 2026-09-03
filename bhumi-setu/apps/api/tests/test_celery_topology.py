@@ -27,6 +27,7 @@ EXPECTED_BEAT_TASKS = {
     "app.services.dashboard.refresh_dashboard_snapshot",
     "app.services.intervention.reconcile_case_counters",
     "app.retention.tasks.run_retention_sweep",
+    "app.retention.tasks.flag_dsar_overdue",
     "app.db.outbox.dispatch_outbox",
 }
 
