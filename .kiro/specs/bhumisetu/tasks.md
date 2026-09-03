@@ -752,7 +752,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - **Static test asserting `app/citizen/` imports no versioned repository and no entity-mutating service**, so no citizen-submitted value can reach stored state; a change reaches state only through an officer modification under R6 or R12 with its own event and version check
     - _Requirements: 32.5, 32.6, 32.7, 32.8, 32.9_
     - _Properties 61, 85, 86_
-  - [~] 25.6 DSAR property tests
+  - [x] 25.6 DSAR property tests
     - Property test: for any correction request carrying any asserted value, the targeted attribute is unchanged until an officer modification is recorded, and the request records all four fields and routes to exactly the in-scope officers
     - Property test: receipt and completion times are recorded, overdue requests are flagged against the configured window, and a correction disposal records outcome, reasons, officer, and time
     - _Requirements: 32.6, 32.7, 32.8, 32.9_

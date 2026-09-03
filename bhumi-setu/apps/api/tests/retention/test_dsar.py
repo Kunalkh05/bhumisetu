@@ -6,6 +6,7 @@ from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 
 import pytest
+from hypothesis import given, strategies as st
 
 from app.models.data_subject_request import DataSubjectRequest
 from app.models.ownership_record import OwnershipRecord
@@ -25,6 +26,15 @@ class _Resolver:
         assert state == "*"
         assert act is None
         return 30
+
+
+class _WindowResolver:
+    def __init__(self, window_days: int) -> None:
+        self.window_days = window_days
+
+    def get(self, key: str, *, state: str, act: str | None, as_of: date) -> int:
+        assert key == "dsar.response_window_days"
+        return self.window_days
 
 
 class _Session:
@@ -243,3 +253,173 @@ def test_citizen_package_imports_no_entity_mutation_paths() -> None:
                 offences.append(f"{path}: {needle}")
 
     assert not offences, "citizen code can reach entity mutation paths: " + "; ".join(offences)
+
+
+_json_scalar = st.one_of(
+    st.none(),
+    st.booleans(),
+    st.integers(min_value=-10_000, max_value=10_000),
+    st.text(max_size=80),
+)
+
+
+@given(
+    target_attribute=st.sampled_from(
+        [
+            "owner_name",
+            "owner_identity_key",
+            "government_identifier",
+            "contact_mobile",
+            "contact_mobile_hash",
+        ]
+    ),
+    current_value=_json_scalar,
+    asserted_value=_json_scalar,
+    received_at=st.datetimes(
+        min_value=datetime(2020, 1, 1),
+        max_value=datetime(2030, 12, 31),
+        timezones=st.just(UTC),
+    ),
+    window_days=st.integers(min_value=0, max_value=365),
+)
+def test_property_correction_request_records_values_without_mutating_owner(
+    monkeypatch,
+    target_attribute: str,
+    current_value,
+    asserted_value,
+    received_at: datetime,
+    window_days: int,
+) -> None:
+    owner = _owner()
+    before = {
+        "owner_name": owner.owner_name,
+        "owner_identity_key": owner.owner_identity_key,
+        "government_identifier": owner.government_identifier,
+        "contact_mobile": owner.contact_mobile,
+        "contact_mobile_hash": owner.contact_mobile_hash,
+    }
+    session = _Session()
+
+    def _current_value(*args, **kwargs):  # noqa: ANN001
+        return current_value, "RET"
+
+    monkeypatch.setattr("app.retention.dsar._current_owner_value", _current_value)
+
+    row = submit_correction_request(
+        session,  # type: ignore[arg-type]
+        principal=_principal(),
+        data=CorrectionSubmission(
+            ownership_record_id=7,
+            target_attribute=target_attribute,
+            asserted_value=asserted_value,
+        ),
+        resolver=_WindowResolver(window_days),  # type: ignore[arg-type]
+        now=received_at,
+    )
+
+    assert {
+        "owner_name": owner.owner_name,
+        "owner_identity_key": owner.owner_identity_key,
+        "government_identifier": owner.government_identifier,
+        "contact_mobile": owner.contact_mobile,
+        "contact_mobile_hash": owner.contact_mobile_hash,
+    } == before
+    assert row.target_attribute == target_attribute
+    assert row.current_value == current_value
+    assert row.asserted_value == asserted_value
+    assert row.received_at == received_at
+    assert row.due_at == received_at + timedelta(days=window_days)
+    assert row.routed_area_code == "RET"
+
+
+@given(
+    outcome=st.text(min_size=1, max_size=40),
+    reasons=st.text(min_size=1, max_size=160),
+    officer_id=st.text(min_size=1, max_size=40),
+    decided_at=st.datetimes(
+        min_value=datetime(2020, 1, 1),
+        max_value=datetime(2030, 12, 31),
+        timezones=st.just(UTC),
+    ),
+)
+def test_property_disposal_records_outcome_reasons_officer_and_time(
+    monkeypatch,
+    outcome: str,
+    reasons: str,
+    officer_id: str,
+    decided_at: datetime,
+) -> None:
+    request = DataSubjectRequest(
+        request_type="CORRECTION",
+        subject_key="citizen",
+        case_id=1,
+        due_at=decided_at + timedelta(days=1),
+        received_at=decided_at,
+        status="OPEN",
+    )
+    request.id = 12
+
+    class Session:
+        def get(self, model, request_id, populate_existing=False):  # noqa: ANN001
+            return request
+
+    monkeypatch.setattr("app.retention.dsar._request_visible_to_principal", lambda *a, **k: True)
+    monkeypatch.setattr(
+        "app.retention.dsar.EventLog.append",
+        lambda *a, **k: type("Event", (), {"id": 55})(),
+    )
+
+    result = dispose_correction_request(
+        Session(),  # type: ignore[arg-type]
+        principal=Principal(kind="OFFICER", id=officer_id),
+        request_id=12,
+        outcome=outcome,
+        reasons=reasons,
+        now=decided_at,
+    )
+
+    assert result.outcome == outcome
+    assert result.reasons == reasons
+    assert result.decided_at == decided_at
+    assert request.completed_at == decided_at
+    assert request.disposal_outcome == outcome
+    assert request.disposal_reasons == reasons
+    assert request.deciding_officer_id == officer_id
+    assert request.disposed_event_id == 55
+
+
+@given(
+    due_at=st.datetimes(
+        min_value=datetime(2020, 1, 1),
+        max_value=datetime(2030, 12, 31),
+        timezones=st.just(UTC),
+    ),
+    delta_days=st.integers(min_value=1, max_value=365),
+)
+def test_property_overdue_flag_uses_materialized_due_at(
+    due_at: datetime,
+    delta_days: int,
+) -> None:
+    request = DataSubjectRequest(
+        request_type="CORRECTION",
+        subject_key="citizen",
+        received_at=due_at - timedelta(days=1),
+        due_at=due_at,
+        status="OPEN",
+    )
+
+    class Result:
+        def scalars(self):
+            return iter((request,))
+
+    class Session:
+        def execute(self, stmt):  # noqa: ANN001
+            return Result()
+
+    changed = flag_overdue_requests(
+        Session(),  # type: ignore[arg-type]
+        now=due_at + timedelta(days=delta_days),
+    )
+
+    assert changed == 1
+    assert request.status == "OVERDUE"
