@@ -546,12 +546,11 @@ def _plan_externalisation(
 def _classify(entity_type: str, column: str, row: Mapping[str, Any]) -> str | None:
     """Return the data category of ``entity_type.column``, or ``None`` if unmapped.
 
-    The membership pre-check is deliberate. ``category_of`` raises ``KeyError`` both
-    for an attribute that is not in ``CATEGORY_MAP`` *and* — for a value-dependent
-    entry — if the discriminator column is missing from ``row``. Only the first is an
-    "unmapped, treat as inline" case; the second is a real error that must not be
-    silently turned into an inline attribute. Checking the map key first separates
-    the two: a genuine resolution error still propagates.
+    After task 25.2 the production schema is fully mapped, so ``None`` remains only
+    for ad hoc objects in unit tests or future unmapped code. The membership
+    pre-check still matters: ``category_of`` raises ``KeyError`` both for an absent
+    map key and for a value-dependent entry whose discriminator is missing. Only
+    the first is an inline fallback; the second is a real resolution error.
     """
     if (entity_type, column) not in CATEGORY_MAP:
         return None

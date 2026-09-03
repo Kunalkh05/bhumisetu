@@ -103,12 +103,11 @@ class TestClassification:
         assert _classify("ownership_record", "contact_mobile", {}) == OWNER_CONTACT
         assert _classify("objection", "objector_name", {}) == OWNER_IDENTITY
 
-    def test_an_unmapped_attribute_is_none_and_so_stays_inline(self) -> None:
-        """The map is intentionally partial until task 25.2 completes it. An attribute
-        it does not name is treated as non-personal here — safe, because the mapped
-        attributes are exactly the personal ones, so nothing personal is missed."""
-        assert _classify("acquisition_case", "stage_key", {}) is None
-        assert _classify("ownership_record", "share", {}) is None
+    def test_a_mapped_non_personal_attribute_stays_inline(self) -> None:
+        """Task 25.2 completes the map; non-personal categories are explicit."""
+        assert _classify("acquisition_case", "stage_key", {}) == LAND_RECORD
+        assert _classify("ownership_record", "share", {}) == LAND_RECORD
+        assert _classify("test_probe", "note", {}) is None
 
     def test_a_value_dependent_attribute_uses_the_row(self) -> None:
         """``extracted_field.extracted_value`` is personal or not depending on which

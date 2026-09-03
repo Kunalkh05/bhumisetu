@@ -721,7 +721,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - `GET` returning, for any ownership record, its categories, the retention start date where determined, and the computed erasure date per category
     - _Requirements: 28.10, 32.1, 32.15_
     - _Property 66_
-  - [~] 25.2 Complete `CATEGORY_MAP` and the metadata-walk test
+  - [x] 25.2 Complete `CATEGORY_MAP` and the metadata-walk test
     - Extend the registry created in 3.3 to every column of every table, including `Discriminated(on="field_name")` for `extracted_field.extracted_value` and `Reference(follows="data_category")` for `personal_datum.value_ciphertext`, with `NOT_PERSONAL` used explicitly rather than by omission
     - `test_every_column_is_classified` walking `Base.metadata.sorted_tables` and failing the build on any unclassified column. That is the whole mechanism for R32.2 holding over time rather than only on the day it was written
     - The same registry already drives the gate's field-coverage test (5.5), the feature disjointness test (3.3), and the DSAR field list (25.5)
