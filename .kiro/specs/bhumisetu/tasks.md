@@ -727,7 +727,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - The same registry already drives the gate's field-coverage test (5.5), the feature disjointness test (3.3), and the DSAR field list (25.5)
     - _Requirements: 32.2_
     - _Property 80_
-  - [~] 25.3 Two-armed erasure, disabled
+  - [x] 25.3 Two-armed erasure, disabled
     - `run_retention_sweep` per §17.2 returning immediately unless `retention.sweep_enabled` resolves true — **ships false, with no seeded `retention.period.*` rows**, so R32.14's withhold-and-record path is the operating state
     - Retention start is the occurrence time of the event that moved the case into a terminal stage; while the case is non-terminal the start is undetermined and erasure is withheld regardless of elapsed time
     - Restricted to the configured erasable set; a missing effective period records the withholding reason

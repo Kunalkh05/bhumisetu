@@ -19,6 +19,7 @@ from app.services.policy import PolicyResolver
 __all__ = [
     "RetentionAttributeProjection",
     "OwnershipRetentionProjection",
+    "record_retention_withholding",
     "ownership_retention_projection",
     "retention_period_key",
 ]
@@ -107,9 +108,10 @@ def _project_attribute(
 ) -> RetentionAttributeProjection:
     policy_key = retention_period_key(data_category)
     if retention_start is None:
-        _record_withholding(
+        record_retention_withholding(
             session,
-            ownership_record_id=ownership_record_id,
+            entity_type=OwnershipRecord.__tablename__,
+            entity_id=ownership_record_id,
             attribute_name=attribute_name,
             data_category=data_category,
             reason="RETENTION_START_UNDETERMINED",
@@ -133,9 +135,10 @@ def _project_attribute(
         as_of=start_date,
     )
     if period_days is None:
-        _record_withholding(
+        record_retention_withholding(
             session,
-            ownership_record_id=ownership_record_id,
+            entity_type=OwnershipRecord.__tablename__,
+            entity_id=ownership_record_id,
             attribute_name=attribute_name,
             data_category=data_category,
             reason="RETENTION_PERIOD_MISSING",
@@ -173,10 +176,11 @@ def _ownership_personal_categories() -> tuple[tuple[str, str], ...]:
     return tuple(sorted(rows))
 
 
-def _record_withholding(
+def record_retention_withholding(
     session: Session,
     *,
-    ownership_record_id: int,
+    entity_type: str,
+    entity_id: int,
     attribute_name: str,
     data_category: str,
     reason: str,
@@ -185,8 +189,8 @@ def _record_withholding(
 ) -> None:
     session.add(
         RetentionWithholding(
-            entity_type=OwnershipRecord.__tablename__,
-            entity_id=ownership_record_id,
+            entity_type=entity_type,
+            entity_id=entity_id,
             attribute_name=attribute_name,
             data_category=data_category,
             reason=reason,

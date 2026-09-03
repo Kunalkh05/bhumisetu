@@ -43,13 +43,12 @@ the bad rather than aborting on the first overlap). Because the index is over a
 Erasable personal data, and the retained hash
 ----------------------------------------------
 
-``owner_name``, ``government_identifier`` and ``contact_mobile`` are personal data
-(``CATEGORY_MAP``, §5.4) and erasable — erasure there is an ordinary ``UPDATE ...
-SET owner_name = NULL`` because entity rows are mutable by design, unlike event
-rows. ``owner_identity_key`` is the normalised match key R13.5 uses for duplicate
-detection. ``contact_mobile_hash`` is retained after ``contact_mobile`` is erased
-so citizen OTP lookup (§19.2) still resolves a case to a mobile without holding the
-number in clear; ``ownership_mobile_hash`` indexes it for that lookup.
+``owner_name``, ``government_identifier``, ``owner_identity_key``,
+``contact_mobile`` and ``contact_mobile_hash`` are personal data (``CATEGORY_MAP``,
+§5.4) and erasable — erasure there is an ordinary ``UPDATE ... SET owner_name =
+NULL`` because entity rows are mutable by design, unlike event rows. The retained
+land-record fields keep the legal interest intact; OTP lookup stops working after
+the contact retention period lapses, which is the explicit Q10 default.
 """
 
 from __future__ import annotations
@@ -117,9 +116,8 @@ class OwnershipRecord(Base, Versioned):
         LargeBinary,
         nullable=True,
         comment=(
-            "Retained for citizen OTP lookup (§19.2) after contact_mobile is "
-            "erased, so a case still resolves to a mobile without holding the "
-            "number in clear. Indexed by ownership_mobile_hash."
+            "OWNER_CONTACT, erasable with contact_mobile. After erasure citizen "
+            "OTP lookup no longer resolves by this owner hash."
         ),
     )
 
