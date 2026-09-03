@@ -736,7 +736,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - `contact_mobile_hash` is `OWNER_CONTACT` and is erased with the plaintext, which means OTP login stops working for that owner. Correct given the retention period lapsed years after a terminal stage, but it should be an explicit expectation when Q10 is confirmed rather than a surprise
     - _Requirements: 32.3, 32.4, 32.10, 32.11, 32.12, 32.14_
     - _Properties 81, 82, 83_
-  - [~] 25.4 Erasure property tests
+  - [x] 25.4 Erasure property tests
     - Property test: every erased attribute is in an erasable category with a lapsed period, the event exists per erasure, and parcel identity and geometry, ownership share and validity, award and payout amounts, and every event row are bit-identical to their pre-erasure snapshot
     - Property test: every stored event row is byte-identical before and after, and the erasure is represented solely by one newly appended compensating event
     - Property test: the erased value is absent from every returned payload while actor, entity id, both timestamps, and position in the ordering are identical to what was returned before
