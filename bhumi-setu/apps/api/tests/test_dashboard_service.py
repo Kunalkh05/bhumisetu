@@ -212,3 +212,22 @@ def test_drill_through_uses_the_same_predicate_as_the_metric() -> None:
 
     assert [case.id for case in drill] == [1, 2]
     assert len(drill) == sum(1 for case in cases if case.stage_key == "NOTICE")
+
+
+def test_each_dashboard_count_uses_the_same_predicate_as_drill_through() -> None:
+    cases = (
+        _Case(id=1, stage_key="NOTICE", risk_band="HIGH", deadline_breached=True),
+        _Case(id=2, stage_key="NOTICE", risk_band="LOW"),
+        _Case(id=3, stage_key="AWARD", risk_band="HIGH", deadline_breached=True),
+    )
+    metrics = {
+        ("cases_by_stage", "NOTICE"): 2,
+        ("cases_by_band", "HIGH"): 2,
+        ("breached_deadline_count", None): 2,
+    }
+
+    for (metric_key, bucket), expected in metrics.items():
+        assert (
+            len(drill_through_cases(cases, metric_key=metric_key, bucket=bucket))
+            == expected
+        )

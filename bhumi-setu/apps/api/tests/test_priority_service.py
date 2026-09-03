@@ -233,3 +233,28 @@ def test_property_priority_score_does_not_decrease_as_deadline_approaches(
     ).score
 
     assert later >= earlier
+
+
+@given(
+    risk_weight=st.decimals(min_value=0, max_value=10, places=2),
+    deadline_weight=st.decimals(min_value=0, max_value=10, places=2),
+    value_weight=st.decimals(min_value=0, max_value=10, places=2),
+)
+@settings(max_examples=100)
+def test_property_degenerate_missing_inputs_stay_bounded_and_versioned(
+    risk_weight: Decimal,
+    deadline_weight: Decimal,
+    value_weight: Decimal,
+) -> None:
+    if risk_weight + deadline_weight + value_weight == 0:
+        deadline_weight = Decimal("1")
+    result = priority_score(
+        _Case(risk_probability=None, stage_deadline=None, aggregate_awarded=Decimal("0")),
+        weights=PriorityWeights(risk_weight, deadline_weight, value_weight, "degenerate-v1"),
+        reference_amount=Decimal("100000"),
+        as_of=NOW.date(),
+    )
+
+    assert result.score == Decimal("0.000")
+    assert result.weight_version == "degenerate-v1"
+    assert Decimal("0") <= result.score <= Decimal("100")

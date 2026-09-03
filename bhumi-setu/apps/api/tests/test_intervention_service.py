@@ -5,6 +5,8 @@ from datetime import date, datetime, timezone
 from decimal import Decimal
 
 import pytest
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from app.services.intervention import (
     CounterSnapshot,
@@ -216,3 +218,42 @@ def test_counter_discrepancies_report_stored_and_actual_values() -> None:
 def test_remaining_days_uses_current_stage_deadline() -> None:
     assert remaining_days(_Case(stage_deadline=date(2026, 3, 5)), TODAY) == 4
     assert remaining_days(_Case(stage_deadline=None), TODAY) is None
+
+
+@given(
+    blocking=st.integers(min_value=0, max_value=3),
+    objections=st.integers(min_value=0, max_value=3),
+    days=st.integers(min_value=-5, max_value=20),
+    band=st.one_of(st.sampled_from(["LOW", "MEDIUM", "HIGH", "CRITICAL"]), st.none()),
+)
+@settings(max_examples=100)
+def test_property_recommended_actions_match_their_configured_predicates(
+    blocking: int,
+    objections: int,
+    days: int,
+    band: str | None,
+) -> None:
+    case = _Case(
+        open_blocking_count=blocking,
+        undisposed_objection_count=objections,
+        stage_deadline=TODAY.replace(day=1) if days < -20 else TODAY,
+        risk_band=band,
+    )
+    case.stage_deadline = TODAY.fromordinal(TODAY.toordinal() + days)
+    [actions] = attach_recommended_actions(
+        [case],
+        rules=_Resolver().get(
+            "intervention.action_rules",
+            state=case.state_key,
+            act=case.act_key,
+            as_of=TODAY,
+        )["rules"],
+        today=TODAY,
+    ).values()
+    action_ids = {action.action_id for action in actions}
+
+    assert ("resolve-blocking-issues" in action_ids) == (blocking > 0)
+    assert ("dispose-objections" in action_ids) == (objections > 0)
+    assert ("deadline-followup" in action_ids) == (
+        days <= 3 and band in {"HIGH", "CRITICAL"}
+    )

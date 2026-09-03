@@ -700,7 +700,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - Intervention queue view presenting Case_Reference, stage, risk band, remaining days, and priority score
     - _Requirements: 21.7, 22.1, 22.2, 22.3, 22.4_
     - _Property 53_
-  - [~] 24.5 Priority, queue, and dashboard property and performance tests
+  - [x] 24.5 Priority, queue, and dashboard property and performance tests
     - Property test over degenerate and all-missing inputs: score in [0, 100], non-decreasing in risk with other inputs unchanged, non-decreasing as remaining days fall, recorded with its weight-set version
     - Property test: attached actions are exactly those the configured rules match, and dispositions are recorded and retained
     - Property test: every presented metric carries its computation time, a failing metric does not void its neighbours, and each metric's drill-through list length equals the metric
