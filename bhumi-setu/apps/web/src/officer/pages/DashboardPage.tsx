@@ -89,9 +89,9 @@ export function DashboardPage() {
         </Panel>
 
         <Panel title="Risk Bands" loading={dashboardQuery.isLoading} empty={Object.keys(bandCounts).length === 0}>
-          <dl className="grid grid-cols-2 gap-3">
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
             {bandOrder.map((band) => (
-              <div key={band} className="rounded border border-surface-border bg-white p-3">
+              <div key={band} className="border-b border-surface-border pb-3 last:border-b-0">
                 <dt className="flex items-center gap-2 text-xs font-medium uppercase text-ink-subtle">
                   <span className={`h-2.5 w-2.5 rounded-sm ${bandClasses[band]}`} />
                   {bandLabel(band)}
