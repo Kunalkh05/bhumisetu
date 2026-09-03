@@ -715,7 +715,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - _Requirements: none beyond 22.2 already covered in 24.4_
 
 - [ ] 25. Retention, erasure, and data subject rights — sweep ships disabled
-  - [~] 25.1 Retention schema and the erasure-date projection
+  - [x] 25.1 Retention schema and the erasure-date projection
     - `data_subject_request` migration with `due_at` materialized at receipt from the configured window so the overdue query is an index scan rather than a per-row policy resolution; `v_case_terminal` view; `retention_withholding` record for R32.14 gaps
     - The §6.2 erasure-date query resolving the period as of the **retention start date**, not today; a NULL result means withhold and record
     - `GET` returning, for any ownership record, its categories, the retention start date where determined, and the computed erasure date per category
