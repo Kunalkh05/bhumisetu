@@ -130,6 +130,15 @@ def test_the_train_serve_rederivation_task_is_registered() -> None:
     )
 
 
+def test_dashboard_refresh_task_is_registered_on_maintenance() -> None:
+    assert "app.services.dashboard" in TASK_MODULES
+    assert "app.services.dashboard" in celery_app.conf.include
+    assert (
+        TASK_ROUTES["app.services.dashboard.refresh_dashboard_snapshot"]["queue"]
+        == "maintenance"
+    )
+
+
 def test_broker_is_the_committed_redis_url() -> None:
     from app.settings import get_broker_settings
 

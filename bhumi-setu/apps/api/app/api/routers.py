@@ -64,6 +64,7 @@ ALL_ROUTERS: tuple[APIRouter, ...] = (
 # Import endpoint modules after the routers exist; decorators register onto the
 # router instances above, while create_app imports only ALL_ROUTERS.
 from app.api import cases  # noqa: E402,F401
+from app.api import dashboard  # noqa: E402,F401
 from app.api import documents  # noqa: E402,F401
 from app.api import gis  # noqa: E402,F401
 from app.api import i18n  # noqa: E402,F401

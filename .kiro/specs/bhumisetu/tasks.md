@@ -688,7 +688,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - Nightly reconciliation task recomputing the denormalised counters and recording a discrepancy event on any mismatch — denormalised counters nobody audits eventually lie
     - _Requirements: 21.7, 21.8, 21.9, 21.10_
     - _Properties 4, 31, 52_
-  - [~] 24.3 Dashboard snapshot and per-metric timestamps
+  - [x] 24.3 Dashboard snapshot and per-metric timestamps
     - `dashboard_snapshot(area_code, metrics jsonb, computed_at)` and append-only `dashboard_band_history(area_code, month, band, case_count)`; `refresh_dashboard_snapshot` every 5 minutes on `maintenance` for each area holding a non-terminal case, computing each metric family in its own `try`
     - A request resolves the officer's scope to area codes and sums pre-aggregated counters — additive metrics roll up by summation, so one snapshot per leaf area serves every ancestor scope without a snapshot per role
     - **Per-metric** rather than per-snapshot timestamps, which is what makes R22.6 work: a failed metric is marked unavailable with its failure time while the rest is served

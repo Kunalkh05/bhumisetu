@@ -85,6 +85,7 @@ TASK_MODULES: tuple[str, ...] = (
     "app.db.outbox",
     "app.services.notice",
     "app.services.ocr",
+    "app.services.dashboard",
     "app.services.intervention",
     "ml.tasks",
 )
