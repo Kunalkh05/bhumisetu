@@ -120,6 +120,18 @@ def test_dashboard_response_rolls_up_additive_leaf_snapshots(
         "_snapshots_for_principal",
         lambda session, principal: snapshots,
     )
+    monkeypatch.setattr(
+        dashboard_service,
+        "_stage_keys_for_principal",
+        lambda session, principal: ("NOTICE", "AWARD"),
+    )
+    monkeypatch.setattr(
+        dashboard_service,
+        "_band_history_for_principal",
+        lambda session, principal: (
+            {"month": "2026-09-01", "band": "HIGH", "case_count": 5},
+        ),
+    )
 
     response = dashboard_response(
         object(),
@@ -135,6 +147,10 @@ def test_dashboard_response_rolls_up_additive_leaf_snapshots(
     assert response.metrics["breached_deadline_count"].value == 3
     assert response.metrics["aggregate_awarded"].value == "15.00"
     assert response.metrics["aggregate_awarded"].computed_at == datetime.fromisoformat(older)
+    assert response.stage_keys == ("NOTICE", "AWARD")
+    assert response.band_history == (
+        {"month": "2026-09-01", "band": "HIGH", "case_count": 5},
+    )
 
 
 def test_unavailable_metric_does_not_hide_other_metrics(
@@ -159,6 +175,16 @@ def test_unavailable_metric_does_not_hide_other_metrics(
                 computed_at=NOW,
             ),
         ),
+    )
+    monkeypatch.setattr(
+        dashboard_service,
+        "_stage_keys_for_principal",
+        lambda session, principal: (),
+    )
+    monkeypatch.setattr(
+        dashboard_service,
+        "_band_history_for_principal",
+        lambda session, principal: (),
     )
 
     response = dashboard_response(

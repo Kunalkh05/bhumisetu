@@ -7,17 +7,18 @@ from datetime import UTC, date, datetime
 from decimal import Decimal
 from typing import Callable, Iterable, Mapping
 
-from sqlalchemy import func, or_, select
+from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import Session
 
 from app.db.session import unit_of_work
 from app.models.acquisition_case import AcquisitionCase
 from app.models.dashboard import DashboardBandHistory, DashboardSnapshot
-from app.models.jurisdiction import AdministrativeArea
 from app.models.validation_issue import ValidationIssue
-from app.security.access import Principal
+from app.security.access import Principal, scoped
 from app.services.dashboard.metrics import metric_predicate
+from app.services.policy import PolicyResolver
+from app.services.stage_graph import STAGE_SET_KEY, StageGraph
 from app.workers.celery_app import celery_app
 
 __all__ = [
@@ -57,9 +58,15 @@ class DashboardMetric:
 @dataclass(frozen=True)
 class DashboardResponse:
     metrics: Mapping[str, DashboardMetric]
+    stage_keys: tuple[str, ...] = ()
+    band_history: tuple[Mapping[str, object], ...] = ()
 
     def to_json(self) -> dict[str, object]:
-        return {"metrics": {key: metric.to_json() for key, metric in self.metrics.items()}}
+        return {
+            "metrics": {key: metric.to_json() for key, metric in self.metrics.items()},
+            "stage_keys": self.stage_keys,
+            "band_history": self.band_history,
+        }
 
 
 def refresh_area_snapshot(
@@ -97,7 +104,11 @@ def dashboard_response(
 ) -> DashboardResponse:
     snapshots = tuple(_snapshots_for_principal(session, principal))
     merged = _merge_snapshot_metrics(snapshot.metrics for snapshot in snapshots)
-    return DashboardResponse(metrics=merged)
+    return DashboardResponse(
+        metrics=merged,
+        stage_keys=_stage_keys_for_principal(session, principal),
+        band_history=_band_history_for_principal(session, principal),
+    )
 
 
 def drill_through_cases(
@@ -242,19 +253,83 @@ def _snapshots_for_principal(
     if principal.kind != "OFFICER" or not principal.scope_paths:
         return ()
     rows = session.execute(
-        select(DashboardSnapshot)
-        .join(AdministrativeArea, AdministrativeArea.code == DashboardSnapshot.area_code)
-        .where(
-            or_(
-                *(
-                    AdministrativeArea.path.op("<@")(scope_path)
-                    for scope_path in principal.scope_paths
-                )
-            )
+        scoped(
+            select(DashboardSnapshot).order_by(DashboardSnapshot.area_code),
+            principal,
+            area_col=DashboardSnapshot.area_code,
         )
-        .order_by(DashboardSnapshot.area_code)
     )
     return tuple(rows.scalars())
+
+
+def _stage_keys_for_principal(
+    session: Session,
+    principal: Principal,
+) -> tuple[str, ...]:
+    if principal.kind != "OFFICER" or not principal.scope_paths:
+        return ()
+    rows = session.execute(
+        scoped(
+            select(
+                AcquisitionCase.state_key,
+                AcquisitionCase.act_key,
+                AcquisitionCase.stage_key,
+                AcquisitionCase.stage_set_effective_from,
+                AcquisitionCase.stage_entered_on,
+            )
+            .where(AcquisitionCase.is_terminal.is_(False))
+            .distinct(),
+            principal,
+            area_col=AcquisitionCase.area_code,
+            case_col=AcquisitionCase.id,
+        )
+    )
+    resolver = PolicyResolver(session)
+    seen: list[str] = []
+    for row in rows:
+        try:
+            value = resolver.get(
+                STAGE_SET_KEY,
+                state=row.state_key,
+                act=row.act_key,
+                as_of=row.stage_set_effective_from,
+            )
+            keys = StageGraph.from_policy_value(value).ordered_keys()
+        except Exception:
+            keys = (row.stage_key,)
+        for key in keys:
+            if key not in seen:
+                seen.append(key)
+    return tuple(seen)
+
+
+def _band_history_for_principal(
+    session: Session,
+    principal: Principal,
+) -> tuple[Mapping[str, object], ...]:
+    if principal.kind != "OFFICER" or not principal.scope_paths:
+        return ()
+    rows = session.execute(
+        scoped(
+            select(
+                DashboardBandHistory.month,
+                DashboardBandHistory.band,
+                func.sum(DashboardBandHistory.case_count).label("case_count"),
+            )
+            .group_by(DashboardBandHistory.month, DashboardBandHistory.band)
+            .order_by(DashboardBandHistory.month, DashboardBandHistory.band),
+            principal,
+            area_col=DashboardBandHistory.area_code,
+        )
+    )
+    return tuple(
+        {
+            "month": row.month.isoformat(),
+            "band": row.band,
+            "case_count": int(row.case_count or 0),
+        }
+        for row in rows
+    )
 
 
 def _merge_snapshot_metrics(

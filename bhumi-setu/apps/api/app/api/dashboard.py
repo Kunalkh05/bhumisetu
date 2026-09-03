@@ -6,7 +6,7 @@ from fastapi import Depends
 
 from app.api.cases import _read_session
 from app.api.routers import officer_router
-from app.schemas.dashboard import DashboardMetricOut, DashboardOut
+from app.schemas.dashboard import DashboardBandPointOut, DashboardMetricOut, DashboardOut
 from app.security.access import Principal, authenticate
 from app.services.dashboard import dashboard_response
 
@@ -21,5 +21,9 @@ def dashboard(principal: Principal = Depends(authenticate)) -> DashboardOut:
             metrics={
                 key: DashboardMetricOut(**metric.to_json())
                 for key, metric in response.metrics.items()
-            }
+            },
+            stage_keys=response.stage_keys,
+            band_history=tuple(
+                DashboardBandPointOut(**point) for point in response.band_history
+            ),
         )

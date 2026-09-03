@@ -695,7 +695,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - Drill-through builds its filtered list from the same predicate the metric counts, defined once in `app/services/dashboard/metrics.py`, so the list length equals the metric
     - _Requirements: 22.1, 22.3, 22.4, 22.6_
     - _Property 53_
-  - [~] 24.4 Dashboard and queue UI
+  - [x] 24.4 Dashboard and queue UI
     - Stage distribution iterating the **resolved stage graph** rather than a fixed column list, so a state with four stages and a state with five both render without a branch; 12-month band trend from `dashboard_band_history`
     - Intervention queue view presenting Case_Reference, stage, risk band, remaining days, and priority score
     - _Requirements: 21.7, 22.1, 22.2, 22.3, 22.4_
