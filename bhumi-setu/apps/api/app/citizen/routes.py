@@ -24,39 +24,18 @@ from app.settings import get_object_storage_settings
 
 __all__ = []
 
+from app.services.localization import resolve as resolve_localized
+
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 TIMELINE_PAGE_SIZE = 20
 SUPPORTED_LANGUAGES = ("en", "hi", "mr")
 STALE_BANNER_TEXT = {
-    "en": "Showing saved content from this device.",
-    "hi": (
-        "\u0907\u0938 \u0909\u092a\u0915\u0930\u0923 \u0938\u0947 "
-        "\u0938\u0939\u0947\u091c\u0940 \u0917\u0908 "
-        "\u0938\u093e\u092e\u0917\u094d\u0930\u0940 "
-        "\u0926\u093f\u0916\u093e\u0908 \u091c\u093e "
-        "\u0930\u0939\u0940 \u0939\u0948\u0964"
-    ),
-    "mr": (
-        "\u092f\u093e \u0909\u092a\u0915\u0930\u0923\u093e\u0935\u0930 "
-        "\u091c\u0924\u0928 \u0915\u0947\u0932\u0947\u0932\u0940 "
-        "\u092e\u093e\u0939\u093f\u0924\u0940 "
-        "\u0926\u093e\u0916\u0935\u0932\u0940 \u0906\u0939\u0947."
-    ),
+    lang: resolve_localized("citizen.stale_banner", locale=lang)
+    for lang in SUPPORTED_LANGUAGES
 }
 OFFLINE_RETRY_ACTION_TEXT = {
-    "en": "Open your case again when the connection returns.",
-    "hi": (
-        "\u0915\u0928\u0947\u0915\u094d\u0936\u0928 "
-        "\u0935\u093e\u092a\u0938 \u0906\u0928\u0947 "
-        "\u092a\u0930 \u0905\u092a\u0928\u093e \u0915\u0947\u0938 "
-        "\u092b\u093f\u0930 \u0916\u094b\u0932\u0947\u0902."
-    ),
-    "mr": (
-        "\u0915\u0928\u0947\u0915\u094d\u0936\u0928 "
-        "\u092a\u0930\u0924 \u0906\u0932\u094d\u092f\u093e\u0935\u0930 "
-        "\u0924\u0941\u092e\u091a\u0940 \u0915\u0947\u0938 "
-        "\u092a\u0941\u0928\u094d\u0939\u093e \u0909\u0918\u0921\u093e."
-    ),
+    lang: resolve_localized("citizen.offline_retry_action", locale=lang)
+    for lang in SUPPORTED_LANGUAGES
 }
 
 

@@ -239,6 +239,11 @@ CATEGORY_MAP: dict[tuple[str, str], str | Discriminated | Reference] = {
     ("import_row", "state"): AUDIT_EVENT,
     ("import_row", "committed_entity_id"): AUDIT_EVENT,
     ("import_row", "rejection"): AUDIT_EVENT,
+    # missing_translation contains translation gap telemetry
+    ("missing_translation", "key"): NOT_PERSONAL,
+    ("missing_translation", "locale"): NOT_PERSONAL,
+    ("missing_translation", "first_seen_at"): NOT_PERSONAL,
+    ("missing_translation", "occurrence_count"): NOT_PERSONAL,
     # dashboard aggregates contain counters and model outputs, not raw personal
     # values; source personal data remains classified on its source table.
     ("dashboard_snapshot", "area_code"): NOT_PERSONAL,

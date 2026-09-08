@@ -789,21 +789,21 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - _Requirements: 30.1, 30.2, 30.3, 30.4, 30.5, 30.6, 30.7, 30.8, 30.9, 30.11, 30.12, 30.13_
     - _Properties 12, 71, 72, 73_
 
-- [ ] 27. Localization
-  - [~] 27.1 `Localization_Service` and catalogs
+- [x] 27. Localization
+  - [x] 27.1 `Localization_Service` and catalogs
     - `apps/api/app/services/localization.py` resolving keys from flat per-locale JSON catalogs; server-side resolution for the citizen portal means **no i18n bundle is transferred**, a direct contribution to R24.1's budget
     - Language selection persisted for the citizen session, applying to strings, dates, numbers, and currency
     - Fallback to the deployment default with the missing key recorded to `missing_translation(key, locale, first_seen_at, occurrence_count)` rather than logged, so the gap is queryable and fixable rather than buried in log volume
     - Coverage test asserting every citizen-facing and officer-facing key resolves in every configured language
     - _Requirements: 27.1, 27.2, 27.3, 27.4_
     - _Property 63_
-  - [~] 27.2 Script round-trip integrity
+  - [x] 27.2 Script round-trip integrity
     - **No unicode normalisation on write.** Storing NFC when the input was NFD would make a read-back differ from the value written, which R27.5 forbids in as many words. UTF-8 encoding, `text` columns, no collation-based folding on the identity index
     - The consequence is that two village names differing only in normalisation form are distinct strings and would evade duplicate detection; resolved by the `village_norm` generated column from 9.1, used for matching only and never for display or export
     - Property test over `st_devanagari_text()` including combining marks, both normalisation forms, and ZWJ: the value read back equals the value written character for character, and the rendered and exported value equals the stored value
     - _Requirements: 27.5_
     - _Property 62_
-  - [~] 27.3 Stage and event label keys
+  - [x] 27.3 Stage and event label keys
     - `label_key` pointers on stage-set entries and citizen-visible event types resolved through the service, so onboarding a state with a different stage set is `INSERT`s plus localization keys and no code change (§4.4)
     - _Requirements: 27.1, 27.2_
     - _Property 63_
