@@ -758,12 +758,12 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - _Requirements: 32.6, 32.7, 32.8, 32.9_
     - _Properties 85, 86_
 
-- [ ] 26. Bulk import
+- [x] 26. Bulk import
   - [x] 26.1 `import_batch` and `import_row` migrations
     - `import_row (batch_id, ordinal)` primary key with `state`, `committed_entity_id`, `rejection jsonb`, and the `import_row_pending` partial index; `import_batch` with `last_processed_ordinal`, `state`, submitted count, and content checksum
     - `IMPORT_BATCH_CREATED` event; submission gated on `import.submit`
     - _Requirements: 30.1, 30.2, 30.7_
-  - [~] 26.2 Chunked set-based `process_import_chunk`
+  - [x] 26.2 Chunked set-based `process_import_chunk`
     - `CHUNK = 1000` per §16.2: one query per lookup kind for the whole chunk into a `ChunkRuleContext`, the **same rule functions** as manual entry evaluated in memory, bulk entity insert with `RETURNING`, bulk event insert with `provenance='IMPORTED'` and the batch id, and row-state updates all in one transaction
     - `ctx.observe(r)` after each passing row so intra-batch duplicates are caught without a query — a lookup issued before the chunk started cannot know about a survey number appearing twice inside it
     - Constraint trigger disabled for the chunk via the session flag from 3.7, with the invariant asserted **set-wise** in one query before commit instead of 1000 trigger firings; same guarantee, and the tradeoff is deliberate because this is one function written once
@@ -771,17 +771,17 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - Pre-partition the batch by parcel key so one parcel's owners land in one chunk; where owners arrive across batches the share-sum rule is **not** evaluated at import time and runs post-commit in the Validation_Engine as a `BLOCKING` issue, because a partial owner set is an incomplete parcel rather than a failing row and rejecting it would make a two-batch migration impossible
     - _Requirements: 30.2, 30.3, 30.4, 30.5, 30.8, 30.9, 30.10_
     - _Properties 12, 20, 71, 72, 73_
-  - [~] 26.3 Batch report, interruption, and resumption
+  - [x] 26.3 Batch report, interruption, and resumption
     - Report stating submitted, committed, and rejected counts and every rejected-row entry with failing rule id, offending attribute, observed value, and matching identifier where applicable; `IMPORT_BATCH_COMPLETED` event; `submitted = committed + rejected` asserted at completion
     - Exactly-once without distributed transactions: the entity insert and the `state = 'COMMITTED'` update share one transaction, so resumption is `WHERE state = 'PENDING' ORDER BY ordinal` and an already-committed row is structurally unreachable; a redelivered chunk finds nothing pending and exits
     - `INTERRUPTED` state with `last_processed_ordinal`; report and rejected-row entries retained retrievably
     - _Requirements: 30.6, 30.7, 30.12_
     - _Property 73_
-  - [~] 26.4 Import batch view
+  - [x] 26.4 Import batch view
     - `GET /imports/{id}` presenting batch state, the three counts, and rejected-row entries filterable by failing rule identifier
     - _Requirements: 30.13_
     - _Property 72_
-  - [~] 26.5 Import property tests and throughput benchmark
+  - [x] 26.5 Import property tests and throughput benchmark
     - Property test submitting the same generated row through both the import path and the manual path and asserting identical issue sets — this is what stops the two validation paths drifting apart
     - Property test over any interleaving of passing and failing rows: committed set equals the passing set exactly, no failing row withholds a passing row, each rejection carries rule id, attribute, and observed value, and the counts reconcile
     - Property test: every committed row has an `IMPORTED`-provenance event with the batch id, and for any interruption at any ordinal followed by resumption the final committed multiset equals the passing set with nothing committed twice
