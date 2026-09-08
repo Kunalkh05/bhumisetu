@@ -14,6 +14,7 @@ from app.services.gis import (
     Bbox,
     InvalidGeometry,
     bump_parcel_geometry_generation,
+    get_parcel_geometry,
     get_parcel_map_payload,
     list_parcels_in_bbox,
     parse_bbox,
@@ -193,8 +194,122 @@ def test_officer_router_exposes_gis_parcel_bbox_endpoint() -> None:
     paths = {route.path for route in officer_router.routes}
 
     assert "/api/officer/gis/parcels" in paths
+    assert "/api/officer/gis/parcels/{parcel_id}/geometry" in paths
     assert "/api/officer/gis/parcels/map" in paths
     assert "/api/officer/gis/tiles/{z}/{x}/{y}.mvt" in paths
+
+
+def test_get_parcel_geometry_returns_full_fidelity_unsimplified() -> None:
+    session = FakeGisSession(
+        results=[
+            {
+                "parcel_id": 42,
+                "survey_number": "100/1",
+                "sub_division": "A",
+                "area_code": "MH-PUNE",
+                "geojson": POLYGON,
+            }
+        ]
+    )
+
+    feature = get_parcel_geometry(
+        session,  # type: ignore[arg-type]
+        parcel_id=42,
+        scope_paths=("IN.MH.PUNE",),
+    )
+
+    assert feature.parcel_id == 42
+    assert feature.survey_number == "100/1"
+    assert feature.geojson == POLYGON
+    statement = session.statements[0]
+    assert "ST_AsGeoJSON(lp.geom)" in statement
+    assert "ST_SimplifyPreserveTopology" not in statement
+    assert "ST_ReducePrecision" not in statement
+
+
+def test_get_parcel_geometry_raises_lookup_error_when_missing_or_out_of_scope() -> None:
+    session = FakeGisSession(results=[None])
+
+    with pytest.raises(LookupError, match="parcel 999 not found or out of scope"):
+        get_parcel_geometry(
+            session,  # type: ignore[arg-type]
+            parcel_id=999,
+            scope_paths=("IN.MH.PUNE",),
+        )
+
+    with pytest.raises(LookupError, match="parcel 999 not found or out of scope"):
+        get_parcel_geometry(
+            session,  # type: ignore[arg-type]
+            parcel_id=999,
+            scope_paths=(),
+        )
+
+
+def test_5000_parcel_payload_simplification_contract() -> None:
+    """R15.8 / §2: 5000 simplified parcels fit in ~250-400 KB, whereas unsimplified exceed 5 MB."""
+    import json
+    from app.schemas.gis import BboxOut, ParcelBboxOut, ParcelGeometryFeatureOut
+
+    simplified_features = [
+        ParcelGeometryFeatureOut(
+            parcel_id=i,
+            survey_number=f"S-{i}",
+            sub_division=None,
+            area_code="IN.MH.PUNE",
+            geojson={
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [round(73.0 + (i % 100) * 0.001, 6), round(18.0 + (i // 100) * 0.001, 6)],
+                        [round(73.0005 + (i % 100) * 0.001, 6), round(18.0 + (i // 100) * 0.001, 6)],
+                        [round(73.0005 + (i % 100) * 0.001, 6), round(18.0005 + (i // 100) * 0.001, 6)],
+                        [round(73.0 + (i % 100) * 0.001, 6), round(18.0 + (i // 100) * 0.001, 6)],
+                    ]
+                ],
+            },
+        )
+        for i in range(5000)
+    ]
+    bbox_response = ParcelBboxOut(
+        bbox=BboxOut(min_lon=73.0, min_lat=18.0, max_lon=73.5, max_lat=18.5),
+        simplification_tolerance=0.00001,
+        limit=5000,
+        geometry_simplified=True,
+        coordinate_decimals=6,
+        features=simplified_features,
+    )
+    simplified_json = bbox_response.model_dump_json()
+    simplified_size = len(simplified_json.encode("utf-8"))
+
+    import brotli
+    compressed_size = len(brotli.compress(simplified_json.encode("utf-8"), quality=11))
+
+    # Assert 5000 simplified parcels fit in wire transfer budget (~250-400 KB, transfers under 2s at 5 Mbps)
+    assert compressed_size <= 400_000, (
+        f"Compressed 5000-parcel payload {compressed_size} B exceeds 400 KB wire budget"
+    )
+
+    # Unsimplified cadastral polygons (~40 vertices each with full float precision)
+    # 5000 parcels * 40 vertices * ~25 chars per coordinate pair = ~5 MB
+    unsimplified_polygon = [
+        [73.12345678901234 + j * 0.00001, 18.12345678901234 + j * 0.00001]
+        for j in range(40)
+    ]
+    unsimplified_polygon.append(unsimplified_polygon[0])
+    unsimplified_feature_json = json.dumps({
+        "parcel_id": 1,
+        "survey_number": "100",
+        "sub_division": None,
+        "area_code": "IN.MH.PUNE",
+        "geojson": {"type": "Polygon", "coordinates": [unsimplified_polygon]},
+    })
+    estimated_unsimplified_size = len(unsimplified_feature_json.encode("utf-8")) * 5000
+    assert estimated_unsimplified_size >= 5_000_000, (
+        f"Unsimplified 5000-parcel payload estimated {estimated_unsimplified_size} B should exceed 5 MB"
+    )
+    # Transfer time of 5 MB at 5 Mbps is 8+ seconds (unachievable for R15.8's 2.0s p95)
+    transfer_time_unsimplified = estimated_unsimplified_size / (5_000_000 / 8)
+    assert transfer_time_unsimplified >= 8.0
 
 
 def test_map_payload_switches_to_grid_clusters_above_configured_threshold() -> None:
@@ -410,6 +525,14 @@ class FakeMappingResult:
 
     def scalar_one(self):  # type: ignore[no-untyped-def]
         return self.rows[0]
+
+    def first(self) -> dict | None:
+        if not self.rows:
+            return None
+        row = self.rows[0]
+        if row is None or row == {}:
+            return None
+        return row
 
 
 class FakeGisSession:

@@ -85,6 +85,11 @@ TASK_MODULES: tuple[str, ...] = (
     "app.db.outbox",
     "app.services.notice",
     "app.services.ocr",
+    "app.services.dashboard",
+    "app.services.intervention",
+    "app.services.import_service",
+    "app.retention.tasks",
+    "ml.tasks",
 )
 
 #: Task name -> queue. Routing is explicit for every task in §13.7 so that a
@@ -101,13 +106,16 @@ TASK_ROUTES: dict[str, dict[str, str]] = {
     "ml.tasks.train_model": {"queue": "ml"},
     "ml.tasks.monitor_calibration": {"queue": "ml"},
     "ml.tasks.monitor_drift": {"queue": "ml"},
+    "ml.tasks.verify_train_serve_equality": {"queue": "ml"},
     # import — chunked bulk import (§16)
     "app.services.import_service.process_import_chunk": {"queue": "import"},
     # maintenance — everything scheduled or fired from the outbox (§5.2, §13.7)
     "app.db.outbox.dispatch_outbox": {"queue": "maintenance"},
     "app.services.dashboard.refresh_dashboard_snapshot": {"queue": "maintenance"},
+    "app.services.intervention.reconcile_case_counters": {"queue": "maintenance"},
     "app.services.notice.deadline_sweep": {"queue": "maintenance"},
     "app.retention.tasks.run_retention_sweep": {"queue": "maintenance"},
+    "app.retention.tasks.flag_dsar_overdue": {"queue": "maintenance"},
     "app.security.otp.send_otp": {"queue": "maintenance"},
 }
 
@@ -152,15 +160,30 @@ def _beat_schedule() -> dict[str, dict[str, object]]:
             "task": "ml.tasks.monitor_drift",
             "schedule": crontab(hour="1", minute="30"),
         },
+        # R17.8 — deployed train/serve equality over real inference rows.
+        "verify-train-serve-equality-nightly": {
+            "task": "ml.tasks.verify_train_serve_equality",
+            "schedule": crontab(hour="2", minute="0"),
+        },
         # R22.5 — the dashboard is materialized, refreshed every 5 minutes.
         "refresh-dashboard-snapshot": {
             "task": "app.services.dashboard.refresh_dashboard_snapshot",
             "schedule": crontab(minute="*/5"),
         },
+        # R21.10 — denormalised counter reconciliation for intervention signals.
+        "reconcile-case-counters-nightly": {
+            "task": "app.services.intervention.reconcile_case_counters",
+            "schedule": crontab(hour="2", minute="30"),
+        },
         # R32.10 — daily, and inert until `retention.sweep_enabled` is true.
         "run-retention-sweep-daily": {
             "task": "app.retention.tasks.run_retention_sweep",
             "schedule": crontab(hour="2", minute="0"),
+        },
+        # R32.6/R32.9 — overdue data-subject requests are materialized daily.
+        "flag-dsar-overdue-daily": {
+            "task": "app.retention.tasks.flag_dsar_overdue",
+            "schedule": crontab(hour="2", minute="15"),
         },
         # §5.2 — the transactional outbox is only as timely as this entry.
         # Seconds as a float; see the note on timedelta in the module docstring.

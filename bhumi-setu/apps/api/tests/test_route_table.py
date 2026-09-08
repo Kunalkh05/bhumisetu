@@ -63,6 +63,8 @@ EXEMPT_PATHS: frozenset[str] = frozenset(
     {
         "/api/officer/gis/tiles/{z}/{x}/{y}.mvt",
         "/c/",
+        "/c/offline",
+        "/c/static/sw.js",
         "/c/request-code",
         "/c/verify",
         "/c/case",
@@ -152,6 +154,12 @@ def test_the_exempt_routes_are_actually_present() -> None:
     assert "/healthz" in paths
     assert "/openapi.json" in paths
     assert "/docs" in paths
+    # Citizen portal routes (server-rendered HTML, gated by render_gated in
+    # the templating layer rather than by a JSON response model).
+    assert "/c/" in paths
+    assert "/c/case" in paths
+    assert "/c/offline" in paths
+    assert "/c/static/sw.js" in paths
 
 
 def test_the_four_routers_declare_the_gated_route_class() -> None:

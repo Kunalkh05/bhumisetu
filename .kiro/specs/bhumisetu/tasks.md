@@ -507,7 +507,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - Throttled harness asserting initial map render p95 ≤ 4 s at ≥ 5 Mbps downlink, landing **in this task** rather than a later hardening pass, with the tile payload sizes recorded so a regression is attributable
     - _Requirements: 16.7_
 
-- [ ] 19. Citizen portal — server-rendered, inside the transfer budget
+- [x] 19. Citizen portal — server-rendered, inside the transfer budget
   - [x] 19.1 Jinja2 templates and the `/c/*` routes
     - `apps/api/app/citizen/` templates rendering the **gated** payload; routes `GET /c/`, `POST /c/request-code`, `POST /c/verify`, `GET /c/case`, `GET /c/timeline?page=`, `GET /c/documents`, `GET /c/documents/{id}/confirm`, `GET /c/documents/{id}`, `GET /c/notices`, `GET /c/objections`, `POST /c/language` on `citizen_html` with `route_class=GatedRoute`
     - Not a React SPA, per §10.1: React 18 + React DOM alone is ~45 KB compressed before any application code, and an SPA pays two serial round trips before first paint, which at 2000 ms RTT costs 4 s before rendering can start
@@ -520,32 +520,32 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - Documents list restricted to the citizen's own ownership records and parcels with type, upload date, and byte size
     - _Requirements: 25.1, 25.2, 25.3, 25.5, 25.7, 25.8, 25.9_
     - _Property 59_
-  - [~] 19.3 Redaction shapes and grant-backed document retrieval
+  - [x] 19.3 Redaction shapes and grant-backed document retrieval
     - `CitizenParcelOut` with `co_owner_count` and `other_share_total` and **no collection of other owners at all** — R26.2 is a different shape, not a subset, so it is a distinct model rather than gate work (§8.4)
     - Document retrieval over a time-limited grant with an event carrying the citizen session id and the document id; the confirm interstitial presents the recorded byte size before any bytes transfer
     - Every citizen data retrieval appends an event carrying session id, case id, and retrieval time
     - _Requirements: 24.9, 25.6, 26.2, 26.8_
     - _Properties 7, 19, 58, 61_
-  - [~] 19.4 Service worker — the entire JavaScript budget
+  - [x] 19.4 Service worker — the entire JavaScript budget
     - `apps/api/app/citizen/static/sw.js` per §10.2: `fetchWithRetry` with one initial attempt plus 3 retries at 1 s / 2 s / 4 s; on failure serve the Cache Storage hit with the `<!--STALE-->` marker replaced by a `data-stale-at` timestamp; with no hit, serve the precached `/c/offline` route naming the action to retry
     - The stale banner text is server-rendered in the citizen's selected language, so the worker ships no translation strings. Minified and brotli-compressed this is ~1.4 KB against a 10 KB budget line
     - **The worker only helps from the second visit onward.** A first-ever visit with no connectivity gets the browser's own error page; this is inherent to service workers and is documented in the template comment rather than implied to work
     - _Requirements: 24.6, 24.7, 24.8_
     - _Property 57_
-  - [~] 19.5 Transfer budget enforced in CI, in this task
+  - [x] 19.5 Transfer budget enforced in CI, in this task
     - `apps/api/tests/perf/test_citizen_budget.py` per §10.5: brotli quality 11 to match the proxy, subresources discovered from the rendered HTML rather than a hand-maintained list, run for **every** configured citizen language since a Devanagari page is larger than an English one
     - Assert total ≤ 150 000 B, any font file ≤ 40 000 B, and every citizen JSON response ≤ 50 000 B; a size-assertion middleware enforces the 50 KB bound in test and staging
     - `maximal_case` fixture built adversarially: the configured maximum parcels per case, longest-permitted Devanagari owner names, a full 20-event timeline page, every optional field populated. A budget test that passes on a small fixture and fails in production is worse than no test
     - Runs on every PR and fails the build. This lands here, not in a later hardening pass
     - _Requirements: 24.1, 24.2, 27.6_
     - _Property 55_
-  - [~] 19.6 Font strategy with a build-step cap
+  - [x] 19.6 Font strategy with a build-step cap
     - Default path ships **no font**: the stack is `system-ui, "Noto Sans Devanagari", "Noto Sans", sans-serif`, and Android has shipped Devanagari system fonts since 4.x. Cost 0 KB, and R27.6 is satisfied trivially because no font file is transferred
     - Where a deployment requires a typeface, a glyph-subset WOFF2 restricted to the Unicode block plus the required conjunct set with hinting and unused OpenType features stripped, declared `unicode-range` and `font-display: swap` so it never blocks first paint; a build step fails if the produced file exceeds 40 KB
     - Content-based subsetting is unavailable because the page renders arbitrary owner and village names. **If a confirmed Q7 regional script has no viable ≤ 40 KB subset and weak device coverage, R27.6 and R24.1 conflict for that deployment** — the build step failing is the signal to raise it, not to quietly ship an oversized file
     - _Requirements: 27.6_
     - _Property 55_
-  - [~] 19.7 Citizen property tests
+  - [x] 19.7 Citizen property tests
     - Property test: rendered without images and without web fonts, every declared content item is present as text; timeline pages of 20 cover the citizen-visible event set exactly once with no gap and no duplicate
     - Property test: a failing request retries at most 3 times with strictly increasing delays from 1 s, and the presented cached content equals what was cached, with its retrieval time and a stale label
     - Property test: the byte size presented before transfer equals the recorded size and no bytes transfer without explicit confirmation
@@ -555,46 +555,46 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - _Requirements: 24.5, 24.6, 24.7, 24.8, 24.9, 24.10, 25.2, 25.3, 25.5, 25.7, 25.8, 26.1, 26.2, 26.5, 26.6_
     - _Properties 56, 57, 58, 59, 60, 61_
 
-- [~] 20. Checkpoint — both portals
+- [x] 20. Checkpoint — both portals
   - Ensure all tests pass, ask the user if questions arise. Confirm the citizen transfer budget test and the officer map benchmark are both green in CI and both fail when a regression is introduced deliberately.
 
-- [ ] 21. Synthetic dataset for point-in-time replay and training
-  - [~] 21.1 Event-timeline generator with realistic recording lag
+- [x] 21. Synthetic dataset for point-in-time replay and training
+  - [x] 21.1 Event-timeline generator with realistic recording lag
     - `scripts/seed/synthetic.py` generating a district of 10 000 cases across the configured stage graph, with per-case event timelines where `recording_time` lags `occurrence_time` by a realistic distribution and a fraction of events are **backdated** — appended with an occurrence time earlier than an already-stored event for the same entity
     - Backdated events are what make the `KNOWABLE_AT` versus `OCCURRED_BY` distinction observable; without them a point-in-time replay test cannot distinguish the two predicates and passes vacuously
     - _Requirements: 4.4, 17.1, 17.2_
-  - [~] 21.2 Enough closed cases to train and evaluate
+  - [x] 21.2 Enough closed cases to train and evaluate
     - Generate at least the volume needed for a temporal split with a non-degenerate base rate on both sides: cases reaching a terminal stage with varied stage durations relative to their configured deadlines, so labelling yields `DELAYED`, `NOT_DELAYED`, and `CENSORED` rows in meaningful proportions, plus per-district counts spanning the minimum district calibration count so R19.6 and R19.7 are both exercisable
     - Parcels with cadastral geometry, ownership vectors summing inside and outside tolerance, awards with consistent and inconsistent component sums, documents with extractions across the confidence range
     - _Requirements: 18.7, 19.6, 19.7, 19.8_
-  - [~] 21.3 Fixture-level policy configuration
+  - [x] 21.3 Fixture-level policy configuration
     - Seed `policy.stage_set`, period keys, OCR thresholds, band cutoffs, priority weights, promotion thresholds, monitoring thresholds, the label definition, and the citizen-visible event set as **synthetic-state fixture data** keyed to a synthetic state and act, so the point-in-time replay and training tests run against a self-contained configuration. This synthetic-state fixture is also the ONLY place any `retention.period.*` value is seeded: seed the DPDP_2023 Data_Category retention periods (Q10) here, keyed to the synthetic state, so the retention and erasure-path tests have configured periods to exercise without any retention period ever reaching the platform-wide baseline
     - Also seed the resolved platform-wide (state key `'*'`) default baseline from the requirements Q8 resolution as effective-dated seed/config rows: the RFCTLARR_2013 statutory periods (Q8) — notice periods, objection windows, and stage deadlines — each carrying a `# review-required before production use` comment. Seeding the statutory baseline platform-wide is safe because no irreversibility attaches to a statutory deadline: a wrong or unreviewed period surfaces as a visible breach flag or schedule an operator can correct, never as lost data. These are seed/config data, not product code — the AST lint of 2.6 and the schema guards of 2.7 still hold, so no period is a literal, a column default, or a CHECK constraint
     - Do NOT seed any `retention.period.*` row into the platform-wide baseline — the DPDP_2023 retention periods (Q10) live only in the synthetic-state fixture above, never platform-wide. Erasure requires BOTH `retention.sweep_enabled` true AND configured `retention.period.*` values, so leaving the periods unseeded outside fixtures means enabling the sweep alone erases nothing: an administrator must deliberately configure the reviewed periods for their state before any erasure can occur, which keeps irreversible erasure behind two independent deliberate actions rather than one. The decided DPDP default values remain recorded in the requirements Q10 resolution for that administrator to apply
     - Keep `retention.sweep_enabled` false — with no `retention.period.*` seeded outside the fixture, enabling the sweep alone would still erase nothing, and no erasure runs until a deployment confirms its state's land-record retention rules, configures its retention periods, and enables the sweep explicitly; seed no state-specific statutory rows either, so any state-and-act key with no effective value stays in the R28.5 refuse-and-report path for real deployments
     - _Requirements: 28.1, 28.5_
 
-- [ ] 22. Machine learning pipeline (internal order matters; each sub-task depends on the one before)
-  - [~] 22.1 ML table migrations
+- [x] 22. Machine learning pipeline (internal order matters; each sub-task depends on the one before)
+  - [x] 22.1 ML table migrations
     - `ml_feature_row` with `reference_t`, `as_of_mode`, `feature_set_version`, `label_definition_version`, `features jsonb`, `consumed_event_ids bigint[]`, `content_hash`, `purpose`, and the uniqueness tuple; `ml_training_row`; `ml_model_version` including `feature_reference_bins` and `baseline_metrics`; `ml_prediction` with its idempotency unique constraint and history index; `ml_explanation_factor`; `ml_monitor_run`
     - _Requirements: 17.4, 18.6, 18.8, 18.16, 19.3, 19.10, 31.10_
-  - [~] 22.2 `AsOfView` and the two as-of predicates
+  - [x] 22.2 `AsOfView` and the two as-of predicates
     - `ml/src/features/asof.py`: `build_as_of_view(session, case_id, t, mode)` fetching events ordered by `(occurrence_time, id)` with the mode's clause applied **in SQL**, then folding into a frozen `AsOfView` with stage history, notices, objections, parcels, awards, issues, documents, and `consumed_event_ids`. The fold is pure with no further I/O
     - A conventional feature table cannot satisfy R17.5 or R17.2 because it stores derived state rather than the evidence the state was derived from (§14.1); the stored `ml_feature_row` is a cache of a pure function's output, never a source of truth
     - _Requirements: 17.1, 17.2_
     - _Property 35_
-  - [~] 22.3 `FeatureExtractor` protocol and the leakage guards
+  - [x] 22.3 `FeatureExtractor` protocol and the leakage guards
     - Complete the registry stubbed in 3.3: `name`, `source_attributes`, `compute(view, t)` — **no `Session`, no `Engine`, no connection in scope**, so an extractor that wants current state has nothing to ask
     - `no_database_access(session)` context manager registering a `before_cursor_execute` listener that raises `LeakageGuardViolation`, **active in production and not only in tests**, so a lazy load that sneaks in during a refactor raises on the first inference call rather than leaking quietly for six months
     - _Requirements: 17.1, 17.2, 17.3_
     - _Properties 35, 39_
-  - [~] 22.4 `FeatureValue`, the extractor set, and `build_feature_row`
+  - [x] 22.4 `FeatureValue`, the extractor set, and `build_feature_row`
     - `FeatureValue` with a constructor invariant that exactly one of `value` and `missing_reason` is set, so an ambiguous value cannot exist; a legitimate zero and a missing value have different JSON, different storage, and different model input. **The Feature_Builder never imputes** — trees receive `NaN` plus a parallel `_is_missing` indicator so the model can learn from missingness
     - Elapsed-duration extractors as whole-day differences between T and the relevant event's occurrence time; count and state extractors over the view. Every extractor declares `source_attributes`, which is what powers both the label-disjointness and personal-data tests
     - `build_feature_row` performing all I/O in `build_as_of_view` and nothing after, inside `no_database_access`, returning `content_hash` over `(feature_set_version, as_of_mode, sorted(consumed_event_ids), canonical values)` — including the event id set makes the cache exactly invalidatable, so a backdated append that changes what is knowable at T makes the cached row detectably stale rather than plausibly correct
     - _Requirements: 17.4, 17.5, 17.6, 17.7_
     - _Properties 36, 38, 40_
-  - [~] 22.5 Train/serve equality, tested three ways, in this task
+  - [x] 22.5 Train/serve equality, tested three ways, in this task
     - `build_training_row` and `build_inference_row` as two deliberately identical entry points differing only in `purpose` on the persisted record; keeping two named entry points that provably agree is more honest than one function with a flag a future change could branch on
     - Hypothesis property test over arbitrary `(case, T)` asserting `content_hash` equality and canonical JSON equality
     - Hypothesis property test asserting a post-T append (later occurrence time, or later recording time) leaves the row's hash unchanged
@@ -602,7 +602,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - `test_label_and_feature_sources_are_disjoint` asserting the label function's declared sources and the union of extractor sources do not intersect
     - _Requirements: 17.3, 17.5, 17.8_
     - _Properties 35, 36, 37, 39_
-  - [~] 22.6 `LabelDefinition`, `LabelOutcome`, and the pure label function
+  - [x] 22.6 `LabelDefinition`, `LabelOutcome`, and the pure label function
     - `ml/src/labelling/definition.py`: `LabelDefinition` carrying `formulation`, `stage_transitions_in_scope`, `deadline_baseline`, `baseline_fallback`, `horizon_days`, and `censoring` — **all four Q1-sensitive knobs are config fields, none is a literal**
     - `label_row(view, t, *, definition, deadline, now)` pure: no config lookup, no clock, no database, everything an argument, so it is exercised in a unit test with a synthetic timeline and no fixtures. `CENSORED` for `HORIZON_NOT_ELAPSED` and for `DEADLINE_BEYOND_HORIZON`
     - `LabelOutcome` populates `time_to_event_days` and `event_observed` **even in binary mode**, so a move to a survival formulation reads two fields that are already there and the labeller is untouched
@@ -610,7 +610,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - `label_definition_version` travels on every row, and the trainer refuses a split containing more than one version, so a mixed-definition training set is detectable rather than silently averaged
     - _Requirements: 18.1, 18.2, 18.3, 18.4_
     - _Property 41_
-  - [~] 22.7 `Model_Trainer`: splits, calibration, metrics, and the promotion gate
+  - [x] 22.7 `Model_Trainer`: splits, calibration, metrics, and the promotion gate
     - `ml/src/training/`: candidate reference points, labelling, censored exclusion from both splits with the count and rate recorded, temporal split where every eval `reference_t` is later than every train `reference_t`
     - Isotonic calibration so the reported probability is calibrated; AUPRC, AUROC, Brier, and ECE over 10 equal-width bins; PR-lift as `(auprc − eval_base_rate) / (1 − eval_base_rate)`; both base rates and both row counts reported beside every metric; the deadline-rule baseline metric set recorded alongside
     - `LABEL_BASE_RATE_SHIFT` event with both rates when they differ by more than 0.10, its id stated in the report; promotion gated on all four configured thresholds, otherwise `WITHHELD` with the report retained and a `MODEL_PROMOTION_WITHHELD` event
@@ -618,35 +618,35 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - Promotion records training window, feature set version, hyperparameters, metrics, both base rates, censored count and rate, and the promoting actor; gated on `model.administer`
     - _Requirements: 18.1, 18.5, 18.6, 18.7, 18.8, 18.9, 18.10, 18.11, 18.12, 18.13, 18.14, 18.15, 18.16, 18.17, 31.12_
     - _Properties 42, 43, 44_
-  - [~] 22.8 Trainer property tests and a calibration example test
+  - [x] 22.8 Trainer property tests and a calibration example test
     - Property test: no `CENSORED` row appears in either split, the temporal ordering holds, and the recorded censored count and rate equal a recount
     - Property test: each metric equals an independent reference computation, and PR-lift matches its formula
     - Property test: promotion happens exactly when all four thresholds are met, otherwise the report is retained and the withheld event exists; the base-rate-shift event and its report reference appear exactly when the rates differ by more than 0.10
     - Example test on the synthetic dataset that isotonic calibration measurably reduces ECE versus the uncalibrated estimator (R18.9 is a quality claim, not a property)
     - _Requirements: 18.5, 18.6, 18.7, 18.8, 18.9, 18.10, 18.11, 18.12, 18.13, 18.14, 18.15, 18.17_
     - _Properties 41, 42, 43, 44_
-  - [~] 22.9 `Prediction_Service`: scoring, triggers, and failure handling
+  - [x] 22.9 `Prediction_Service`: scoring, triggers, and failure handling
     - `score_case` on the `ml` queue triggered by an event whose type is in the feature registry's declared source set, plus the hourly stale sweep with a 24-hour age filter; idempotent by `UNIQUE (case_id, model_version_id, feature_row_id)`
     - Record probability, model version, feature set version, reference timestamp, and generation time; every generated probability retained
     - While no version is promoted, return **no** probability and omit the field entirely rather than nulling it, because a null could be read as "scored zero"; the portal renders not-scored
     - On failure retain the previous probability, set `risk_is_stale`, and append `SCORING_FAILED`; the portal shows the retained band with its original generation time and a stale marker
     - _Requirements: 18.18, 19.1, 19.2, 19.3, 19.10, 19.12_
     - _Properties 34, 48_
-  - [~] 22.10 Banding, district cutoffs, and rebanding
+  - [x] 22.10 Banding, district cutoffs, and rebanding
     - `band_for(p, case, *, resolver)` returning `(band, cutoff_source, cutoff_set_version)`; `classify` is total and monotone because the config validator in 2.4 rejects any set that is not a contiguous partition of [0, 1] — guaranteed by validation rather than re-checked per call
     - District-specific cutoffs applied only where the district's count of `DELAYED`/`NOT_DELAYED` labelled cases is at or above the configured minimum; below it, platform cutoffs apply and a `DISTRICT_CUTOFFS_WITHHELD` event records the district, observed count, and minimum. `CENSORED` rows never contribute to that count
     - Reband pass triggered by 2.5 updating `risk_band` and `cutoff_set_version` on stored predictions while leaving `risk_probability` and `generated_at` untouched
     - Responses state whether the band came from district or platform cutoffs
     - _Requirements: 19.4, 19.5, 19.6, 19.7, 19.8, 19.9, 19.11_
     - _Properties 45, 46, 47_
-  - [~] 22.11 Explanations, override recording, and the no-action guarantee
+  - [x] 22.11 Explanations, override recording, and the no-action guarantee
     - TreeSHAP factors persisted as ranked `ml_explanation_factor` rows with `label_key` resolved through the Localization_Service, so the plain-language label is translatable rather than an English string baked into the model artifact; top 5 presented with the model version and generation time
     - `POST /predictions/{case}/override` recording officer, overridden value, stated reason, and occurrence time, with the model output retained in the view alongside the override
     - Risk probability, band, explanation factors, and priority score excluded from every citizen response (enforced by the gate)
     - **Static test asserting `ml/src/` and `app/services/{prediction,priority,intervention}.py` import no mutating domain service**, so the intervention service cannot transition a stage, dispose an objection, or record a payout because it holds no reference to the code that can
     - _Requirements: 20.1, 20.2, 20.3, 20.4, 20.5, 20.6, 20.7, 20.8_
     - _Properties 49, 50, 60_
-  - [~] 22.12 `Model_Monitor`: calibration, drift, triggers, and the watchdog
+  - [x] 22.12 `Model_Monitor`: calibration, drift, triggers, and the watchdog
     - Grouped by **the band assigned at prediction time** read from `ml_prediction.risk_band`, not the case's current band which may have been rebanded since; divergence as the absolute difference between realized rate and mean predicted; withheld with the observed count and reason below the configured minimum evaluable count
     - PSI over the stored 10 quantile edges with an `EPS` floor so an empty bin cannot make `ln()` infinite, plus an **11th bucket for the missing rate** — a feature that silently stops being derivable is one of the most likely real failure modes and binning only present values would hide it entirely
     - Three retraining paths each recording `RETRAINING_TRIGGERED` with the triggering condition and enqueueing one training run: calibration divergence, drifted feature count at or above the configured minimum within one computation, and model age reaching the configured maximum from `training_window_end`
@@ -655,7 +655,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - Notify officers holding `model.administer` on divergence and on drift
     - _Requirements: 31.1, 31.2, 31.3, 31.4, 31.5, 31.6, 31.7, 31.8, 31.9, 31.10, 31.11, 31.13, 31.14_
     - _Properties 74, 75, 76, 77, 78, 79_
-  - [~] 22.13 Monitoring property tests
+  - [x] 22.13 Monitoring property tests
     - Property test: realized rate is computed per assigned-at-prediction band, divergence is the absolute difference, and the comparison is withheld with the observed count below the minimum
     - Property test: PSI equals the reference computation on the same edges, is zero for identical distributions, stays finite for disjoint supports, and accounts for the missing rate as a distinct bucket
     - Property test: each threshold breach produces the correctly-shaped event and notifies model administrators; each retraining condition triggers exactly once per detection
@@ -670,17 +670,17 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - An analysis job proposing district-specific cutoff values from that district's labelled history, for an administrator to review and write through `PUT /policy/{key}`. Optional because the **enforcement** of R19.6–19.8 lives in 22.10 and is covered by Property 46; only the value-proposing tool is discretionary
     - _Requirements: none beyond 19.6, 19.7 already covered in 22.10_
 
-- [~] 23. Checkpoint — ML pipeline
+- [x] 23. Checkpoint — ML pipeline
   - Ensure all tests pass, ask the user if questions arise. Verify the nightly re-derivation job, the leakage guard, and the label/feature disjointness test all run against the synthetic dataset from task 21, and that a deliberately leaking extractor fails the build.
 
-- [ ] 24. Priority score, intervention queue, and dashboard
-  - [~] 24.1 `Priority_Engine`
+- [x] 24. Priority score, intervention queue, and dashboard
+  - [x] 24.1 `Priority_Engine`
     - `apps/api/app/services/priority.py`: weighted combination of risk, deadline pressure as remaining days normalised against the configured stage period, and case value normalised against the configured reference amount, all weights from config with `priority_weight_version` stored per score
     - Normalising by `weights.total()` keeps the output in [0, 100] for any non-negative weight set, which is why the validator in 2.4 only rejects negatives and an all-zero set; `pressure` clamps at 1 past the deadline where remaining days go negative, so the score is non-decreasing in both risk and pressure by construction
     - Recompute on a risk, deadline, or case-value change
     - _Requirements: 21.1, 21.2, 21.3, 21.4, 21.5, 21.6_
     - _Property 51_
-  - [~] 24.2 Live intervention queue and recommended actions
+  - [x] 24.2 Live intervention queue and recommended actions
     - Live indexed query over the `case_queue` partial index ordered by `priority_score DESC NULLS LAST` with `LIMIT/OFFSET` — at 10 000 cases this is an index-ordered scan of the first 50 rows, far inside 3 s, so no materialization is needed
     - Recommended actions attached only for the returned page, matched by the configured action rules against the denormalised counters and the deadline state, so attaching them costs no per-case queries
     - Disposition recording (accept, reject, defer) with officer and occurrence time, action retained retrievably
@@ -688,19 +688,19 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - Nightly reconciliation task recomputing the denormalised counters and recording a discrepancy event on any mismatch — denormalised counters nobody audits eventually lie
     - _Requirements: 21.7, 21.8, 21.9, 21.10_
     - _Properties 4, 31, 52_
-  - [~] 24.3 Dashboard snapshot and per-metric timestamps
+  - [x] 24.3 Dashboard snapshot and per-metric timestamps
     - `dashboard_snapshot(area_code, metrics jsonb, computed_at)` and append-only `dashboard_band_history(area_code, month, band, case_count)`; `refresh_dashboard_snapshot` every 5 minutes on `maintenance` for each area holding a non-terminal case, computing each metric family in its own `try`
     - A request resolves the officer's scope to area codes and sums pre-aggregated counters — additive metrics roll up by summation, so one snapshot per leaf area serves every ancestor scope without a snapshot per role
     - **Per-metric** rather than per-snapshot timestamps, which is what makes R22.6 work: a failed metric is marked unavailable with its failure time while the rest is served
     - Drill-through builds its filtered list from the same predicate the metric counts, defined once in `app/services/dashboard/metrics.py`, so the list length equals the metric
     - _Requirements: 22.1, 22.3, 22.4, 22.6_
     - _Property 53_
-  - [~] 24.4 Dashboard and queue UI
+  - [x] 24.4 Dashboard and queue UI
     - Stage distribution iterating the **resolved stage graph** rather than a fixed column list, so a state with four stages and a state with five both render without a branch; 12-month band trend from `dashboard_band_history`
     - Intervention queue view presenting Case_Reference, stage, risk band, remaining days, and priority score
     - _Requirements: 21.7, 22.1, 22.2, 22.3, 22.4_
     - _Property 53_
-  - [~] 24.5 Priority, queue, and dashboard property and performance tests
+  - [x] 24.5 Priority, queue, and dashboard property and performance tests
     - Property test over degenerate and all-missing inputs: score in [0, 100], non-decreasing in risk with other inputs unchanged, non-decreasing as remaining days fall, recorded with its weight-set version
     - Property test: attached actions are exactly those the configured rules match, and dispositions are recorded and retained
     - Property test: every presented metric carries its computation time, a failing metric does not void its neighbours, and each metric's drill-through list length equals the metric
@@ -714,20 +714,20 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - Animation, tooltip refinement, and responsive chart layout. The chart data shape and rendering that R22.2 requires ship in 24.4 with a shape test; this is presentation refinement only
     - _Requirements: none beyond 22.2 already covered in 24.4_
 
-- [ ] 25. Retention, erasure, and data subject rights — sweep ships disabled
-  - [~] 25.1 Retention schema and the erasure-date projection
+- [x] 25. Retention, erasure, and data subject rights — sweep ships disabled
+  - [x] 25.1 Retention schema and the erasure-date projection
     - `data_subject_request` migration with `due_at` materialized at receipt from the configured window so the overdue query is an index scan rather than a per-row policy resolution; `v_case_terminal` view; `retention_withholding` record for R32.14 gaps
     - The §6.2 erasure-date query resolving the period as of the **retention start date**, not today; a NULL result means withhold and record
     - `GET` returning, for any ownership record, its categories, the retention start date where determined, and the computed erasure date per category
     - _Requirements: 28.10, 32.1, 32.15_
     - _Property 66_
-  - [~] 25.2 Complete `CATEGORY_MAP` and the metadata-walk test
+  - [x] 25.2 Complete `CATEGORY_MAP` and the metadata-walk test
     - Extend the registry created in 3.3 to every column of every table, including `Discriminated(on="field_name")` for `extracted_field.extracted_value` and `Reference(follows="data_category")` for `personal_datum.value_ciphertext`, with `NOT_PERSONAL` used explicitly rather than by omission
     - `test_every_column_is_classified` walking `Base.metadata.sorted_tables` and failing the build on any unclassified column. That is the whole mechanism for R32.2 holding over time rather than only on the day it was written
     - The same registry already drives the gate's field-coverage test (5.5), the feature disjointness test (3.3), and the DSAR field list (25.5)
     - _Requirements: 32.2_
     - _Property 80_
-  - [~] 25.3 Two-armed erasure, disabled
+  - [x] 25.3 Two-armed erasure, disabled
     - `run_retention_sweep` per §17.2 returning immediately unless `retention.sweep_enabled` resolves true — **ships false, with no seeded `retention.period.*` rows**, so R32.14's withhold-and-record path is the operating state
     - Retention start is the occurrence time of the event that moved the case into a terminal stage; while the case is non-terminal the start is undetermined and erasure is withheld regardless of elapsed time
     - Restricted to the configured erasable set; a missing effective period records the withholding reason
@@ -736,7 +736,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - `contact_mobile_hash` is `OWNER_CONTACT` and is erased with the plaintext, which means OTP login stops working for that owner. Correct given the retention period lapsed years after a terminal stage, but it should be an explicit expectation when Q10 is confirmed rather than a surprise
     - _Requirements: 32.3, 32.4, 32.10, 32.11, 32.12, 32.14_
     - _Properties 81, 82, 83_
-  - [~] 25.4 Erasure property tests
+  - [x] 25.4 Erasure property tests
     - Property test: every erased attribute is in an erasable category with a lapsed period, the event exists per erasure, and parcel identity and geometry, ownership share and validity, award and payout amounts, and every event row are bit-identical to their pre-erasure snapshot
     - Property test: every stored event row is byte-identical before and after, and the erasure is represented solely by one newly appended compensating event
     - Property test: the erased value is absent from every returned payload while actor, entity id, both timestamps, and position in the ordering are identical to what was returned before
@@ -744,7 +744,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - Property test: the computed erasure date uses the period effective at the retention start, not the current period
     - _Requirements: 28.10, 32.3, 32.4, 32.10, 32.11, 32.12, 32.13, 32.15_
     - _Properties 66, 81, 82, 83, 84_
-  - [~] 25.5 DSAR access and correction handlers
+  - [x] 25.5 DSAR access and correction handlers
     - `GET /c/my-data` assembling the response by **iterating `CATEGORY_MAP`** for personal-data attributes on the requester's own records so it cannot fall behind the schema; the government identifier masked under R26.5, with a `DATA_ACCESS_REQUEST_SERVED` event. **Q10 asks whether a DSAR response may carry it unmasked** — this design masks it until Q10 says otherwise, and unmasking is one change to the gate's `PERMISSION` visibility
     - `POST /c/correction` writing **only** to `data_subject_request`: target attribute, current value, asserted value, receipt time; routed to officers whose scope contains the case
     - `GET /dsar` and `POST /dsar/{id}/disposal` gated on `dsar.dispose`, recording outcome, reasons, deciding officer, and disposal time with a `CORRECTION_REQUEST_DISPOSED` event
@@ -752,18 +752,18 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - **Static test asserting `app/citizen/` imports no versioned repository and no entity-mutating service**, so no citizen-submitted value can reach stored state; a change reaches state only through an officer modification under R6 or R12 with its own event and version check
     - _Requirements: 32.5, 32.6, 32.7, 32.8, 32.9_
     - _Properties 61, 85, 86_
-  - [~] 25.6 DSAR property tests
+  - [x] 25.6 DSAR property tests
     - Property test: for any correction request carrying any asserted value, the targeted attribute is unchanged until an officer modification is recorded, and the request records all four fields and routes to exactly the in-scope officers
     - Property test: receipt and completion times are recorded, overdue requests are flagged against the configured window, and a correction disposal records outcome, reasons, officer, and time
     - _Requirements: 32.6, 32.7, 32.8, 32.9_
     - _Properties 85, 86_
 
-- [ ] 26. Bulk import
-  - [~] 26.1 `import_batch` and `import_row` migrations
+- [x] 26. Bulk import
+  - [x] 26.1 `import_batch` and `import_row` migrations
     - `import_row (batch_id, ordinal)` primary key with `state`, `committed_entity_id`, `rejection jsonb`, and the `import_row_pending` partial index; `import_batch` with `last_processed_ordinal`, `state`, submitted count, and content checksum
     - `IMPORT_BATCH_CREATED` event; submission gated on `import.submit`
     - _Requirements: 30.1, 30.2, 30.7_
-  - [~] 26.2 Chunked set-based `process_import_chunk`
+  - [x] 26.2 Chunked set-based `process_import_chunk`
     - `CHUNK = 1000` per §16.2: one query per lookup kind for the whole chunk into a `ChunkRuleContext`, the **same rule functions** as manual entry evaluated in memory, bulk entity insert with `RETURNING`, bulk event insert with `provenance='IMPORTED'` and the batch id, and row-state updates all in one transaction
     - `ctx.observe(r)` after each passing row so intra-batch duplicates are caught without a query — a lookup issued before the chunk started cannot know about a survey number appearing twice inside it
     - Constraint trigger disabled for the chunk via the session flag from 3.7, with the invariant asserted **set-wise** in one query before commit instead of 1000 trigger firings; same guarantee, and the tradeoff is deliberate because this is one function written once
@@ -771,17 +771,17 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - Pre-partition the batch by parcel key so one parcel's owners land in one chunk; where owners arrive across batches the share-sum rule is **not** evaluated at import time and runs post-commit in the Validation_Engine as a `BLOCKING` issue, because a partial owner set is an incomplete parcel rather than a failing row and rejecting it would make a two-batch migration impossible
     - _Requirements: 30.2, 30.3, 30.4, 30.5, 30.8, 30.9, 30.10_
     - _Properties 12, 20, 71, 72, 73_
-  - [~] 26.3 Batch report, interruption, and resumption
+  - [x] 26.3 Batch report, interruption, and resumption
     - Report stating submitted, committed, and rejected counts and every rejected-row entry with failing rule id, offending attribute, observed value, and matching identifier where applicable; `IMPORT_BATCH_COMPLETED` event; `submitted = committed + rejected` asserted at completion
     - Exactly-once without distributed transactions: the entity insert and the `state = 'COMMITTED'` update share one transaction, so resumption is `WHERE state = 'PENDING' ORDER BY ordinal` and an already-committed row is structurally unreachable; a redelivered chunk finds nothing pending and exits
     - `INTERRUPTED` state with `last_processed_ordinal`; report and rejected-row entries retained retrievably
     - _Requirements: 30.6, 30.7, 30.12_
     - _Property 73_
-  - [~] 26.4 Import batch view
+  - [x] 26.4 Import batch view
     - `GET /imports/{id}` presenting batch state, the three counts, and rejected-row entries filterable by failing rule identifier
     - _Requirements: 30.13_
     - _Property 72_
-  - [~] 26.5 Import property tests and throughput benchmark
+  - [x] 26.5 Import property tests and throughput benchmark
     - Property test submitting the same generated row through both the import path and the manual path and asserting identical issue sets — this is what stops the two validation paths drifting apart
     - Property test over any interleaving of passing and failing rows: committed set equals the passing set exactly, no failing row withholds a passing row, each rejection carries rule id, attribute, and observed value, and the counts reconcile
     - Property test: every committed row has an `IMPORTED`-provenance event with the batch id, and for any interruption at any ordinal followed by resumption the final committed multiset equals the passing set with nothing committed twice
@@ -789,43 +789,43 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - _Requirements: 30.1, 30.2, 30.3, 30.4, 30.5, 30.6, 30.7, 30.8, 30.9, 30.11, 30.12, 30.13_
     - _Properties 12, 71, 72, 73_
 
-- [ ] 27. Localization
-  - [~] 27.1 `Localization_Service` and catalogs
+- [x] 27. Localization
+  - [x] 27.1 `Localization_Service` and catalogs
     - `apps/api/app/services/localization.py` resolving keys from flat per-locale JSON catalogs; server-side resolution for the citizen portal means **no i18n bundle is transferred**, a direct contribution to R24.1's budget
     - Language selection persisted for the citizen session, applying to strings, dates, numbers, and currency
     - Fallback to the deployment default with the missing key recorded to `missing_translation(key, locale, first_seen_at, occurrence_count)` rather than logged, so the gap is queryable and fixable rather than buried in log volume
     - Coverage test asserting every citizen-facing and officer-facing key resolves in every configured language
     - _Requirements: 27.1, 27.2, 27.3, 27.4_
     - _Property 63_
-  - [~] 27.2 Script round-trip integrity
+  - [x] 27.2 Script round-trip integrity
     - **No unicode normalisation on write.** Storing NFC when the input was NFD would make a read-back differ from the value written, which R27.5 forbids in as many words. UTF-8 encoding, `text` columns, no collation-based folding on the identity index
     - The consequence is that two village names differing only in normalisation form are distinct strings and would evade duplicate detection; resolved by the `village_norm` generated column from 9.1, used for matching only and never for display or export
     - Property test over `st_devanagari_text()` including combining marks, both normalisation forms, and ZWJ: the value read back equals the value written character for character, and the rendered and exported value equals the stored value
     - _Requirements: 27.5_
     - _Property 62_
-  - [~] 27.3 Stage and event label keys
+  - [x] 27.3 Stage and event label keys
     - `label_key` pointers on stage-set entries and citizen-visible event types resolved through the service, so onboarding a state with a different stage set is `INSERT`s plus localization keys and no code change (§4.4)
     - _Requirements: 27.1, 27.2_
     - _Property 63_
 
-- [ ] 28. Measurement harnesses for the requirements §2 flags as not satisfiable as written
-  - [~] 28.1 R24.3 throttled-network p95 harness under the stated warm-connection reading
+- [x] 28. Measurement harnesses for the requirements §2 flags as not satisfiable as written
+  - [x] 28.1 R24.3 throttled-network p95 harness under the stated warm-connection reading
     - Playwright + CDP `Network.emulateNetworkConditions` at 400 kbps down, 400 kbps up, 2000 ms latency; 100 cold loads with an empty HTTP cache and empty Cache Storage; assert FCP p95 ≤ 5 s and interactivity p95 ≤ 8 s
     - **The harness records whether DNS and connection setup were inside the measurement**, so the result is interpretable against the ambiguity rather than a bare pass/fail. Under the proposed reading — DNS resolved, reusable connection or HTTP/3 0-RTT, empty HTTP cache — the target is met with margin. Under the strictest reading, DNS + TCP + TLS at 2000 ms RTT is 6 s before the request is even sent, so FCP cannot be under 5 s by any architecture and the requirement needs a different number
     - Nightly, not per-PR: 100 loads at ~8 s each is 15–25 minutes
     - _Requirements: 24.3_
-  - [~] 28.2 R15.8 geometry simplification made explicit in the contract
+  - [x] 28.2 R15.8 geometry simplification made explicit in the contract
     - The simplification implemented in 17.2; this sub-task adds the response-level declaration of tolerance and coordinate precision, the payload-size assertion at 5000 parcels, and the documentation that full-fidelity geometry is a separate single-parcel endpoint. Without the simplification the requirement is unachievable: 5000 cadastral polygons at ~40 vertices are ~5 MB of GeoJSON and over 8 s of transfer at 5 Mbps
     - _Requirements: 15.4, 15.8_
-  - [~] 28.3 R11.8 measured OCR latency distribution
+  - [x] 28.3 R11.8 measured OCR latency distribution
     - Record and report the p95 of extraction time from job dequeue over the trailing 100 completed jobs for single-page documents up to 2 MB, so the claim is evidenced rather than assumed
     - The recognizer stays behind the `Recognizer` protocol from 16.2 so CPU-versus-GPU is a deployment choice. **Selecting the hardware is a precondition, not a task**: CPU Tesseract with Devanagari runs 8–25 s and clears 60 s; a transformer recognizer will not clear it on CPU
     - _Requirements: 11.8_
-  - [~] 28.4 R27.6 font cap as a build-step failure
+  - [x] 28.4 R27.6 font cap as a build-step failure
     - The build step from 19.6 that fails when a produced subset exceeds 40 KB compressed, plus the CI assertion in 19.5 over every configured language. Where a deployment's confirmed Q7 script has no viable subset and weak device coverage, R27.6 and R24.1 conflict and the build failure is the signal to revisit the numbers rather than ship an oversized file
     - _Requirements: 24.1, 27.6_
 
-- [~] 29. Final checkpoint
+- [x] 29. Final checkpoint
   - Ensure all tests pass, ask the user if questions arise. Confirm every guard is green and fails on deliberate violation: the AST lint, the three schema guards, the route-table and field-coverage tests, the RBAC matrix, the metadata-walk classification test, the feature/personal-data disjointness test, the label/feature disjointness test, the no-mutating-import test for `ml/src` and `app/citizen/`, the same-version race harness, the citizen transfer budget, and the nightly re-derivation job. Confirm no statutory period, retention period, or label definition value is seeded outside test fixtures.
 
 ## Notes

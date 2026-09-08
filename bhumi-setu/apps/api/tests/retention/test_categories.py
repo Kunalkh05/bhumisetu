@@ -10,15 +10,17 @@ Two things are load-bearing and are what these tests pin down:
   are personal. A set that returned everything, or nothing, would make either
   guard useless in a way that still passes.
 
-The completeness of ``CATEGORY_MAP`` over the whole schema is task 25.2's
-metadata walk, not asserted here.
+Task 25.2 makes the map complete over the whole schema with a metadata walk.
 """
 
 from __future__ import annotations
 
 import pytest
 
+from app import models
+from app.db.base import all_metadata
 from app.retention.categories import (
+    AUDIT_EVENT,
     CATEGORY_MAP,
     DOCUMENT_CONTENT,
     LAND_RECORD,
@@ -33,6 +35,16 @@ from app.retention.categories import (
     personal_data_attributes,
 )
 
+ALL_CATEGORIES = {
+    AUDIT_EVENT,
+    DOCUMENT_CONTENT,
+    LAND_RECORD,
+    MODEL_FEATURE,
+    NOT_PERSONAL,
+    OWNER_CONTACT,
+    OWNER_IDENTITY,
+}
+
 
 # ---------------------------------------------------------------------------
 # category_of: plain entries and the deliberate absence of a default
@@ -43,6 +55,29 @@ def test_a_plain_entry_returns_its_category() -> None:
     assert category_of("ownership_record", "owner_name") == OWNER_IDENTITY
     assert category_of("ownership_record", "contact_mobile") == OWNER_CONTACT
     assert category_of("ml_feature_row", "features") == MODEL_FEATURE
+
+
+def test_every_column_is_classified() -> None:
+    """R32.2 fails at build time when a mapped column lacks a Data_Category."""
+    models.load_all_models()
+    missing = [
+        f"{table.name}.{column.name}"
+        for table in all_metadata().sorted_tables
+        for column in table.columns
+        if (table.name, column.name) not in CATEGORY_MAP
+    ]
+
+    assert missing == []
+
+
+def test_every_plain_category_name_is_known() -> None:
+    plain = [
+        f"{table}.{column}={entry}"
+        for (table, column), entry in CATEGORY_MAP.items()
+        if isinstance(entry, str) and entry not in ALL_CATEGORIES
+    ]
+
+    assert plain == []
 
 
 def test_an_unclassified_attribute_raises_keyerror() -> None:

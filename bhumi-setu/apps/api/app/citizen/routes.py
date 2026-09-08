@@ -4,11 +4,12 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Iterator
 
 from fastapi import Depends, Request
 from sqlalchemy.orm import Session
-from starlette.responses import RedirectResponse
+from starlette.responses import FileResponse, RedirectResponse
 from starlette.templating import _TemplateResponse
 
 from app.api.routers import citizen_html
@@ -23,14 +24,24 @@ from app.settings import get_object_storage_settings
 
 __all__ = []
 
+from app.services.localization import resolve as resolve_localized
+
+STATIC_DIR = Path(__file__).resolve().parent / "static"
 TIMELINE_PAGE_SIZE = 20
 SUPPORTED_LANGUAGES = ("en", "hi", "mr")
+STALE_BANNER_TEXT = {
+    lang: resolve_localized("citizen.stale_banner", locale=lang)
+    for lang in SUPPORTED_LANGUAGES
+}
+OFFLINE_RETRY_ACTION_TEXT = {
+    lang: resolve_localized("citizen.offline_retry_action", locale=lang)
+    for lang in SUPPORTED_LANGUAGES
+}
 
 
 class _CitizenCaseEntity:
-    __tablename__ = "acquisition_case"
-
     def __init__(self, case_id: int) -> None:
+        self.__tablename__ = "acquisition_case"
         self.id = case_id
 
 
@@ -45,6 +56,11 @@ def _read_session() -> Iterator[Session]:
 
 def _redirect(path: str) -> RedirectResponse:
     return RedirectResponse(path, status_code=303)
+
+
+def _selected_language(request: Request) -> str:
+    language = request.cookies.get("bhumisetu_citizen_language", "en")
+    return language if language in SUPPORTED_LANGUAGES else "en"
 
 
 def _record_retrieval(
@@ -79,6 +95,7 @@ async def _form_value(request: Request, key: str, default: str = "") -> str:
 
 @citizen_html.get("/")
 def citizen_home(request: Request) -> _TemplateResponse:
+    selected_language = _selected_language(request)
     return render_gated(
         request,
         "home.html",
@@ -86,7 +103,33 @@ def citizen_home(request: Request) -> _TemplateResponse:
         None,
         title="Citizen access",
         languages=SUPPORTED_LANGUAGES,
-        selected_language=request.cookies.get("bhumisetu_citizen_language", "en"),
+        selected_language=selected_language,
+        stale_banner_text=STALE_BANNER_TEXT[selected_language],
+    )
+
+
+@citizen_html.get("/offline")
+def citizen_offline(request: Request) -> _TemplateResponse:
+    selected_language = _selected_language(request)
+    return render_gated(
+        request,
+        "offline.html",
+        None,
+        None,
+        title="Offline",
+        action_to_retry=OFFLINE_RETRY_ACTION_TEXT[selected_language],
+        languages=SUPPORTED_LANGUAGES,
+        selected_language=selected_language,
+        stale_banner_text=STALE_BANNER_TEXT[selected_language],
+    )
+
+
+@citizen_html.get("/static/sw.js")
+def citizen_service_worker() -> FileResponse:
+    return FileResponse(
+        STATIC_DIR / "sw.js",
+        media_type="text/javascript",
+        headers={"Service-Worker-Allowed": "/c/"},
     )
 
 
@@ -109,6 +152,7 @@ def citizen_case(
     request: Request,
     principal: Principal = Depends(authenticate),
 ) -> _TemplateResponse:
+    selected_language = _selected_language(request)
     with unit_of_work() as session:
         content = load_citizen_content(session, principal)
         _record_retrieval(session, principal, surface="case")
@@ -122,7 +166,8 @@ def citizen_case(
         ownership_records=content.ownership_records,
         awards=content.awards,
         languages=SUPPORTED_LANGUAGES,
-        selected_language=request.cookies.get("bhumisetu_citizen_language", "en"),
+        selected_language=selected_language,
+        stale_banner_text=STALE_BANNER_TEXT[selected_language],
     )
 
 
@@ -132,6 +177,7 @@ def citizen_timeline(
     page: int = 1,
     principal: Principal = Depends(authenticate),
 ) -> _TemplateResponse:
+    selected_language = _selected_language(request)
     page = max(1, page)
     with unit_of_work() as session:
         content = load_citizen_content(session, principal)
@@ -148,7 +194,8 @@ def citizen_timeline(
         previous_page=page - 1 if page > 1 else None,
         next_page=page + 1,
         languages=SUPPORTED_LANGUAGES,
-        selected_language=request.cookies.get("bhumisetu_citizen_language", "en"),
+        selected_language=selected_language,
+        stale_banner_text=STALE_BANNER_TEXT[selected_language],
     )
 
 
@@ -157,6 +204,7 @@ def citizen_documents(
     request: Request,
     principal: Principal = Depends(authenticate),
 ) -> _TemplateResponse:
+    selected_language = _selected_language(request)
     with unit_of_work() as session:
         content = load_citizen_content(session, principal)
         _record_retrieval(session, principal, surface="documents")
@@ -168,7 +216,8 @@ def citizen_documents(
         title="Documents",
         documents=content.documents,
         languages=SUPPORTED_LANGUAGES,
-        selected_language=request.cookies.get("bhumisetu_citizen_language", "en"),
+        selected_language=selected_language,
+        stale_banner_text=STALE_BANNER_TEXT[selected_language],
     )
 
 
@@ -178,6 +227,7 @@ def citizen_document_confirm(
     document_id: int,
     principal: Principal = Depends(authenticate),
 ) -> _TemplateResponse:
+    selected_language = _selected_language(request)
     with unit_of_work() as session:
         document = load_citizen_document(session, principal, document_id)
         _record_retrieval(session, principal, surface="document_confirm", document_id=document_id)
@@ -189,7 +239,8 @@ def citizen_document_confirm(
         title="Confirm document",
         document=document,
         languages=SUPPORTED_LANGUAGES,
-        selected_language=request.cookies.get("bhumisetu_citizen_language", "en"),
+        selected_language=selected_language,
+        stale_banner_text=STALE_BANNER_TEXT[selected_language],
     )
 
 
@@ -217,6 +268,7 @@ def citizen_notices(
     request: Request,
     principal: Principal = Depends(authenticate),
 ) -> _TemplateResponse:
+    selected_language = _selected_language(request)
     with unit_of_work() as session:
         content = load_citizen_content(session, principal)
         _record_retrieval(session, principal, surface="notices")
@@ -228,7 +280,8 @@ def citizen_notices(
         title="Notices",
         notices=content.notices,
         languages=SUPPORTED_LANGUAGES,
-        selected_language=request.cookies.get("bhumisetu_citizen_language", "en"),
+        selected_language=selected_language,
+        stale_banner_text=STALE_BANNER_TEXT[selected_language],
     )
 
 
@@ -237,6 +290,7 @@ def citizen_objections(
     request: Request,
     principal: Principal = Depends(authenticate),
 ) -> _TemplateResponse:
+    selected_language = _selected_language(request)
     with unit_of_work() as session:
         content = load_citizen_content(session, principal)
         _record_retrieval(session, principal, surface="objections")
@@ -248,7 +302,8 @@ def citizen_objections(
         title="Objections",
         objections=content.objections,
         languages=SUPPORTED_LANGUAGES,
-        selected_language=request.cookies.get("bhumisetu_citizen_language", "en"),
+        selected_language=selected_language,
+        stale_banner_text=STALE_BANNER_TEXT[selected_language],
     )
 
 

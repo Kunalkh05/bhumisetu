@@ -2,7 +2,8 @@
 {% block content %}
 <section class="panel">
   <h2>Confirm download</h2>
-  <p class="muted">Document {{ document_id }} will be opened only after confirmation.</p>
-  <a href="/c/documents/{{ document_id }}">Open document</a>
+  <p>{{ document.original_filename }}</p>
+  <p class="muted">{{ document.document_type }} · {{ document.byte_size }} bytes</p>
+  <a href="/c/documents/{{ document.id }}">Open document</a>
 </section>
 {% endblock %}

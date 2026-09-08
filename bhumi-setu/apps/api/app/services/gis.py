@@ -22,6 +22,7 @@ __all__ = [
     "TileCache",
     "bump_parcel_geometry_generation",
     "build_redis_tile_cache",
+    "get_parcel_geometry",
     "get_parcel_map_payload",
     "GeometryWriteResult",
     "InvalidGeometry",
@@ -250,6 +251,50 @@ def list_parcels_in_bbox(
         simplification_tolerance=simplification_tolerance,
         limit=limit,
         features=features,
+    )
+
+
+def get_parcel_geometry(
+    session: Session,
+    *,
+    parcel_id: int,
+    scope_paths: Sequence[str],
+) -> ParcelGeometryFeature:
+    """Fetch full-fidelity survey-grade geometry for a single parcel without simplification.
+
+    Unlike bbox intersection queries which simplify geometry to satisfy the R15.8
+    transfer budget and 2-second p95 latency, this endpoint serves unsimplified,
+    full-fidelity geometry with complete coordinate precision.
+    """
+    if not scope_paths:
+        raise LookupError(f"parcel {parcel_id} not found or out of scope")
+    scope_clause, params = _scope_clause(scope_paths)
+    params["parcel_id"] = parcel_id
+    row = session.execute(
+        text(
+            f"""
+            SELECT lp.id AS parcel_id,
+                   lp.survey_number,
+                   lp.sub_division,
+                   lp.area_code,
+                   ST_AsGeoJSON(lp.geom)::jsonb AS geojson
+              FROM land_parcel lp
+              JOIN administrative_area aa ON lp.area_code = aa.code
+             WHERE lp.id = :parcel_id
+               AND lp.geom IS NOT NULL
+               AND ({scope_clause})
+            """
+        ),
+        params,
+    ).mappings().first()
+    if row is None:
+        raise LookupError(f"parcel {parcel_id} not found or out of scope")
+    return ParcelGeometryFeature(
+        parcel_id=row["parcel_id"],
+        survey_number=row["survey_number"],
+        sub_division=row["sub_division"],
+        area_code=row["area_code"],
+        geojson=dict(row["geojson"]),
     )
 
 

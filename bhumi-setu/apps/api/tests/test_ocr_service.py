@@ -36,8 +36,11 @@ from app.services.ocr import (
     confirm_field,
     correct_field,
     exact_match,
+    get_ocr_latency_distribution,
     measure_holdout_accuracy,
     process_document,
+    record_ocr_job_latency,
+    reset_ocr_latency_records,
     review_state_for,
     summarise_accuracy,
 )
@@ -690,3 +693,62 @@ def _patch_document_update(monkeypatch, events: list[str]) -> None:
         return document
 
     monkeypatch.setattr("app.services.ocr.VersionedRepository.update", _update)
+
+
+def test_ocr_latency_distribution_tracks_p95_under_sixty_seconds() -> None:
+    """R11.8: Measure p95 of extraction time over trailing 100 completed jobs for single-page <= 2 MB."""
+    reset_ocr_latency_records()
+
+    # Record 100 jobs with realistic CPU Tesseract durations (8-25 s)
+    for i in range(100):
+        duration = 8.0 + (i % 18) * 0.95
+        record_ocr_job_latency(
+            document_id=1000 + i,
+            duration_seconds=duration,
+            document_size_bytes=1_500_000,
+            page_count=1,
+            recognizer_version="tesseract-5.x",
+            hardware_target="cpu",
+        )
+
+    report = get_ocr_latency_distribution(trailing_count=100)
+
+    assert report.sample_count == 100
+    assert report.target_met is True
+    assert report.p95_seconds <= 60.0
+    assert report.hardware_target == "cpu"
+    assert "satisfying R11.8" in report.hardware_finding
+
+
+def test_ocr_latency_distribution_filters_by_size_and_page_count() -> None:
+    reset_ocr_latency_records()
+
+    # Job that exceeds 2 MB
+    record_ocr_job_latency(
+        document_id=1,
+        duration_seconds=90.0,
+        document_size_bytes=3_000_000,
+        page_count=1,
+    )
+    # Job that has 3 pages
+    record_ocr_job_latency(
+        document_id=2,
+        duration_seconds=80.0,
+        document_size_bytes=1_000_000,
+        page_count=3,
+    )
+    # Eligible single-page <= 2 MB job
+    record_ocr_job_latency(
+        document_id=3,
+        duration_seconds=12.5,
+        document_size_bytes=1_800_000,
+        page_count=1,
+    )
+
+    report = get_ocr_latency_distribution()
+
+    assert report.sample_count == 1
+    assert report.p50_seconds == 12.5
+    assert report.p95_seconds == 12.5
+    assert report.target_met is True
+
