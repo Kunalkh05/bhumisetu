@@ -69,6 +69,7 @@ from app.api import documents  # noqa: E402,F401
 from app.api import gis  # noqa: E402,F401
 from app.api import i18n  # noqa: E402,F401
 from app.api import intervention  # noqa: E402,F401
+from app.api import imports  # noqa: E402,F401
 from app.api import issues  # noqa: E402,F401
 from app.api import notices  # noqa: E402,F401
 from app.api import parcels  # noqa: E402,F401

@@ -759,7 +759,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - _Properties 85, 86_
 
 - [ ] 26. Bulk import
-  - [~] 26.1 `import_batch` and `import_row` migrations
+  - [x] 26.1 `import_batch` and `import_row` migrations
     - `import_row (batch_id, ordinal)` primary key with `state`, `committed_entity_id`, `rejection jsonb`, and the `import_row_pending` partial index; `import_batch` with `last_processed_ordinal`, `state`, submitted count, and content checksum
     - `IMPORT_BATCH_CREATED` event; submission gated on `import.submit`
     - _Requirements: 30.1, 30.2, 30.7_

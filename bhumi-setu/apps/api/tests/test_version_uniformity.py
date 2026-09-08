@@ -38,6 +38,7 @@ NON_VERSIONED_FORM_POSTS = frozenset(
         "/c/language",
         "/c/correction",
         "/api/officer/dsar/{request_id}/disposal",
+        "/api/officer/imports",
     }
 )
 

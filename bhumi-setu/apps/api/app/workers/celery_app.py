@@ -87,6 +87,7 @@ TASK_MODULES: tuple[str, ...] = (
     "app.services.ocr",
     "app.services.dashboard",
     "app.services.intervention",
+    "app.services.import_service",
     "app.retention.tasks",
     "ml.tasks",
 )
