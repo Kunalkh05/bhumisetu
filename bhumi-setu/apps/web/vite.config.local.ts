@@ -18,6 +18,15 @@ import base from './vite.config';
  * Serves at http://localhost:5174/officer/
  */
 export default mergeConfig(base, {
-  server: { port: 5174, strictPort: false },
+  server: {
+    port: 5174,
+    strictPort: false,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
+    },
+  },
   preview: { port: 5174, strictPort: false },
 });

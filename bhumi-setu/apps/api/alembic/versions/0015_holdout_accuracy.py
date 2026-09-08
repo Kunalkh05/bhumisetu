@@ -73,7 +73,7 @@ def upgrade() -> None:
         ),
     )
     op.create_foreign_key(
-        "fk_extracted_field_accuracy_report_id_extraction_accuracy_report",
+        "fk_extracted_field_accuracy_report_id",
         "extracted_field",
         "extraction_accuracy_report",
         ["accuracy_report_id"],
@@ -81,7 +81,7 @@ def upgrade() -> None:
         ondelete="RESTRICT",
     )
     op.create_foreign_key(
-        "fk_policy_config_justification_report_id_extraction_accuracy_report",
+        "fk_policy_config_justification_report_id",
         "policy_config",
         "extraction_accuracy_report",
         ["justification_report_id"],
@@ -92,12 +92,12 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     op.drop_constraint(
-        "fk_policy_config_justification_report_id_extraction_accuracy_report",
+        "fk_policy_config_justification_report_id",
         "policy_config",
         type_="foreignkey",
     )
     op.drop_constraint(
-        "fk_extracted_field_accuracy_report_id_extraction_accuracy_report",
+        "fk_extracted_field_accuracy_report_id",
         "extracted_field",
         type_="foreignkey",
     )

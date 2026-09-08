@@ -51,7 +51,7 @@ def test_bbox_query_p95_under_two_seconds_with_plan_capture(postgis_ready) -> No
                     "min_lat": min_lat,
                     "max_lon": max_lon,
                     "max_lat": max_lat,
-                    "scope_path": "IN.MH.PUNE",
+                    "scope_path": "MH.PUNE",
                 },
             ).all()
             timings.append(time.perf_counter() - started)
@@ -88,9 +88,8 @@ def _seed_benchmark_parcels(conn, *, parcel_count: int) -> None:
             INSERT INTO administrative_area
                 (code, area_type, name, parent_code, state_key, path)
             VALUES
-                ('IN', 'country', 'India', NULL, 'IN', 'IN'),
-                ('MH', 'state', 'Maharashtra', 'IN', 'MH', 'IN.MH'),
-                ('PUNE', 'district', 'Pune', 'MH', 'MH', 'IN.MH.PUNE')
+                ('MH', 'state', 'Maharashtra', NULL, 'MH', 'MH'),
+                ('PUNE', 'district', 'Pune', 'MH', 'MH', 'MH.PUNE')
             ON CONFLICT DO NOTHING
             """
         )
@@ -137,15 +136,17 @@ def _seed_benchmark_parcels(conn, *, parcel_count: int) -> None:
                 1,
                 'hectare',
                 'PUNE',
-                ST_Translate(
-                    ST_Buffer(
-                        ST_SetSRID(ST_Point(73 + ((gs - 1) % 5000) * 0.0001, 18), 4326),
-                        0.00004,
-                        20
-                    ),
-                    ((gs - 1) / 5000) * 0.000001,
-                    0
-                )::geometry(MultiPolygon, 4326),
+                ST_Multi(
+                    ST_Translate(
+                        ST_Buffer(
+                            ST_SetSRID(ST_Point(73 + ((gs - 1) % 5000) * 0.0001, 18), 4326),
+                            0.00004,
+                            20
+                        ),
+                        ((gs - 1) / 5000) * 0.000001,
+                        0
+                    )
+                ),
                 ST_Area(
                     ST_Translate(
                         ST_Buffer(
@@ -230,7 +231,7 @@ def _explain(conn, box: tuple[float, float, float, float]) -> str:
             "min_lat": min_lat,
             "max_lon": max_lon,
             "max_lat": max_lat,
-            "scope_path": "IN.MH.PUNE",
+            "scope_path": "MH.PUNE",
         },
     )
     return "\n".join(row[0] for row in plan)

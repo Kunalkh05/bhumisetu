@@ -125,6 +125,20 @@ def create_app(core: CoreSettings | None = None) -> FastAPI:
     for router in ALL_ROUTERS:
         app.include_router(router)
 
+    # Initialize session backend if not already configured (e.g. by a test)
+    try:
+        from app.security.access import AuthBackendNotConfigured, configure_auth_backend, get_auth_backend
+        try:
+            get_auth_backend()
+        except AuthBackendNotConfigured:
+            import redis
+            from app.security.auth import RedisOfficerSessionBackend
+            from app.settings import get_broker_settings
+            redis_client = redis.from_url(get_broker_settings().redis_url)
+            configure_auth_backend(RedisOfficerSessionBackend(redis_client))
+    except Exception as exc:
+        logger.warning("Could not auto-configure Redis auth backend: %s", exc)
+
     @app.get("/healthz", include_in_schema=False)
     async def healthz() -> dict[str, str]:
         return {"status": "ok"}

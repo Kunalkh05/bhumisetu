@@ -263,6 +263,9 @@ def seeded_owner(db_connection: Connection, area_factory) -> int:
         text("UPDATE acquisition_case SET terminal_event_id = :event_id WHERE id = :case_id"),
         {"event_id": terminal_event_id, "case_id": case_id},
     )
+    db_connection.execute(
+        text("SELECT setval('land_parcel_id_seq', (SELECT COALESCE(max(id), 0) + 1 FROM land_parcel), false)")
+    )
     parcel_id = db_connection.execute(
         text(
             """
