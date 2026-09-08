@@ -825,7 +825,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - The build step from 19.6 that fails when a produced subset exceeds 40 KB compressed, plus the CI assertion in 19.5 over every configured language. Where a deployment's confirmed Q7 script has no viable subset and weak device coverage, R27.6 and R24.1 conflict and the build failure is the signal to revisit the numbers rather than ship an oversized file
     - _Requirements: 24.1, 27.6_
 
-- [~] 29. Final checkpoint
+- [x] 29. Final checkpoint
   - Ensure all tests pass, ask the user if questions arise. Confirm every guard is green and fails on deliberate violation: the AST lint, the three schema guards, the route-table and field-coverage tests, the RBAC matrix, the metadata-walk classification test, the feature/personal-data disjointness test, the label/feature disjointness test, the no-mutating-import test for `ml/src` and `app/citizen/`, the same-version race harness, the citizen transfer budget, and the nightly re-derivation job. Confirm no statutory period, retention period, or label definition value is seeded outside test fixtures.
 
 ## Notes

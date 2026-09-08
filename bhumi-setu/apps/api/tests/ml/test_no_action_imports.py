@@ -8,15 +8,20 @@ API_ROOT = Path(__file__).resolve().parents[2]
 REPO_ROOT = API_ROOT.parents[1]
 ML_SRC = REPO_ROOT / "ml" / "src"
 APP_SERVICES = API_ROOT / "app" / "services"
+APP_CITIZEN = API_ROOT / "app" / "citizen"
 
-CHECKED_FILES = tuple(ML_SRC.rglob("*.py")) + tuple(
-    path
-    for path in (
-        APP_SERVICES / "prediction.py",
-        APP_SERVICES / "priority.py",
-        APP_SERVICES / "intervention.py",
+CHECKED_FILES = (
+    tuple(ML_SRC.rglob("*.py"))
+    + tuple(APP_CITIZEN.rglob("*.py"))
+    + tuple(
+        path
+        for path in (
+            APP_SERVICES / "prediction.py",
+            APP_SERVICES / "priority.py",
+            APP_SERVICES / "intervention.py",
+        )
+        if path.exists()
     )
-    if path.exists()
 )
 BANNED_DOMAIN_SERVICES = frozenset(
     {
