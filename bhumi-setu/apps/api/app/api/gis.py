@@ -21,6 +21,7 @@ from app.schemas.gis import (
 from app.security.access import Principal, authenticate
 from app.services.gis import (
     build_redis_tile_cache,
+    get_parcel_geometry,
     get_parcel_map_payload,
     list_parcels_in_bbox,
     parse_bbox,
@@ -55,6 +56,15 @@ def parcels_in_bbox(
     tolerance: float = Query(DEFAULT_SIMPLIFICATION_TOLERANCE, ge=0),
     principal: Principal = Depends(authenticate),
 ) -> ParcelBboxOut:
+    """Query land parcels intersecting a bounding box with viewport simplification.
+
+    The response explicitly declares `geometry_simplified=True`, `simplification_tolerance`,
+    and `coordinate_decimals=6`. This simplification is what allows 5000 parcels to transfer
+    in ~250-400 KB and meet the R15.8 2-second p95 latency target (unsimplified 5000 parcels
+    exceed 5 MB and take > 8 s at 5 Mbps).
+
+    Full-fidelity survey-grade geometry is served on GET /gis/parcels/{parcel_id}/geometry.
+    """
     with _read_session() as session:
         result = list_parcels_in_bbox(
             session,
@@ -74,6 +84,33 @@ def parcels_in_bbox(
             for feature in result.features
         ],
     )
+
+
+@officer_router.get(
+    "/gis/parcels/{parcel_id}/geometry",
+    response_model=ParcelGeometryFeatureOut,
+)
+def parcel_full_fidelity_geometry(
+    parcel_id: int,
+    principal: Principal = Depends(authenticate),
+) -> ParcelGeometryFeatureOut:
+    """Return full-fidelity survey-grade geometry for a single parcel without simplification.
+
+    R15.8 requires that 5000 parcels intersecting a viewport bounding box return
+    within 2 s p95. To achieve that latency and payload budget (~250-400 KB vs ~5 MB),
+    the bbox endpoint (/gis/parcels?bbox=) returns simplified geometry with viewport-derived
+    tolerance and 6-decimal coordinate truncation.
+
+    Full-fidelity, unsimplified survey-grade geometry is served exclusively through this
+    single-parcel endpoint.
+    """
+    with _read_session() as session:
+        feature = get_parcel_geometry(
+            session,
+            parcel_id=parcel_id,
+            scope_paths=principal.scope_paths,
+        )
+    return ParcelGeometryFeatureOut.model_validate(feature)
 
 
 @officer_router.get(

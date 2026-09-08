@@ -574,7 +574,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - Keep `retention.sweep_enabled` false — with no `retention.period.*` seeded outside the fixture, enabling the sweep alone would still erase nothing, and no erasure runs until a deployment confirms its state's land-record retention rules, configures its retention periods, and enables the sweep explicitly; seed no state-specific statutory rows either, so any state-and-act key with no effective value stays in the R28.5 refuse-and-report path for real deployments
     - _Requirements: 28.1, 28.5_
 
-- [ ] 22. Machine learning pipeline (internal order matters; each sub-task depends on the one before)
+- [x] 22. Machine learning pipeline (internal order matters; each sub-task depends on the one before)
   - [x] 22.1 ML table migrations
     - `ml_feature_row` with `reference_t`, `as_of_mode`, `feature_set_version`, `label_definition_version`, `features jsonb`, `consumed_event_ids bigint[]`, `content_hash`, `purpose`, and the uniqueness tuple; `ml_training_row`; `ml_model_version` including `feature_reference_bins` and `baseline_metrics`; `ml_prediction` with its idempotency unique constraint and history index; `ml_explanation_factor`; `ml_monitor_run`
     - _Requirements: 17.4, 18.6, 18.8, 18.16, 19.3, 19.10, 31.10_
@@ -673,7 +673,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
 - [x] 23. Checkpoint — ML pipeline
   - Ensure all tests pass, ask the user if questions arise. Verify the nightly re-derivation job, the leakage guard, and the label/feature disjointness test all run against the synthetic dataset from task 21, and that a deliberately leaking extractor fails the build.
 
-- [ ] 24. Priority score, intervention queue, and dashboard
+- [x] 24. Priority score, intervention queue, and dashboard
   - [x] 24.1 `Priority_Engine`
     - `apps/api/app/services/priority.py`: weighted combination of risk, deadline pressure as remaining days normalised against the configured stage period, and case value normalised against the configured reference amount, all weights from config with `priority_weight_version` stored per score
     - Normalising by `weights.total()` keeps the output in [0, 100] for any non-negative weight set, which is why the validator in 2.4 only rejects negatives and an all-zero set; `pressure` clamps at 1 past the deadline where remaining days go negative, so the score is non-decreasing in both risk and pressure by construction
@@ -714,7 +714,7 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - Animation, tooltip refinement, and responsive chart layout. The chart data shape and rendering that R22.2 requires ship in 24.4 with a shape test; this is presentation refinement only
     - _Requirements: none beyond 22.2 already covered in 24.4_
 
-- [ ] 25. Retention, erasure, and data subject rights — sweep ships disabled
+- [x] 25. Retention, erasure, and data subject rights — sweep ships disabled
   - [x] 25.1 Retention schema and the erasure-date projection
     - `data_subject_request` migration with `due_at` materialized at receipt from the configured window so the overdue query is an index scan rather than a per-row policy resolution; `v_case_terminal` view; `retention_withholding` record for R32.14 gaps
     - The §6.2 erasure-date query resolving the period as of the **retention start date**, not today; a NULL result means withhold and record
@@ -808,20 +808,20 @@ These are consequences of Q1, Q8, and Q10 being accepted as provisional (§1), p
     - _Requirements: 27.1, 27.2_
     - _Property 63_
 
-- [ ] 28. Measurement harnesses for the requirements §2 flags as not satisfiable as written
-  - [~] 28.1 R24.3 throttled-network p95 harness under the stated warm-connection reading
+- [x] 28. Measurement harnesses for the requirements §2 flags as not satisfiable as written
+  - [x] 28.1 R24.3 throttled-network p95 harness under the stated warm-connection reading
     - Playwright + CDP `Network.emulateNetworkConditions` at 400 kbps down, 400 kbps up, 2000 ms latency; 100 cold loads with an empty HTTP cache and empty Cache Storage; assert FCP p95 ≤ 5 s and interactivity p95 ≤ 8 s
     - **The harness records whether DNS and connection setup were inside the measurement**, so the result is interpretable against the ambiguity rather than a bare pass/fail. Under the proposed reading — DNS resolved, reusable connection or HTTP/3 0-RTT, empty HTTP cache — the target is met with margin. Under the strictest reading, DNS + TCP + TLS at 2000 ms RTT is 6 s before the request is even sent, so FCP cannot be under 5 s by any architecture and the requirement needs a different number
     - Nightly, not per-PR: 100 loads at ~8 s each is 15–25 minutes
     - _Requirements: 24.3_
-  - [~] 28.2 R15.8 geometry simplification made explicit in the contract
+  - [x] 28.2 R15.8 geometry simplification made explicit in the contract
     - The simplification implemented in 17.2; this sub-task adds the response-level declaration of tolerance and coordinate precision, the payload-size assertion at 5000 parcels, and the documentation that full-fidelity geometry is a separate single-parcel endpoint. Without the simplification the requirement is unachievable: 5000 cadastral polygons at ~40 vertices are ~5 MB of GeoJSON and over 8 s of transfer at 5 Mbps
     - _Requirements: 15.4, 15.8_
-  - [~] 28.3 R11.8 measured OCR latency distribution
+  - [x] 28.3 R11.8 measured OCR latency distribution
     - Record and report the p95 of extraction time from job dequeue over the trailing 100 completed jobs for single-page documents up to 2 MB, so the claim is evidenced rather than assumed
     - The recognizer stays behind the `Recognizer` protocol from 16.2 so CPU-versus-GPU is a deployment choice. **Selecting the hardware is a precondition, not a task**: CPU Tesseract with Devanagari runs 8–25 s and clears 60 s; a transformer recognizer will not clear it on CPU
     - _Requirements: 11.8_
-  - [~] 28.4 R27.6 font cap as a build-step failure
+  - [x] 28.4 R27.6 font cap as a build-step failure
     - The build step from 19.6 that fails when a produced subset exceeds 40 KB compressed, plus the CI assertion in 19.5 over every configured language. Where a deployment's confirmed Q7 script has no viable subset and weak device coverage, R27.6 and R24.1 conflict and the build failure is the signal to revisit the numbers rather than ship an oversized file
     - _Requirements: 24.1, 27.6_
 

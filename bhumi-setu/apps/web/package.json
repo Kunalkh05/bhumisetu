@@ -9,6 +9,7 @@
     "dev:local": "vite --config vite.config.local.ts",
     "build": "tsc --noEmit && vite build",
     "perf:map": "node scripts/map-render-benchmark.mjs",
+    "perf:citizen": "node scripts/citizen-p95-benchmark.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },

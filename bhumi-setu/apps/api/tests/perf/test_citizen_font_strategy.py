@@ -107,4 +107,49 @@ def test_any_font_file_in_static_fits_the_40kb_cap() -> None:
         )
 
 
+def check_font_cap(static_dir: Path) -> list[str]:
+    """Check all font files in static_dir for the R27.6 40 KB compressed limit."""
+    if not static_dir.exists():
+        return []
+
+    import brotli
+
+    failures = []
+    fonts = [
+        p for p in static_dir.iterdir()
+        if p.is_file() and p.suffix.lower() in FONT_EXTENSIONS
+    ]
+
+    for font_path in fonts:
+        data = font_path.read_bytes()
+        compressed = len(brotli.compress(data, quality=11))
+        if compressed > FONT_CAP_BYTES:
+            failures.append(
+                f"BUILD STEP FAILED: R27.6 Font cap exceeded for '{font_path.name}'.\n"
+                f"Compressed size: {compressed} bytes (cap: {FONT_CAP_BYTES} bytes).\n"
+                f"Conflict notice: Where a deployment's confirmed Q7 regional script has no viable "
+                f"<= 40 KB subset and weak device coverage, R27.6 and R24.1 conflict.\n"
+                f"The build failure is the signal to revisit the numbers rather than ship an oversized file."
+            )
+
+    return failures
+
+
+def test_oversized_font_subset_triggers_build_step_failure_with_conflict_signal(tmp_path: Path) -> None:
+    """A font subset exceeding 40 KB fails the build step with the R27.6/R24.1 conflict signal."""
+    import os
+
+    # Create an incompressible 45 KB font file (e.g. random bytes that won't compress below 40 KB)
+    oversized_font = tmp_path / "oversized-devanagari.woff2"
+    oversized_font.write_bytes(os.urandom(45_000))
+
+    failures = check_font_cap(tmp_path)
+    assert len(failures) == 1
+    msg = failures[0]
+    assert "BUILD STEP FAILED: R27.6 Font cap exceeded" in msg
+    assert "oversized-devanagari.woff2" in msg
+    assert "R27.6 and R24.1 conflict" in msg
+    assert "revisit the numbers rather than ship an oversized file" in msg
+
+
 R27_6_REFERENCE = "R27.6"

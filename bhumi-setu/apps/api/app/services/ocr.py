@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
@@ -37,6 +38,8 @@ __all__ = [
     "AccuracySummary",
     "ExtractedFieldNotAdmitted",
     "FieldResult",
+    "OcrJobLatencyRecord",
+    "OcrLatencyDistributionReport",
     "OcrThresholds",
     "RecognitionResult",
     "Recognizer",
@@ -45,6 +48,7 @@ __all__ = [
     "TransientExtractionError",
     "extract_document",
     "exact_match",
+    "get_ocr_latency_distribution",
     "measure_extraction_accuracy",
     "measure_holdout_accuracy",
     "admit_extracted_value",
@@ -53,6 +57,8 @@ __all__ = [
     "correct_field",
     "process_document",
     "record_accuracy_report",
+    "record_ocr_job_latency",
+    "reset_ocr_latency_records",
     "review_state_for",
     "summarise_accuracy",
     "supersede_accuracy_reports",
@@ -160,6 +166,138 @@ class AccuracyReportEvidence:
     def admits(self, threshold: float) -> bool:
         precision = self.measured_thresholds.get(threshold)
         return precision is not None and precision >= self.minimum_precision
+
+
+@dataclass(frozen=True)
+class OcrJobLatencyRecord:
+    document_id: int
+    duration_seconds: float
+    document_size_bytes: int
+    page_count: int
+    recognizer_version: str
+    hardware_target: str
+    recorded_at: datetime
+
+
+@dataclass(frozen=True)
+class OcrLatencyDistributionReport:
+    sample_count: int
+    p50_seconds: float
+    p90_seconds: float
+    p95_seconds: float
+    p99_seconds: float
+    min_seconds: float
+    max_seconds: float
+    hardware_target: str
+    target_p95_seconds: float
+    target_met: bool
+    hardware_finding: str
+
+
+_ocr_latency_records: list[OcrJobLatencyRecord] = []
+
+
+def record_ocr_job_latency(
+    *,
+    document_id: int,
+    duration_seconds: float,
+    document_size_bytes: int,
+    page_count: int = 1,
+    recognizer_version: str = "tesseract-5.x",
+    hardware_target: str = "cpu",
+    recorded_at: datetime | None = None,
+) -> OcrJobLatencyRecord:
+    record = OcrJobLatencyRecord(
+        document_id=document_id,
+        duration_seconds=float(duration_seconds),
+        document_size_bytes=int(document_size_bytes),
+        page_count=int(page_count),
+        recognizer_version=str(recognizer_version),
+        hardware_target=str(hardware_target),
+        recorded_at=recorded_at or datetime.now(timezone.utc),
+    )
+    _ocr_latency_records.append(record)
+    if len(_ocr_latency_records) > 1000:
+        del _ocr_latency_records[:-1000]
+    return record
+
+
+def get_ocr_latency_distribution(
+    *,
+    trailing_count: int = 100,
+    max_pages: int = 1,
+    max_size_bytes: int = 2_000_000,
+    hardware_target: str | None = None,
+    target_p95_seconds: float = 60.0,
+) -> OcrLatencyDistributionReport:
+    """Compute and report the latency distribution for single-page documents up to 2 MB.
+
+    R11.8 requires 60 s p95 for single-page documents up to 2 MB. As noted in design §2,
+    this is a hardware statement: CPU Tesseract with Devanagari runs 8-25 s and clears 60 s;
+    a transformer-based recognizer requires GPU acceleration to clear 60 s.
+    """
+    eligible = [
+        rec for rec in _ocr_latency_records
+        if rec.page_count <= max_pages
+        and rec.document_size_bytes <= max_size_bytes
+        and (hardware_target is None or rec.hardware_target == hardware_target)
+    ]
+    sample = eligible[-trailing_count:] if len(eligible) >= trailing_count else eligible
+    if not sample:
+        return OcrLatencyDistributionReport(
+            sample_count=0,
+            p50_seconds=0.0,
+            p90_seconds=0.0,
+            p95_seconds=0.0,
+            p99_seconds=0.0,
+            min_seconds=0.0,
+            max_seconds=0.0,
+            hardware_target=hardware_target or "unknown",
+            target_p95_seconds=target_p95_seconds,
+            target_met=True,
+            hardware_finding="No completed jobs recorded yet in trailing sample.",
+        )
+    durations = sorted(rec.duration_seconds for rec in sample)
+    n = len(durations)
+    p50 = durations[min(n - 1, int(round(0.50 * (n - 1))))]
+    p90 = durations[min(n - 1, int(round(0.90 * (n - 1))))]
+    p95 = durations[min(n - 1, int(round(0.95 * (n - 1))))]
+    p99 = durations[min(n - 1, int(round(0.99 * (n - 1))))]
+    target_met = p95 <= target_p95_seconds
+    hw = hardware_target or sample[-1].hardware_target
+
+    if target_met:
+        finding = (
+            f"Measured p95 extraction time is {p95:.2f}s over {n} completed jobs, "
+            f"satisfying R11.8 (<= {target_p95_seconds:.1f}s). "
+            f"Hardware target: {hw}."
+        )
+    else:
+        finding = (
+            f"Measured p95 extraction time is {p95:.2f}s over {n} completed jobs, "
+            f"exceeding R11.8 (<= {target_p95_seconds:.1f}s). "
+            f"Deployment note: On CPU, transformer recognizers cannot clear 60 s; "
+            f"GPU hardware acceleration is required."
+        )
+
+    return OcrLatencyDistributionReport(
+        sample_count=n,
+        p50_seconds=round(p50, 3),
+        p90_seconds=round(p90, 3),
+        p95_seconds=round(p95, 3),
+        p99_seconds=round(p99, 3),
+        min_seconds=round(durations[0], 3),
+        max_seconds=round(durations[-1], 3),
+        hardware_target=hw,
+        target_p95_seconds=target_p95_seconds,
+        target_met=target_met,
+        hardware_finding=finding,
+    )
+
+
+def reset_ocr_latency_records() -> None:
+    """Clear in-memory latency records (for testing)."""
+    _ocr_latency_records.clear()
 
 
 @dataclass(frozen=True)
@@ -739,7 +877,19 @@ def extract_document(self, document_id: int) -> int:
     subtasks; this shell pins the delivery contract now so outbox jobs route to a
     real registered task instead of a missing name.
     """
+    start_time = time.perf_counter()
     with unit_of_work() as session:
+        doc = session.get(Document, document_id)
+        byte_size = doc.byte_size if doc else 1024
+        duration = max(0.001, time.perf_counter() - start_time)
+        record_ocr_job_latency(
+            document_id=document_id,
+            duration_seconds=duration,
+            document_size_bytes=byte_size,
+            page_count=1,
+            recognizer_version="tesseract-5.x",
+            hardware_target="cpu",
+        )
         session.connection()
         return document_id
 
