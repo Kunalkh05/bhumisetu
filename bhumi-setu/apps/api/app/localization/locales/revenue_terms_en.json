@@ -1,0 +1,16 @@
+{
+  "satbara": "7/12 Extract (Record of Rights)",
+  "ferfar": "Mutation Entry (Register of Alterations in Rights)",
+  "gat_number": "Gat / Block Number",
+  "survey_number": "Survey Number",
+  "khatedar": "Land Title Holder / Khata Account Owner",
+  "pot_kharaba": "Uncultivable / Barren Land within Parcel",
+  "jirayat": "Dry Crop / Rain-fed Agricultural Land",
+  "bagayat": "Irrigated Agricultural Land",
+  "tari": "Paddy / Wet Agricultural Land",
+  "chalta_number": "Running / Serial Survey Number",
+  "cts_number": "City Survey Number (Urban Property Card)",
+  "akar": "Land Revenue Assessment Amount",
+  "kabjedar_class_1": "Occupant Class 1 (Unrestricted Ownership Rights)",
+  "kabjedar_class_2": "Occupant Class 2 (Government Grant with Alienation Restrictions)"
+}
