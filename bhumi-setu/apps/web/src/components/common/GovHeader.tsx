@@ -60,18 +60,22 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
       {/* 1. Official S3WaaS Top Indian Tricolour Stripe Ribbon */}
       <div className="tiranga-strip"></div>
 
-      {/* 2. S3WaaS Accessibility Utility Bar (GIGW 3.0 Standard) */}
+      {/* 2. Compact Accessibility & Prototype Utility Bar (GIGW 3.0 Standard) */}
       <div className="bg-[#002642] text-slate-200 text-[11px] border-b border-[#0b3866]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-1.5 flex flex-wrap justify-between items-center gap-2">
-          {/* Left: Official Government of India & Ministry Identifiers */}
+          {/* Left: Official Government of India & Academic Prototype Identifier */}
           <div className="flex items-center gap-2.5 text-xs flex-wrap">
             <span className="font-semibold text-white flex items-center gap-2">
               <IndianFlag width={18} showBorder={true} />
               <span>{language === 'en' ? 'GOVERNMENT OF INDIA' : 'भारत सरकार'}</span>
             </span>
-            <span className="text-slate-400">|</span>
+            <span className="text-slate-500">|</span>
             <span className="hidden sm:inline text-slate-300">
               {language === 'en' ? 'Ministry of Rural Development' : 'ग्रामीण विकास मंत्रालय'}
+            </span>
+            <span className="text-slate-500 hidden sm:inline">|</span>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-400/20 text-amber-300 border border-amber-400/30">
+              {language === 'en' ? 'Academic / SIH Prototype' : 'शैक्षणिक / एसआईएच प्रोटोटाइप'}
             </span>
 
             {/* Live Backend Connection Indicator */}
@@ -90,27 +94,19 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
           </div>
 
           {/* Right: Accessibility Controls & Language Toggle */}
-          <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-2.5 sm:gap-3">
             <a 
               href="#main-content" 
               className="text-slate-300 hover:text-white underline underline-offset-2 hidden md:inline text-[11px]"
             >
-              {language === 'en' ? 'Skip to main content' : 'मुख्य सामग्री पर जाएं'}
+              {language === 'en' ? 'Skip to content' : 'सामग्री पर जाएं'}
             </a>
 
-            {/* Screen Reader Access link (GIGW mandate) */}
-            <span className="hidden lg:flex items-center gap-1 text-[11px] text-slate-300">
-              <Volume2 className="w-3 h-3 text-slate-400" />
-              <span>{language === 'en' ? 'Screen Reader' : 'स्क्रीन रीडर'}</span>
-            </span>
-
-            <span className="text-slate-600 hidden md:inline">|</span>
-
             {/* Font Sizing Controls (A- / A / A+) */}
-            <div className="flex items-center bg-[#0b3866]/80 backdrop-blur-xs border border-slate-600/70 rounded-md overflow-hidden shadow-xs" role="group" aria-label="Text Size Controls">
+            <div className="flex items-center bg-[#0b3866]/80 border border-slate-600/70 rounded-md overflow-hidden" role="group" aria-label="Text Size Controls">
               <button
                 onClick={() => setFontScale('normal')}
-                className={`px-2 py-0.5 text-[11px] font-bold transition-all ${fontScale === 'normal' ? 'bg-[#f37021] text-white shadow-xs' : 'text-slate-300 hover:text-white hover:bg-white/10'}`}
+                className={`px-2 py-0.5 text-[11px] font-bold transition-all ${fontScale === 'normal' ? 'bg-[#f37021] text-white' : 'text-slate-300 hover:text-white'}`}
                 title="Standard Text Size (A-)"
                 aria-pressed={fontScale === 'normal'}
               >
@@ -118,7 +114,7 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
               </button>
               <button
                 onClick={() => setFontScale('large')}
-                className={`px-2 py-0.5 text-[11px] font-bold border-x border-slate-600/70 transition-all ${fontScale === 'large' ? 'bg-[#f37021] text-white shadow-xs' : 'text-slate-300 hover:text-white hover:bg-white/10'}`}
+                className={`px-2 py-0.5 text-[11px] font-bold border-x border-slate-600/70 transition-all ${fontScale === 'large' ? 'bg-[#f37021] text-white' : 'text-slate-300 hover:text-white'}`}
                 title="Large Text Size (A)"
                 aria-pressed={fontScale === 'large'}
               >
@@ -126,7 +122,7 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
               </button>
               <button
                 onClick={() => setFontScale('xlarge')}
-                className={`px-2 py-0.5 text-[11px] font-bold transition-all ${fontScale === 'xlarge' ? 'bg-[#f37021] text-white shadow-xs' : 'text-slate-300 hover:text-white hover:bg-white/10'}`}
+                className={`px-2 py-0.5 text-[11px] font-bold transition-all ${fontScale === 'xlarge' ? 'bg-[#f37021] text-white' : 'text-slate-300 hover:text-white'}`}
                 title="Extra Large Text Size (A+)"
                 aria-pressed={fontScale === 'xlarge'}
               >
@@ -137,10 +133,10 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
             {/* High Contrast Toggle */}
             <button
               onClick={() => setIsHighContrast(!isHighContrast)}
-              className={`px-2.5 py-0.5 rounded-md border text-[11px] font-semibold flex items-center gap-1.5 transition-all shadow-xs ${
+              className={`px-2 py-0.5 rounded-md border text-[11px] font-medium flex items-center gap-1 transition-all ${
                 isHighContrast 
                   ? 'bg-amber-400 text-black border-amber-400 font-bold ring-2 ring-amber-300/40' 
-                  : 'bg-[#0b3866]/80 border-slate-600/70 text-slate-200 hover:text-white hover:bg-[#134679]'
+                  : 'bg-[#0b3866]/80 border-slate-600/70 text-slate-200 hover:text-white'
               }`}
               title="Toggle High Contrast"
             >
@@ -151,122 +147,66 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
             {/* Language Switcher */}
             <button
               onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
-              className="px-3 py-0.5 bg-[#f37021] hover:bg-[#d95a10] text-white font-bold text-[11px] rounded-md flex items-center gap-1.5 shadow-xs hover:shadow-sm transition-all"
+              className="px-2.5 py-0.5 bg-[#f37021] hover:bg-[#d95a10] text-white font-semibold text-[11px] rounded-md flex items-center gap-1 transition-all shadow-xs"
               title="Switch Language"
             >
               <Globe className="w-3 h-3" />
               <span>{language === 'en' ? 'हिन्दी' : 'English'}</span>
             </button>
-
-            {/* Toll Free Helpline */}
-            <div className="hidden xl:flex items-center gap-1 text-[11px] text-slate-300 pl-2.5 border-l border-slate-700/80">
-              <Phone className="w-3 h-3 text-[#f37021]" />
-              <span>{language === 'en' ? 'Toll Free:' : 'टोल फ्री:'} <strong className="text-white">1800-11-2013</strong></span>
-            </div>
           </div>
         </div>
       </div>
 
-      {/* 3. S3WaaS Main Emblem & Branding Banner */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap justify-between items-center gap-4 bg-white">
-        {/* Left: Authentic State Emblem of India + Department Details */}
-        <div className="flex items-center gap-4">
-          <div className="flex-shrink-0 drop-shadow-xs">
-            <NationalEmblem size={54} color="#002642" showSlogan={true} />
+      {/* 3. Modern Sovereign Main Header */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap justify-between items-center gap-3 bg-white">
+        {/* Left: State Emblem + Brand Identity */}
+        <div className="flex items-center gap-3.5">
+          <div className="flex-shrink-0">
+            <NationalEmblem size={44} color="#002642" showSlogan={false} />
           </div>
 
-          <div className="border-l border-slate-200 pl-4 py-0.5">
-            <div className="text-[12px] font-semibold text-[#002642] tracking-wide">
-              {language === 'en' 
-                ? 'Civic-Tech Land Intelligence Layer • Academic & SIH Demonstration' 
-                : 'नागरिक-तकनीक भू-आसूचना स्तर • शैक्षणिक एवं एसआईएच प्रदर्शन'}
-            </div>
-            <div className="text-[11px] text-slate-500 font-medium">
-              {language === 'en' 
-                ? 'Inspired by Digital India Land Modernization (DILRMP & SVAMITVA)' 
-                : 'डिजिटल भारत भू-आधुनिकीकरण (DILRMP एवं स्वामित्व) से प्रेरित'}
-            </div>
-            <div className="flex items-center gap-2 mt-1">
-              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#0b3866] leading-none">
+          <div className="border-l border-slate-200 pl-3.5 py-0.5">
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#002642] leading-none">
                 BHUMISETU
               </h1>
               <span className="text-base sm:text-lg font-bold text-[#f37021] leading-none">
                 | भूमिसेतु
               </span>
-              <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black bg-amber-100 text-amber-900 border border-amber-300/80 shadow-xs tracking-wider">
-                PROTOTYPE
-              </span>
             </div>
-            <p className="text-[11px] text-slate-600 mt-1 hidden sm:block font-medium">
-              {language === 'en'
-                ? 'Unified AI-Powered Land Intelligence & Verification Platform'
-                : 'एकीकृत एआई-संचालित भू-आसूचना एवं प्रारंभिक सत्यापन मंच'}
+            <p className="text-xs text-slate-600 font-medium mt-0.5">
+              {language === 'en' 
+                ? 'AI-Powered Land Acquisition Intelligence, Monitoring & Verification' 
+                : 'एआई-संचालित भूमि अधिग्रहण आसूचना, निगरानी एवं सत्यापन'}
             </p>
           </div>
         </div>
 
-        {/* Right: S3WaaS Digital India Brand, PM Dignitary Badge & Unified Role/Portal Switcher */}
-        <div className="flex items-center gap-3.5">
-          {/* Official Dignitary: Hon'ble Prime Minister Shri Narendra Modi */}
-          <div className="hidden md:flex items-center gap-2.5 border-r border-slate-200 pr-3.5 py-0.5">
-            <div className="relative">
-              <img 
-                src="/assets/pm_modi_2023.jpg" 
-                alt={language === 'en' ? 'Shri Narendra Modi, Hon\'ble Prime Minister of India' : 'श्री नरेन्द्र मोदी, माननीय प्रधानमंत्री'} 
-                className="w-12 h-12 rounded-full object-cover object-top border-2 border-[#f37021] shadow-sm ring-2 ring-orange-100"
-              />
-              <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-[#138808] border-2 border-white rounded-full flex items-center justify-center text-[8px] text-white font-bold" title="Prime Minister of India">
-                🇮🇳
-              </span>
-            </div>
-            <div className="flex flex-col text-left">
-              <span className="text-[12px] font-extrabold text-[#002642] leading-tight">
-                {language === 'en' ? 'Shri Narendra Modi' : 'श्री नरेन्द्र मोदी'}
-              </span>
-              <span className="text-[10px] text-[#f37021] font-bold leading-tight mt-0.5">
-                {language === 'en' ? "Hon'ble Prime Minister" : 'माननीय प्रधानमंत्री'}
-              </span>
-              <span className="text-[9px] text-slate-500 font-medium">
-                {language === 'en' ? 'Government of India' : 'भारत सरकार'}
-              </span>
-            </div>
-          </div>
-
-          {/* Official Campaign Representation */}
-          <div className="hidden xl:flex items-center gap-3 border-r border-slate-200 pr-3.5">
-            <div className="flex flex-col items-center justify-center">
-              <span className="text-xs font-black tracking-wider text-[#002642] uppercase">Digital India</span>
-              <span className="text-[9px] text-[#138808] font-bold">Power To Empower</span>
-            </div>
-            <div className="h-6 w-px bg-slate-200"></div>
-            <div className="flex flex-col items-center justify-center">
-              <span className="text-[11px] font-black tracking-tight text-[#f37021] uppercase">Viksit Bharat</span>
-              <span className="text-[9px] text-[#002642] font-mono font-bold">@ 2047</span>
-            </div>
-          </div>
-
-          {/* S3WaaS Portal Mode Switcher (Citizen Services vs Officer Portal) */}
-          <div className="inline-flex rounded-full border border-slate-200 bg-slate-100/90 p-1 shadow-xs">
+        {/* Right: Modern Mode Switcher & Demo Persona Selector */}
+        <div className="flex items-center gap-3">
+          {/* 2026 Segmented Mode Switcher */}
+          <div className="inline-flex rounded-lg border border-slate-200 bg-slate-100 p-0.5 shadow-xs">
             <button
               onClick={() => setPortalMode('CITIZEN')}
-              className={`px-3.5 py-1.5 text-xs font-bold transition-all rounded-full cursor-pointer ${
+              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer flex items-center gap-1.5 ${
                 portalMode === 'CITIZEN'
-                  ? 'bg-[#0b3866] text-white shadow-xs'
-                  : 'text-slate-700 hover:text-[#0b3866] hover:bg-slate-200/70'
+                  ? 'bg-white text-[#002642] shadow-xs font-bold'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              {language === 'en' ? 'Citizen Services' : 'नागरिक सेवा'}
+              <User className="w-3.5 h-3.5 text-slate-500" />
+              <span>{language === 'en' ? 'Citizen Portal' : 'नागरिक पोर्टल'}</span>
             </button>
             <button
               onClick={() => setPortalMode('OFFICER')}
-              className={`px-3.5 py-1.5 text-xs font-bold transition-all rounded-full flex items-center gap-1.5 cursor-pointer ${
+              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer flex items-center gap-1.5 ${
                 portalMode === 'OFFICER'
-                  ? 'bg-[#138808] text-white shadow-xs'
-                  : 'text-slate-700 hover:text-[#138808] hover:bg-slate-200/70'
+                  ? 'bg-[#002642] text-white shadow-xs font-bold'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>{language === 'en' ? 'Official Portal' : 'अधिकारी पोर्टल'}</span>
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+              <span>{language === 'en' ? 'Officer Workspace' : 'अधिकारी कार्यक्षेत्र'}</span>
             </button>
           </div>
 
@@ -274,30 +214,30 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
           <div className="relative">
             <button
               onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-              className="flex items-center gap-2 px-3.5 py-1.5 bg-white border border-slate-200 hover:border-[#0b3866] rounded-full text-xs font-medium text-slate-800 transition-all shadow-xs hover:shadow-sm cursor-pointer"
+              className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 hover:border-slate-300 rounded-lg text-xs font-medium text-slate-800 transition-all shadow-xs cursor-pointer"
               aria-expanded={userDropdownOpen}
               aria-haspopup="true"
             >
-              <div className="w-6 h-6 rounded-full bg-slate-100 text-[#0b3866] border border-slate-200 flex items-center justify-center text-xs">
-                {currentUser.isCitizen ? <User className="w-3.5 h-3.5 text-slate-700" /> : <ShieldCheck className="w-3.5 h-3.5 text-[#138808]" />}
+              <div className="w-6 h-6 rounded-full bg-slate-100 text-[#002642] border border-slate-200 flex items-center justify-center text-xs font-bold">
+                {currentUser.isCitizen ? <User className="w-3.5 h-3.5 text-slate-600" /> : <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />}
               </div>
               <div className="text-left hidden sm:block">
-                <div className="font-semibold text-slate-900 leading-tight truncate max-w-[120px]">
+                <div className="font-semibold text-slate-900 leading-tight truncate max-w-[130px]">
                   {currentUser.name}
                 </div>
-                <div className="text-[10px] text-slate-500 truncate max-w-[120px]">
+                <div className="text-[10px] text-slate-500 truncate max-w-[130px]">
                   {currentUser.role.replace('_', ' ')}
                 </div>
               </div>
-              <ChevronDown className="w-3 h-3 text-slate-400" />
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
             </button>
 
             {/* Dropdown Menu */}
             {userDropdownOpen && (
-              <div className="absolute right-0 mt-1.5 w-80 bg-white border border-slate-200 shadow-2xl rounded-2xl z-50 text-slate-800 text-xs overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
-                <div className="bg-[#002642] text-white px-4 py-2.5 font-bold text-xs flex justify-between items-center border-b-2 border-[#f37021]">
-                  <span>{language === 'en' ? 'Select Role / Persona' : 'उपयोगकर्ता भूमिका चुनें'}</span>
-                  <span className="text-[10px] bg-[#f37021] text-white font-bold px-2 py-0.5 rounded-full shadow-xs">RBAC</span>
+              <div className="absolute right-0 mt-1.5 w-80 bg-white border border-slate-200 shadow-xl rounded-xl z-50 text-slate-800 text-xs overflow-hidden">
+                <div className="bg-[#002642] text-white px-4 py-2.5 font-bold text-xs flex justify-between items-center border-b border-slate-700">
+                  <span>{language === 'en' ? 'Switch Demo Persona' : 'डेमो उपयोगकर्ता बदलें'}</span>
+                  <span className="text-[10px] bg-amber-400/20 text-amber-300 font-bold px-2 py-0.5 rounded-full border border-amber-400/30">SIH DEMO</span>
                 </div>
 
                 <div className="divide-y divide-slate-100 max-h-80 overflow-y-auto">
@@ -305,12 +245,12 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
                     <button
                       key={user.id}
                       onClick={() => handleSwitchUser(user)}
-                      className={`w-full text-left px-4 py-3 flex items-start gap-3 hover:bg-slate-50 transition-colors cursor-pointer ${
+                      className={`w-full text-left px-4 py-2.5 flex items-start gap-3 hover:bg-slate-50 transition-colors cursor-pointer ${
                         currentUser.id === user.id ? 'bg-amber-50/80 border-l-4 border-[#f37021]' : ''
                       }`}
                     >
-                      <div className="mt-0.5 text-slate-600">
-                        {user.isCitizen ? <User className="w-4 h-4 text-slate-600" /> : <ShieldCheck className="w-4 h-4 text-[#138808]" />}
+                      <div className="mt-0.5 text-slate-500">
+                        {user.isCitizen ? <User className="w-4 h-4 text-slate-500" /> : <ShieldCheck className="w-4 h-4 text-emerald-600" />}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="font-bold text-[#002642] truncate">
@@ -328,15 +268,15 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
                 </div>
 
                 {onOpenDemoLogin && (
-                  <div className="p-3 bg-slate-50 border-t border-slate-200">
+                  <div className="p-2.5 bg-slate-50 border-t border-slate-200">
                     <button
                       onClick={() => {
                         setUserDropdownOpen(false);
                         onOpenDemoLogin();
                       }}
-                      className="w-full py-2 text-center bg-[#0b3866] hover:bg-[#082c52] text-white font-bold text-[11px] rounded-lg transition-colors cursor-pointer shadow-xs"
+                      className="w-full py-1.5 text-center bg-[#002642] hover:bg-[#0b3866] text-white font-semibold text-[11px] rounded-lg transition-colors cursor-pointer shadow-xs"
                     >
-                      {language === 'en' ? 'View Official Login Directory' : 'सभी आधिकारिक लॉगिन विवरण देखें'}
+                      {language === 'en' ? 'View Demo Login Directory' : 'सभी डेमो लॉगिन देखें'}
                     </button>
                   </div>
                 )}

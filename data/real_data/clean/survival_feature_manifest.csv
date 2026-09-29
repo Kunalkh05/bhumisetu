@@ -1,0 +1,23 @@
+feature_name,feature_type,source,calculation,availability_rule,coverage,missingness_reason,point_in_time_safe,allowed_for_survival_training,leakage_risk,rejection_reason
+derived_days_since_case_initiation,TEMPORAL,EventLog.occurrence_time (earliest notice),"max(0, (snapshot_date - earliest_notice_date).days)",Days between earliest recorded notification and snapshot_date T,100.0%,NONE,TRUE,TRUE,LOW,NONE
+derived_days_in_current_stage,TEMPORAL,EventLog.occurrence_time (current stage entry),"max(0, (snapshot_date - current_stage_date).days)",Days between current stage entry and snapshot_date T,100.0%,NONE,TRUE,TRUE,LOW,NONE
+derived_days_since_latest_notice,TEMPORAL,EventLog.occurrence_time (notices),"max(0, (snapshot_date - latest_notice_date).days)",Days since latest statutory notice occurring on or before T,99.0%,NO_NOTICE_EVENT,TRUE,TRUE,LOW,NONE
+derived_notice_count,TEMPORAL,EventLog count(statutory_notice),count(notices where occurrence_time <= T and recording_time <= T),Cumulative count of notices published on or before T,100.0%,NONE,TRUE,TRUE,LOW,NONE
+derived_statutory_sec19_proximity_ratio,STATUTORY,EventLog Section 11 date,"min(1.0, (snapshot_date - s11_date).days / 365.0)",Proximity ratio to statutory 365-day Section 19 limit as of T,36.1%,NOT_APPLICABLE_PRE_SEC11,TRUE,TRUE,LOW,NONE
+extension_count,STATUTORY,EventLog EXTENSION orders,count(extension orders where occurrence_time <= T and recording_time <= T),Cumulative count of statutory extensions granted on or before T,100.0%,NONE,TRUE,TRUE,LOW,NONE
+has_statutory_extension,STATUTORY,EventLog EXTENSION orders,extension_count > 0,Boolean indicator if extension_count > 0 on or before T,100.0%,NONE,TRUE,TRUE,LOW,NONE
+award_recorded,AWARD,EventLog AWARD events,count(award events where occurrence_time <= T and recording_time <= T) > 0,Boolean indicator if an Award was published on or before T,100.0%,NONE,TRUE,FALSE,MEDIUM,REJECTED_ZERO_VARIANCE_PRE_EVENT_LEAKAGE_RISK
+current_stage,CATEGORICAL,EventLog stage history,most recent stage entry event where occurrence_time <= T,Current active statutory stage as of T,100.0%,NONE,TRUE,TRUE,LOW,NONE
+district,ADMINISTRATIVE,AcquisitionCase.district,case_meta.district,Jurisdictional Collectorate,100.0%,NONE,TRUE,TRUE,LOW,NONE
+taluka,ADMINISTRATIVE,AcquisitionCase.taluka,case_meta.taluka,Taluka revenue administrative unit,60.5%,UNPARSED_SCHEDULE_TABLE,TRUE,TRUE,LOW,NONE
+village,ADMINISTRATIVE,AcquisitionCase.village,case_meta.village,Revenue village / mouza name,64.2%,UNPARSED_SCHEDULE_TABLE,TRUE,TRUE,LOW,NONE
+acquiring_authority,ADMINISTRATIVE,AcquisitionCase.acquiring_authority,case_meta.acquiring_authority,Acquiring government body / administration,100.0%,NONE,TRUE,TRUE,LOW,NONE
+act_key,ADMINISTRATIVE,AcquisitionCase.act_key,case_meta.act_key,Governing statutory act,100.0%,NONE,TRUE,TRUE,LOW,NONE
+derived_project_type,ADMINISTRATIVE,Project description extraction,case_meta.derived_project_type,Project category inferred from public notice text,100.0%,NONE,TRUE,TRUE,LOW,NONE
+derived_is_direct_purchase,ADMINISTRATIVE,Notice title & negotiation keywords,case_meta.derived_is_direct_purchase,Private negotiation / direct purchase proceeding indicator,100.0%,NONE,TRUE,TRUE,LOW,NONE
+objection_count,MISSING_ATTRIBUTE,Section 15 objection register,None (preserved as NULL),Landowner objection records,0.0%,NOT_PUBLISHED_IN_GAZETTE,TRUE,FALSE,LOW,REJECTED_ZERO_COVERAGE_UNPUBLISHED
+parcel_count,MISSING_ATTRIBUTE,Cadastral survey schedule,None (preserved as NULL),Survey numbers published in gazette schedule table,0.0%,NOT_PUBLISHED_IN_STRUCTURED_DATA,TRUE,FALSE,LOW,REJECTED_ZERO_COVERAGE_UNPUBLISHED
+open_issue_count,MISSING_ATTRIBUTE,Administrative issue tracker,None (preserved as NULL),Internal collectorate operational issues,0.0%,NOT_APPLICABLE_IN_REAL_DATA,TRUE,FALSE,LOW,REJECTED_NOT_APPLICABLE_REAL_DATA
+notified_area_hectares,MISSING_ATTRIBUTE,Gazette notification schedule,None (preserved as NULL),Total land area specified in hectares,0.0%,UNPARSED_SCHEDULE_TABLE,TRUE,FALSE,LOW,REJECTED_ZERO_COVERAGE_UNPARSED
+affected_landowner_count,MISSING_ATTRIBUTE,Cadastral landowner schedule,None (preserved as NULL),Count of distinct affected persons listed in schedule,0.0%,NOT_PUBLISHED_IN_STRUCTURED_DATA,TRUE,FALSE,LOW,REJECTED_ZERO_COVERAGE_UNPUBLISHED
+compensation_amount_inr,MISSING_ATTRIBUTE,Section 23 award statement,None (preserved as NULL),Total compensation determined in award,0.0%,NOT_APPLICABLE_PRE_AWARD,TRUE,FALSE,LOW,REJECTED_ZERO_COVERAGE_POST_AWARD

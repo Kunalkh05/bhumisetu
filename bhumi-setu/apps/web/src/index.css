@@ -381,3 +381,58 @@ body {
 .animate-scheme-progress {
   animation: schemeProgress 6.2s linear forwards;
 }
+
+/* ============================================================ */
+/* BHUMISETU 2026 ENTERPRISE DESIGN SYSTEM UTILITIES            */
+/* ============================================================ */
+
+/* Accessible Focus Rings */
+.gov-focus-ring:focus-visible {
+  outline: 2px solid #0b3866;
+  outline-offset: 2px;
+}
+
+/* 2026 Clean Surface Card */
+.gov-surface-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.03);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.gov-surface-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px 0 rgba(15, 23, 42, 0.05);
+}
+
+/* 2026 Enterprise Data Table */
+.gov-table-2026 {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+  background-color: #ffffff;
+}
+
+.gov-table-2026 th {
+  background-color: #f8fafc;
+  color: #475569;
+  font-weight: 700;
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.gov-table-2026 td {
+  padding: 11px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+  color: #1e293b;
+}
+
+.gov-table-2026 tr:hover {
+  background-color: #f8fafc;
+}

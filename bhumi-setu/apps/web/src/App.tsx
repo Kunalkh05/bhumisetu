@@ -148,7 +148,7 @@ const AppShell: React.FC<{
   demoLoginOpen: boolean;
   setDemoLoginOpen: (open: boolean) => void;
 }> = ({ publicTab, setPublicTab, demoLoginOpen, setDemoLoginOpen }) => {
-  const { isHighContrast, fontScale, currentUser, setCurrentUser, setPortalMode, addToast } = useApp();
+  const { isHighContrast, fontScale, currentUser, setCurrentUser, portalMode, setPortalMode, addToast } = useApp();
   const [bhuMitraOpen, setBhuMitraOpen] = useState(false);
 
   const handleSelectUser = (user: typeof DEMO_USERS[0]) => {
@@ -177,11 +177,13 @@ const AppShell: React.FC<{
         publicTab={publicTab}
         setPublicTab={setPublicTab}
       />
-      <GovNavigation 
-        activeTab={publicTab}
-        setActiveTab={setPublicTab}
-        onOpenAiChat={() => setBhuMitraOpen(true)}
-      />
+      {portalMode === 'CITIZEN' && (
+        <GovNavigation 
+          activeTab={publicTab}
+          setActiveTab={setPublicTab}
+          onOpenAiChat={() => setBhuMitraOpen(true)}
+        />
+      )}
       <MainContent 
         publicTab={publicTab}
         setPublicTab={setPublicTab}
