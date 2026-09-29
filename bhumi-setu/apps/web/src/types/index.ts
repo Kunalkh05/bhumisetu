@@ -101,6 +101,10 @@ export interface LandParcel {
   coordinates: [number, number][]; // Polygon geometry
   geodesicAreaComputed?: number;
   center: [number, number];
+  landownerName?: string;
+  areaHectares?: number;
+  marketValuePerSqm?: number;
+  compensationCalculated?: number;
 }
 
 export interface OwnershipRecord {
@@ -257,11 +261,13 @@ export interface AcquisitionCase {
   stageDeadline: string;
   daysRemaining: number;
   isBreached: boolean;
+  entityVersion?: number;
   totalParcelsCount: number;
   totalExtentHa: number;
   totalAwardedAmount: number;
   totalDisbursedAmount: number;
   sanctionedBudget: number;
+  landAcquisitionOfficer?: string;
   parcels: LandParcel[];
   ownershipRecords: OwnershipRecord[];
   notices: StatutoryNotice[];
@@ -333,6 +339,10 @@ export interface AuditEvent {
   details: string;
   priorValue?: string;
   newValue?: string;
+  actionType?: string;
+  timestamp?: string;
+  ipAddress?: string;
+  payload?: any;
 }
 
 export interface ImportBatchRow {

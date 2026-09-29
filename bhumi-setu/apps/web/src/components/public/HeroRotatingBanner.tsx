@@ -11,7 +11,8 @@ import {
   Sparkles,
   ArrowRight,
   ExternalLink,
-  Layers
+  Layers,
+  Mic
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { PublicTab } from '../common/GovNavigation';
@@ -145,9 +146,50 @@ export const HeroRotatingBanner: React.FC<{
   onNavigate: (tab: PublicTab) => void;
   onOpenReport?: () => void;
 }> = ({ onNavigate }) => {
-  const { language } = useApp();
+  const { language, addToast } = useApp();
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [quickSearch, setQuickSearch] = useState('');
+  const [isListening, setIsListening] = useState(false);
+
+  const handleVoiceSearch = () => {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      try {
+        const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        const recognition = new SpeechRec();
+        recognition.lang = language === 'hi' ? 'hi-IN' : 'en-IN';
+        setIsListening(true);
+        recognition.onresult = (event: any) => {
+          const transcript = event.results[0][0].transcript;
+          setQuickSearch(transcript);
+          setIsListening(false);
+          addToast({
+            type: 'info',
+            message: `Voice search recognized: "${transcript}"`,
+            messageHi: `आवाज पहचानी गई: "${transcript}"`
+          });
+          onNavigate('SEARCH');
+        };
+        recognition.onerror = () => {
+          setIsListening(false);
+        };
+        recognition.onend = () => {
+          setIsListening(false);
+        };
+        recognition.start();
+      } catch {
+        setIsListening(false);
+      }
+    } else {
+      addToast({
+        type: 'info',
+        message: 'Speech recognition is simulating for your browser.',
+        messageHi: 'आवाज इनपुट अनुकरण किया जा रहा है।'
+      });
+      setQuickSearch('Gat 123 Besa Nagpur');
+      setTimeout(() => onNavigate('SEARCH'), 800);
+    }
+  };
 
   // Auto-rotate every 4.5 seconds
   useEffect(() => {
@@ -236,33 +278,100 @@ export const HeroRotatingBanner: React.FC<{
               </p>
             </div>
 
-            {/* Primary, Secondary & Third Action CTAs */}
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              {/* Primary CTA */}
-              <button
-                onClick={() => onNavigate('SEARCH')}
-                className="px-5 py-2.5 bg-[#f37021] hover:bg-[#d95a10] text-white font-extrabold text-xs sm:text-sm rounded-xs shadow-md flex items-center gap-2 transition-all transform hover:-translate-y-0.5"
+            {/* Direct Quick Search Bar with Voice Input */}
+            <div className="pt-2 max-w-2xl">
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  onNavigate('SEARCH');
+                }}
+                className="bg-white p-1 sm:p-1.5 rounded-xs shadow-xl flex items-center gap-2 border-2 border-amber-400"
               >
-                <Search className="w-4 h-4" />
-                <span>{language === 'en' ? 'Search Land' : 'भू-अभिलेख खोजें'}</span>
-              </button>
+                <div className="pl-2 text-slate-500">
+                  <Search className="w-4 h-4 text-[#002642]" />
+                </div>
+                <input
+                  type="text"
+                  value={quickSearch}
+                  onChange={(e) => setQuickSearch(e.target.value)}
+                  placeholder={language === 'en' 
+                    ? "Enter Survey / Gat No., 14-digit ULPIN, or Village..." 
+                    : "सर्वे / गट क्रमांक, १४-अंकीय भू-आधार (ULPIN) या गाँव दर्ज करें..."}
+                  className="flex-1 bg-transparent text-slate-800 text-xs sm:text-sm font-semibold focus:outline-none placeholder:text-slate-400"
+                />
+                <button
+                  type="button"
+                  onClick={handleVoiceSearch}
+                  className={`p-1.5 rounded-xs transition-colors flex items-center gap-1 text-[11px] font-bold ${
+                    isListening 
+                      ? 'bg-red-500 text-white animate-pulse' 
+                      : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                  }`}
+                  title={language === 'en' ? "Search by Voice" : "बोलकर खोजें"}
+                  aria-label="Search by Voice"
+                >
+                  <Mic className={`w-3.5 h-3.5 ${isListening ? 'text-white' : 'text-[#f37021]'}`} />
+                  <span className="hidden sm:inline">{language === 'en' ? 'Voice' : 'बोलें'}</span>
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-[#f37021] hover:bg-[#d95a10] text-white font-extrabold text-xs rounded-xs flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                >
+                  <span>{language === 'en' ? 'Search' : 'खोजें'}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </form>
 
+              {/* Instant sample search chips for zero cognitive load */}
+              <div className="flex flex-wrap items-center gap-1.5 mt-2 text-[10px]">
+                <span className="text-slate-300 font-semibold">{language === 'en' ? 'Quick samples:' : 'त्वरित नमूने:'}</span>
+                {[
+                  { label: 'Gat 123/4 Besa', tab: 'SEARCH' },
+                  { label: 'ULPIN: 27712049001234', tab: 'SEARCH' },
+                  { label: 'One Property View', tab: 'PROPERTY_INTEL' }
+                ].map((chip, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      setQuickSearch(chip.label);
+                      onNavigate(chip.tab as any);
+                    }}
+                    className="px-2 py-0.5 bg-white/15 hover:bg-white/30 text-amber-200 border border-white/20 rounded-xs transition-colors cursor-pointer"
+                  >
+                    {chip.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Primary, Secondary & Third Action CTAs */}
+            <div className="flex flex-wrap items-center gap-3 pt-1">
               {/* Secondary CTA */}
               <button
                 onClick={() => onNavigate('DOC_VERIFY')}
-                className="px-5 py-2.5 bg-white text-[#002642] hover:bg-slate-100 font-extrabold text-xs sm:text-sm rounded-xs shadow-md flex items-center gap-2 transition-all transform hover:-translate-y-0.5"
+                className="px-4 py-2 bg-white text-[#002642] hover:bg-slate-100 font-extrabold text-xs rounded-xs shadow-md flex items-center gap-1.5 transition-all transform hover:-translate-y-0.5"
               >
-                <FileCheck className="w-4 h-4 text-[#002642]" />
-                <span>{language === 'en' ? 'Verify Document' : 'दस्तावेज सत्यापन'}</span>
+                <FileCheck className="w-3.5 h-3.5 text-[#002642]" />
+                <span>{language === 'en' ? 'AI Document Verification' : 'दस्तावेज सत्यापन'}</span>
               </button>
 
               {/* Third CTA */}
               <button
                 onClick={() => onNavigate('SCHEMES')}
-                className="px-4 py-2.5 bg-white/15 hover:bg-white/25 border border-white/30 text-white font-bold text-xs sm:text-sm rounded-xs transition-colors flex items-center gap-1.5"
+                className="px-4 py-2 bg-white/15 hover:bg-white/25 border border-white/30 text-white font-bold text-xs rounded-xs transition-colors flex items-center gap-1.5"
               >
-                <Landmark className="w-4 h-4 text-amber-300" />
-                <span>{language === 'en' ? 'Explore Schemes' : 'योजनाएं देखें'}</span>
+                <Landmark className="w-3.5 h-3.5 text-amber-300" />
+                <span>{language === 'en' ? 'Explore 9 Schemes' : '९ प्रमुख योजनाएं'}</span>
+              </button>
+
+              {/* Fourth CTA */}
+              <button
+                onClick={() => onNavigate('PROPERTY_INTEL')}
+                className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-extrabold text-xs rounded-xs shadow-md flex items-center gap-1.5 transition-all"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                <span>{language === 'en' ? 'One Property — One View' : 'एकल संपत्ति दृश्य'}</span>
               </button>
             </div>
 

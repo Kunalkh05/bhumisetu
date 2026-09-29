@@ -132,12 +132,13 @@ with open(index_md, "w", encoding="utf-8") as f:
     f.write("# BHUMISETU Real Government Land Acquisition Documents Catalog\n\n")
     f.write(f"**Total Verified Government Documents**: {len(tracker_records)}\n\n")
     f.write("All original official PDF notices and awards from Maharashtra Collectorate Portals organized into a single directory.\n\n")
-    f.write("| Index | District | Stage | Case / Notice Details | Village / Project | Date | Size | File Link |\n")
-    f.write("| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n")
+    f.write("| Index | District | Stage | Case / Notice Details | Village / Project | Date | Size | Local File (Click to Open) | Official S3WaaS Source |\n")
+    f.write("| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n")
     for r in tracker_records:
         details = r['case_number'] if r['case_number'] != 'N/A' else r['source_id']
         loc_prj = f"{r['village']} ({r['project_name']})" if r['project_name'] != 'N/A' else r['village']
-        f.write(f"| {r['index']} | **{r['district']}** | `{r['stage_abbr']}` | {details} | {loc_prj} | {r['publication_date']} | {r['file_size_mb']} MB | [`{r['organized_file']}`](./{r['organized_file']}) |\n")
+        abs_file_path = os.path.join(TARGET_DIR, r['organized_file'])
+        f.write(f"| {r['index']} | **{r['district']}** | `{r['stage_abbr']}` | {details} | {loc_prj} | {r['publication_date']} | {r['file_size_mb']} MB | [📄 {r['organized_file']}](file://{abs_file_path}) | [🌐 Official Notice ↗]({r['source_url']}) |\n")
 
 print(f"Successfully organized {len(tracker_records)} files into {TARGET_DIR}")
 print(f"Generated tracker: {tracker_csv}")

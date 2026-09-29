@@ -21,12 +21,14 @@ export const AuditLogViewer: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
 
-  const filteredLogs = auditLog.filter(log =>
-    log.actionType.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    log.actorName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    log.entityType.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    log.entityId.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredLogs = auditLog.filter(log => {
+    const q = searchQuery.toLowerCase();
+    const action = (log.actionType || log.eventType || '').toLowerCase();
+    const actor = (log.actorName || '').toLowerCase();
+    const entity = (log.entityType || '').toLowerCase();
+    const entityId = (log.entityId || '').toLowerCase();
+    return action.includes(q) || actor.includes(q) || entity.includes(q) || entityId.includes(q);
+  });
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-6 animate-in fade-in">
@@ -76,7 +78,7 @@ export const AuditLogViewer: React.FC = () => {
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-mono font-bold text-blue-900 dark:text-blue-300 bg-blue-50 dark:bg-blue-950 px-2 py-0.5 rounded">
-                      {log.actionType}
+                      {log.actionType || log.eventType}
                     </span>
                     <span className="text-slate-500">•</span>
                     <span className="font-semibold text-slate-800 dark:text-slate-200">
@@ -91,9 +93,9 @@ export const AuditLogViewer: React.FC = () => {
                     </span>
                     <span className="flex items-center gap-1">
                       <Clock className="w-3 h-3 text-slate-400" />
-                      {new Date(log.timestamp).toLocaleString('en-IN')}
+                      {log.timestamp ? new Date(log.timestamp).toLocaleString('en-IN') : log.occurrenceTime || 'Recent'}
                     </span>
-                    <span className="font-mono text-slate-400">IP: {log.ipAddress}</span>
+                    {log.ipAddress && <span className="font-mono text-slate-400">IP: {log.ipAddress}</span>}
                   </div>
                 </div>
 

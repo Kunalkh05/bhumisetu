@@ -473,12 +473,12 @@ export const ReraPerformanceChart: React.FC<ReraPerformanceChartProps> = ({
                 const availableWidth = 760 - chartPadding.left - chartPadding.right;
                 const zoneBandWidth = availableWidth / zoneData.length;
                 const zoneCenter = chartPadding.left + zoneBandWidth * zoneIdx + zoneBandWidth / 2;
-                const isZoneSelected = selectedZoneId === zone.id;
+                const isZoneSelected = selectedZoneId === zone.zoneId;
 
                 const statuses: ReraPerformanceStatus[] = ['ON_TRACK', 'DELAYED', 'COMPLETED', 'LAPSED_DEFAULT'];
 
                 return (
-                  <g key={zone.id}>
+                  <g key={zone.zoneId}>
                     {/* Zone Highlight Background Column */}
                     <rect
                       x={chartPadding.left + zoneBandWidth * zoneIdx + 4}
@@ -488,7 +488,7 @@ export const ReraPerformanceChart: React.FC<ReraPerformanceChartProps> = ({
                       fill={isZoneSelected ? '#f0f6fb' : 'transparent'}
                       rx="2"
                       className="hover:fill-slate-50 transition-colors cursor-pointer"
-                      onClick={() => onSelectZone && onSelectZone(isZoneSelected ? '' : zone.id)}
+                      onClick={() => onSelectZone && onSelectZone(isZoneSelected ? '' : zone.zoneId)}
                     />
 
                     {/* Bars Rendering */}
@@ -505,7 +505,7 @@ export const ReraPerformanceChart: React.FC<ReraPerformanceChartProps> = ({
                           const barX = groupStartX + stIdx * (barWidth + 3);
                           const barY = getYCoordinate(val);
                           const barHeight = Math.max(getYCoordinate(0) - barY, val > 0 ? 3 : 0);
-                          const isBarHovered = hoveredBar?.zoneId === zone.id && hoveredBar?.status === st;
+                          const isBarHovered = hoveredBar?.zoneId === zone.zoneId && hoveredBar?.status === st;
                           const isStatusActive = selectedStatus === 'ALL' || selectedStatus === st;
 
                           return (
@@ -524,10 +524,10 @@ export const ReraPerformanceChart: React.FC<ReraPerformanceChartProps> = ({
                                 onMouseEnter={(e) => {
                                   const rect = e.currentTarget.getBoundingClientRect();
                                   setHoveredBar({
-                                    zoneId: zone.id,
+                                    zoneId: zone.zoneId,
                                     status: st,
                                     value: val,
-                                    label: `${zone.name} • ${cfg.label}`,
+                                    label: `${zone.zoneName} • ${cfg.label}`,
                                     projects,
                                     x: rect.x + rect.width / 2,
                                     y: rect.y - 10,
@@ -536,7 +536,7 @@ export const ReraPerformanceChart: React.FC<ReraPerformanceChartProps> = ({
                                 onMouseLeave={() => setHoveredBar(null)}
                                 onClick={() => {
                                   if (onSelectStatus) onSelectStatus(st);
-                                  if (onSelectZone) onSelectZone(zone.id);
+                                  if (onSelectZone) onSelectZone(zone.zoneId);
                                 }}
                               />
 
@@ -573,7 +573,7 @@ export const ReraPerformanceChart: React.FC<ReraPerformanceChartProps> = ({
                           const segBottomY = getYCoordinate(currentBottomVal);
                           const segTopY = getYCoordinate(currentBottomVal + val);
                           const segHeight = Math.max(segBottomY - segTopY, 2);
-                          const isBarHovered = hoveredBar?.zoneId === zone.id && hoveredBar?.status === st;
+                          const isBarHovered = hoveredBar?.zoneId === zone.zoneId && hoveredBar?.status === st;
                           const isStatusActive = selectedStatus === 'ALL' || selectedStatus === st;
 
                           currentBottomVal += val;
@@ -593,10 +593,10 @@ export const ReraPerformanceChart: React.FC<ReraPerformanceChartProps> = ({
                                 onMouseEnter={(e) => {
                                   const rect = e.currentTarget.getBoundingClientRect();
                                   setHoveredBar({
-                                    zoneId: zone.id,
+                                    zoneId: zone.zoneId,
                                     status: st,
                                     value: val,
-                                    label: `${zone.name} • ${cfg.label}`,
+                                    label: `${zone.zoneName} • ${cfg.label}`,
                                     projects,
                                     x: rect.x + rect.width / 2,
                                     y: rect.y - 10,
@@ -605,7 +605,7 @@ export const ReraPerformanceChart: React.FC<ReraPerformanceChartProps> = ({
                                 onMouseLeave={() => setHoveredBar(null)}
                                 onClick={() => {
                                   if (onSelectStatus) onSelectStatus(st);
-                                  if (onSelectZone) onSelectZone(zone.id);
+                                  if (onSelectZone) onSelectZone(zone.zoneId);
                                 }}
                               />
 
@@ -632,7 +632,7 @@ export const ReraPerformanceChart: React.FC<ReraPerformanceChartProps> = ({
                     {/* X Axis Zone Label & Corridor Badge */}
                     <g 
                       className="cursor-pointer"
-                      onClick={() => onSelectZone && onSelectZone(isZoneSelected ? '' : zone.id)}
+                      onClick={() => onSelectZone && onSelectZone(isZoneSelected ? '' : zone.zoneId)}
                     >
                       <text
                         x={zoneCenter}
@@ -730,7 +730,7 @@ export const ReraPerformanceChart: React.FC<ReraPerformanceChartProps> = ({
               </thead>
               <tbody>
                 {zoneData.map(zone => {
-                  const isSelected = selectedZoneId === zone.id;
+                  const isSelected = selectedZoneId === zone.zoneId;
                   return (
                     <tr 
                       key={zone.zoneId}

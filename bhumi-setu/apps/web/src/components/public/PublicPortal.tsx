@@ -32,7 +32,9 @@ import {
   FileCheck,
   Share2,
   Printer,
-  Sparkles
+  Sparkles,
+  Pause,
+  Play
 } from 'lucide-react';
 import { formatCurrencyINR, formatDate } from '../../lib/utils';
 import { GisMapViewer } from '../officer/GisMapViewer';
@@ -79,6 +81,7 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
 }) => {
   const { cases, submitCitizenObjection, language, addToast } = useApp();
   const [selectedProperty, setSelectedProperty] = useState<DemoProperty>(SAMPLE_PROPERTY_DEMO);
+  const [isMarqueePaused, setIsMarqueePaused] = useState(false);
 
   // Search State
   const [searchState, setSearchState] = useState('Maharashtra');
@@ -195,12 +198,23 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
     <div id="main-content" className="w-full bg-[#f8fafc] text-slate-800 text-xs min-h-screen">
       {/* 1. Official S3WaaS News Marquee Ticker */}
       <div className="bg-[#fff9e6] border-b border-[#ffd27f] text-slate-900 py-1.5 px-4 flex items-center gap-3">
-        <div className="bg-[#f37021] text-white px-2.5 py-0.5 font-bold text-[11px] uppercase flex-shrink-0 flex items-center gap-1.5 rounded-xs shadow-xs">
-          <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-          <span>{language === 'en' ? "WHAT'S NEW" : 'नवीनतम'}</span>
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          <div className="bg-[#f37021] text-white px-2.5 py-0.5 font-bold text-[11px] uppercase flex items-center gap-1.5 rounded-xs shadow-xs">
+            <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+            <span>{language === 'en' ? "WHAT'S NEW" : 'नवीनतम'}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsMarqueePaused(!isMarqueePaused)}
+            className="p-1 rounded-xs bg-amber-100 hover:bg-amber-200 text-slate-800 border border-amber-300 transition-colors cursor-pointer"
+            title={isMarqueePaused ? (language === 'en' ? "Play news ticker" : "समाचार शुरू करें") : (language === 'en' ? "Pause news ticker" : "समाचार रोकें")}
+            aria-label={isMarqueePaused ? "Play news ticker" : "Pause news ticker"}
+          >
+            {isMarqueePaused ? <Play className="w-3 h-3 text-[#002642]" /> : <Pause className="w-3 h-3 text-[#002642]" />}
+          </button>
         </div>
         <div className="overflow-hidden whitespace-nowrap flex-1 text-[11px] font-medium text-slate-800">
-          <span className="animate-gov-marquee">
+          <span className={`animate-gov-marquee ${isMarqueePaused ? 'paused' : ''}`}>
             📢 [28-Sept-2026] <strong>PM-KISAN</strong>: 17th Installment credited to 11.8 Cr farmers • 
             <strong>SVAMITVA</strong>: 1.65 Cr+ digital property cards issued via drone survey • 
             <strong>Jal Jeevan Mission</strong>: 15.2 Cr rural households connected with tap water • 
