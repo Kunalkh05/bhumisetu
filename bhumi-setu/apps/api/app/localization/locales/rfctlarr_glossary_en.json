@@ -1,0 +1,15 @@
+{
+  "statutory_act": "Right to Fair Compensation and Transparency in Land Acquisition, Rehabilitation and Resettlement Act, 2013",
+  "section_4": "Social Impact Assessment Study Notification",
+  "section_11": "Preliminary Notification for Land Acquisition",
+  "section_15": "Hearing of Objections by Collector",
+  "section_19": "Declaration and Summary of Rehabilitation and Resettlement Scheme",
+  "section_21": "Notice to Persons Interested to Claim Compensation",
+  "section_23": "Inquiry and Land Acquisition Award by Collector",
+  "section_26": "Determination of Market Value of Land",
+  "section_30": "Award of Solatium at 100% of Market Value",
+  "solatium_description": "Mandatory 100% solatium over determined market value in consideration of compulsory nature of acquisition",
+  "market_value_multiplier_rural": "Multiplier factor between 1.00 and 2.00 determined by state government based on rural distance",
+  "market_value_multiplier_urban": "Multiplier factor of 1.00 applicable to urban areas",
+  "statutory_interest": "Additional compensation calculated at 12% per annum from Section 11 publication date to award date"
+}
