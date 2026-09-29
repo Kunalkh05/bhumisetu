@@ -17,6 +17,31 @@ from app.models.acquisition_case import AcquisitionCase
 from app.models.data_subject_request import DataSubjectRequest
 from app.models.objection import Objection
 from app.security.access import Principal, authenticate
+from app.security.gate import GatedModel, Sensitive, Visibility
+
+
+class CitizenCaseOut(GatedModel):
+    id: int = Sensitive(Visibility.PUBLIC)
+    case_reference: str = Sensitive(Visibility.PUBLIC)
+    stage_key: str | None = Sensitive(Visibility.PUBLIC)
+    stage: str | None = Sensitive(Visibility.PUBLIC)
+    status: str | None = Sensitive(Visibility.PUBLIC)
+    village: str | None = Sensitive(Visibility.PUBLIC)
+    district: str | None = Sensitive(Visibility.PUBLIC)
+    stage_deadline: str | None = Sensitive(Visibility.PUBLIC)
+    is_breached: bool | None = Sensitive(Visibility.PUBLIC)
+
+
+class CitizenObjectionOut(GatedModel):
+    success: bool = Sensitive(Visibility.PUBLIC)
+    objection_id: int = Sensitive(Visibility.PUBLIC)
+    message: str = Sensitive(Visibility.PUBLIC)
+
+
+class CitizenCorrectionOut(GatedModel):
+    success: bool = Sensitive(Visibility.PUBLIC)
+    request_id: int = Sensitive(Visibility.PUBLIC)
+    message: str = Sensitive(Visibility.PUBLIC)
 
 
 class CitizenObjectionIn(BaseModel):
@@ -37,8 +62,8 @@ class CitizenCorrectionIn(BaseModel):
     assertedValue: str | None = None
 
 
-@citizen_router.get("/case")
-def get_citizen_case() -> dict[str, Any]:
+@citizen_router.get("/case", response_model=CitizenCaseOut)
+def get_citizen_case() -> CitizenCaseOut:
     try:
         with _read_session() as session:
             case = session.execute(select(AcquisitionCase).order_by(AcquisitionCase.id)).scalars().first()
@@ -69,8 +94,8 @@ def get_citizen_case() -> dict[str, Any]:
         }
 
 
-@citizen_router.post("/objection")
-def submit_objection(payload: CitizenObjectionIn) -> dict[str, Any]:
+@citizen_router.post("/objection", response_model=CitizenObjectionOut)
+def submit_objection(payload: CitizenObjectionIn) -> CitizenObjectionOut:
     numeric_case_id = (
         payload.caseId
         if isinstance(payload.caseId, int)
@@ -122,8 +147,8 @@ def submit_objection(payload: CitizenObjectionIn) -> dict[str, Any]:
         }
 
 
-@citizen_router.post("/correction")
-def submit_correction(payload: CitizenCorrectionIn) -> dict[str, Any]:
+@citizen_router.post("/correction", response_model=CitizenCorrectionOut)
+def submit_correction(payload: CitizenCorrectionIn) -> CitizenCorrectionOut:
     try:
         with unit_of_work() as session:
             dsr = DataSubjectRequest(

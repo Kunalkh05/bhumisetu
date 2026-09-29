@@ -213,8 +213,14 @@ def test_the_four_routers_are_gated_with_the_section_9_prefixes() -> None:
 def test_create_app_mounts_every_surface_as_a_gated_route(gated_app: FastAPI) -> None:
     """The wiring: each probe path is present on the app and is a GatedRoute, so an
     endpoint registered on a §9 router is gated by construction."""
+    routes = []
+    for r in gated_app.routes:
+        if type(r).__name__ == "_IncludedRouter":
+            routes.extend(getattr(r.original_router, "routes", []))
+        else:
+            routes.append(r)
     by_path = {
-        route.path: route for route in gated_app.routes if hasattr(route, "path")
+        route.path: route for route in routes if hasattr(route, "path")
     }
     for path in (
         "/api/officer/probe",

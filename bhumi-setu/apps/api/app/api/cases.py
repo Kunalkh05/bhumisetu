@@ -16,6 +16,39 @@ from app.db.session import get_engine
 from app.models.acquisition_case import AcquisitionCase
 from app.schemas.cases import CaseOut, TimelineEventOut
 from app.security.access import Principal, authenticate, scoped
+from app.security.gate import GatedModel, Sensitive, Visibility
+
+
+class CaseWorkspaceOut(GatedModel):
+    id: int = Sensitive(Visibility.OFFICER_ONLY)
+    case_reference: str = Sensitive(Visibility.OFFICER_ONLY)
+    project: dict = Sensitive(Visibility.OFFICER_ONLY)
+    stage_key: str = Sensitive(Visibility.OFFICER_ONLY)
+    stage_deadline: str | None = Sensitive(Visibility.OFFICER_ONLY)
+    stage_entered_on: str | None = Sensitive(Visibility.OFFICER_ONLY)
+    remaining_days: int | None = Sensitive(Visibility.OFFICER_ONLY)
+    statutory_window_days: int | None = Sensitive(Visibility.OFFICER_ONLY)
+    progress_percentage: int | None = Sensitive(Visibility.OFFICER_ONLY)
+    statutory_max_breached: bool = Sensitive(Visibility.OFFICER_ONLY)
+    sla_color: str = Sensitive(Visibility.OFFICER_ONLY)
+    parcels: list[dict] = Sensitive(Visibility.OFFICER_ONLY)
+    ownership_records: list[dict] = Sensitive(Visibility.OFFICER_ONLY)
+    notices: list[dict] = Sensitive(Visibility.OFFICER_ONLY)
+    objections: list[dict] = Sensitive(Visibility.OFFICER_ONLY)
+    validation_issues: list[dict] = Sensitive(Visibility.OFFICER_ONLY)
+    documents: list[dict] = Sensitive(Visibility.OFFICER_ONLY)
+    timeline: list[dict] = Sensitive(Visibility.OFFICER_ONLY)
+    risk: dict = Sensitive(Visibility.OFFICER_ONLY)
+    entity_version: int = Sensitive(Visibility.OFFICER_ONLY)
+
+
+class StageTransitionOut(GatedModel):
+    id: int = Sensitive(Visibility.OFFICER_ONLY)
+    case_reference: str = Sensitive(Visibility.OFFICER_ONLY)
+    stage_key: str = Sensitive(Visibility.OFFICER_ONLY)
+    entity_version: int = Sensitive(Visibility.OFFICER_ONLY)
+    message: str = Sensitive(Visibility.OFFICER_ONLY)
+
 
 __all__ = []
 
@@ -272,11 +305,11 @@ def case_timeline(
         ]
 
 
-@officer_router.get("/cases/{case_id}/workspace")
+@officer_router.get("/cases/{case_id}/workspace", response_model=CaseWorkspaceOut)
 def get_case_workspace(
     case_id: int,
     principal: Principal = Depends(authenticate),
-) -> dict:
+) -> Any:
     from app.models.project import Project
     from app.models.land_parcel import LandParcel
     from app.models.case_parcel import CaseParcel
@@ -451,12 +484,12 @@ def get_case_workspace(
         return _mock_workspace(case_id)
 
 
-@officer_router.post("/cases/{case_id}/stage")
+@officer_router.post("/cases/{case_id}/stage", response_model=StageTransitionOut)
 def transition_case_stage(
     case_id: int,
     body: dict,
     principal: Principal = Depends(authenticate),
-) -> dict:
+) -> Any:
     from app.db.session import unit_of_work
     from app.db.event_log import Actor
 

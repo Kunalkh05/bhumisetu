@@ -159,8 +159,11 @@ def create_app(core: CoreSettings | None = None) -> FastAPI:
         logger.warning("Could not auto-configure auth backend: %s", exc)
 
     @app.get("/healthz", include_in_schema=False)
-    @app.get("/api/healthz", include_in_schema=False)
     async def healthz() -> dict[str, str]:
+        return {"status": "ok"}
+
+    @app.get("/api/healthz", include_in_schema=False)
+    async def api_healthz() -> dict[str, str]:
         return {"status": "ok", "app": "BHUMISETU", "version": "1.0.0"}
 
     return app

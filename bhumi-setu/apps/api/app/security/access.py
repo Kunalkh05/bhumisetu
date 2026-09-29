@@ -475,13 +475,18 @@ def _read_session() -> Iterator[Session]:
     exists, checks out one connection, and returns it on exit, so it never collides
     with the handler's later transaction.
     """
+    session = None
     try:
         session = Session(bind=get_engine())
+    except Exception:
+        pass
+
+    if session is not None:
         try:
             yield session
         finally:
             session.close()
-    except Exception:
+    else:
         class _NullSession:
             def execute(self, *args, **kwargs):
                 raise RuntimeError("Database connection not ready")
