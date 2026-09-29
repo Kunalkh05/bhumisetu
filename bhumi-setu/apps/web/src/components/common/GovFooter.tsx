@@ -15,21 +15,21 @@ export const GovFooter: React.FC = () => {
       {/* 2. S3WaaS 4-Column Structured Link Directory */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Column 1: Department Information */}
+          {/* Column 1: Platform Purpose & Civic-Tech Mission */}
           <div className="space-y-3">
             <div className="border-b border-slate-700 pb-2">
               <h3 className="font-bold text-sm text-white tracking-wide uppercase">
-                {language === 'en' ? 'BHUMISETU PORTAL' : 'भूमिसेतु पोर्टल'}
+                {language === 'en' ? 'BHUMISETU PLATFORM' : 'भूमिसेतु मंच'}
               </h3>
             </div>
             <p className="text-[11px] text-slate-400 leading-relaxed">
               {language === 'en'
-                ? 'Official Land Acquisition Management & Compensation Tracking System of the Government of India, ensuring statutory transparency under RFCTLARR Act 2013.'
-                : 'भारत सरकार की आधिकारिक भूमि अधिग्रहण एवं मुआवजा ट्रैकिंग प्रणाली, जो भूमि अधिग्रहण अधिनियम २०१३ के अंतर्गत पारदर्शिता सुनिश्चित करती है।'}
+                ? 'Unified AI-Powered Land Intelligence & Verification Platform. An academic civic-tech demonstration providing preliminary verification and discovery across India’s land records ecosystem.'
+                : 'एकीकृत एआई-संचालित भू-आसूचना एवं प्रारंभिक सत्यापन मंच। भारत के भू-अभिलेखों के प्राथमिक विश्लेषण हेतु एक शैक्षणिक नागरिक-तकनीक पहल।'}
             </p>
             <div className="pt-1 text-[11px] text-slate-400">
-              <p className="font-semibold text-slate-300">Department of Land Resources</p>
-              <p>Ministry of Rural Development, New Delhi</p>
+              <p className="font-semibold text-slate-300">Academic / SIH Demonstration Project</p>
+              <p>Inspired by Digital India Land Modernization (DILRMP)</p>
             </div>
           </div>
 
@@ -202,24 +202,32 @@ export const GovFooter: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. S3WaaS Legal Ownership & Hosting Credits (GIGW 3.0 Mandatory) */}
+      {/* 3. Mandatory Civic-Tech Academic Disclaimer & Credits (Section 20) */}
+      <div className="bg-[#00101e] border-t border-slate-800 py-3.5 px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto p-3 bg-amber-500/10 border border-amber-500/30 rounded-xs text-[11px] text-amber-200/90 leading-relaxed text-left">
+          <strong>Mandatory Academic &amp; Legal Disclaimer: </strong>
+          “BhuMiseTu is a prototype civic-tech platform created for demonstration and academic purposes. It is not an official Government of India portal. Information shown may be simulated or aggregated from publicly available sources and should not be treated as legal title verification, government certification, or legal advice.”
+        </div>
+      </div>
+
+      {/* 4. S3WaaS Hosting Credits & Standards Compliance */}
       <div className="bg-[#001424] border-t border-slate-800 text-[11px] text-slate-400 py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-wrap justify-between items-center gap-4">
-          <div className="space-y-1">
+          <div className="space-y-1 text-left">
             <p>
               {language === 'en'
-                ? 'Website Content Managed by Department of Land Resources, Ministry of Rural Development, Government of India.'
-                : 'वेबसाइट सामग्री प्रबंधन: भूमि संसाधन विभाग, ग्रामीण विकास मंत्रालय, भारत सरकार।'}
+                ? 'Academic Prototype developed for Smart India Hackathon / Civic-Tech Demonstration.'
+                : 'स्मार्ट इंडिया हैकाथॉन / नागरिक-तकनीक प्रदर्शन हेतु विकसित शैक्षणिक प्रारूप।'}
             </p>
             <p className="text-[10px] text-slate-400">
               {language === 'en'
-                ? 'Designed, Developed and Hosted by National Informatics Centre (NIC), Ministry of Electronics & IT, Government of India.'
-                : 'डिजाइन, विकास एवं होस्टिंग: राष्ट्रीय सूचना विज्ञान केंद्र (एन.आई.सी.), इलेक्ट्रॉनिकी एवं सूचना प्रौद्योगिकी मंत्रालय, भारत सरकार।'}
+                ? 'Designed using S3WaaS & GIGW 3.0 government accessibility design guidelines.'
+                : 'S3WaaS एवं GIGW 3.0 सरकारी सुगम्यता दिशानिर्देशों के अनुरूप संरचित।'}
             </p>
           </div>
 
           <div className="flex items-center gap-3 text-[10px]">
-            <span className="text-slate-400">Last Updated: <strong className="text-slate-300">28 September 2026</strong></span>
+            <span className="text-slate-400">Last Updated: <strong className="text-slate-300">29 September 2026</strong></span>
             <span>•</span>
             <span className="flex items-center gap-1 text-emerald-400 font-semibold">
               <ShieldCheck className="w-3.5 h-3.5" />

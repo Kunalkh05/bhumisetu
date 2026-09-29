@@ -178,13 +178,13 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
           <div className="border-l border-slate-300 pl-4 py-0.5">
             <div className="text-[12px] font-semibold text-[#002642] tracking-wide">
               {language === 'en' 
-                ? 'Department of Land Resources • Ministry of Rural Development' 
-                : 'भूमि संसाधन विभाग • ग्रामीण विकास मंत्रालय'}
+                ? 'Civic-Tech Land Intelligence Layer • Academic & SIH Demonstration' 
+                : 'नागरिक-तकनीक भू-आसूचना स्तर • शैक्षणिक एवं एसआईएच प्रदर्शन'}
             </div>
             <div className="text-[11px] text-slate-500 font-medium">
               {language === 'en' 
-                ? 'Government of India' 
-                : 'भारत सरकार'}
+                ? 'Inspired by Digital India Land Modernization (DILRMP & SVAMITVA)' 
+                : 'डिजिटल भारत भू-आधुनिकीकरण (DILRMP एवं स्वामित्व) से प्रेरित'}
             </div>
             <div className="flex items-center gap-2 mt-1">
               <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#0b3866] leading-none">
@@ -193,11 +193,14 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
               <span className="text-base sm:text-lg font-bold text-[#f37021] leading-none">
                 | भूमिसेतु
               </span>
+              <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-amber-400 text-black">
+                PROTOTYPE
+              </span>
             </div>
-            <p className="text-[10px] text-slate-600 mt-0.5 hidden sm:block">
+            <p className="text-[10px] text-slate-600 mt-0.5 hidden sm:block font-semibold">
               {language === 'en'
-                ? 'National Land Acquisition Management & Statutory Compliance Portal (RFCTLARR Act, 2013)'
-                : 'राष्ट्रीय भूमि अधिग्रहण प्रबंधन एवं सांविधिक अनुपालन पोर्टल'}
+                ? 'Unified AI-Powered Land Intelligence & Verification Platform'
+                : 'एकीकृत एआई-संचालित भू-आसूचना एवं प्रारंभिक सत्यापन मंच'}
             </p>
           </div>
         </div>
@@ -208,7 +211,7 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
           <div className="hidden md:flex items-center gap-2.5 border-r border-slate-200 pr-3.5 py-0.5">
             <div className="relative">
               <img 
-                src="/assets/pm_modi_thumb.jpg" 
+                src="/assets/pm_modi_2023.jpg" 
                 alt={language === 'en' ? 'Shri Narendra Modi, Hon\'ble Prime Minister of India' : 'श्री नरेन्द्र मोदी, माननीय प्रधानमंत्री'} 
                 className="w-12 h-12 rounded-full object-cover object-top border-2 border-[#f37021] shadow-xs"
               />
