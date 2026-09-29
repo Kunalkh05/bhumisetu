@@ -132,65 +132,66 @@ export const CaseWorkspace: React.FC<{ onNavigateToOcr?: () => void }> = ({ onNa
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 space-y-6 animate-in fade-in">
-      {/* Case Selector Dropdown & Header Card */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
-        <div className="flex flex-wrap justify-between items-start gap-4 pb-5 border-b border-slate-100 dark:border-slate-800">
-          <div>
-            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+    <div className="max-w-7xl mx-auto space-y-5 animate-in fade-in">
+      {/* Case Header Card with Switcher & Statutory Actions */}
+      <div className="gov-surface-card p-5 sm:p-6 space-y-5">
+        <div className="flex flex-wrap justify-between items-start gap-4 pb-5 border-b border-slate-100">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2.5 flex-wrap">
               {/* Case Switcher */}
               <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-slate-500">Case Ref:</span>
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Case:</span>
                 <select
                   value={c.id}
                   onChange={(e) => setSelectedCaseId(e.target.value)}
-                  className="font-mono text-sm font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-900 dark:text-blue-200 border border-blue-300 dark:border-blue-700 rounded-lg px-3 py-1 focus:ring-2 focus:ring-blue-500"
+                  className="font-mono text-xs font-bold bg-slate-50 text-[#002642] border border-slate-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-[#002642]/20 cursor-pointer"
                 >
                   {cases.map((cs) => (
                     <option key={cs.id} value={cs.id}>
-                      {cs.caseReference} — {cs.village} ({cs.stage.replace('STAGE_', '')})
+                      {cs.caseReference} — {cs.village} ({cs.stage.replace('STAGE_', '').replace(/_/g, ' ')})
                     </option>
                   ))}
                 </select>
               </div>
 
-              <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                c.riskBand === 'CRITICAL' ? 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300 border border-red-300' :
-                c.riskBand === 'HIGH' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300' :
-                c.riskBand === 'MEDIUM' ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border border-blue-300' :
-                'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300'
+              {/* Risk Badge */}
+              <span className={`px-2.5 py-0.5 rounded-md text-xs font-bold ${
+                c.riskBand === 'CRITICAL' ? 'bg-red-50 text-red-700 border border-red-200' :
+                c.riskBand === 'HIGH' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                c.riskBand === 'MEDIUM' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                'bg-emerald-50 text-emerald-700 border border-emerald-200'
               }`}>
-                {c.riskBand} DELAY RISK ({Math.round(c.riskProbability * 100)}%)
+                {c.riskBand} RISK ({Math.round(c.riskProbability * 100)}%)
               </span>
 
               {c.officerOverride && (
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border border-purple-300">
+                <span className="px-2.5 py-0.5 rounded-md text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200">
                   Officer Override: {c.officerOverride.newRiskBand}
                 </span>
               )}
             </div>
 
-            <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
               {language === 'en' ? c.projectName : c.projectNameHi}
             </h2>
 
-            <div className="flex flex-wrap items-center gap-4 text-xs text-slate-600 dark:text-slate-400 mt-2">
-              <span className="flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5 text-slate-500" />
-                <strong>Location:</strong> {c.village}, Tehsil {c.tehsil}, District {c.district}, {c.state}
+            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600">
+              <span className="flex items-center gap-1 font-medium">
+                <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                <span>{c.village}, {c.tehsil}, {c.district}, {c.state}</span>
               </span>
-              <span>•</span>
-              <span><strong>Extent:</strong> {c.totalExtentHa} Hectares ({c.totalParcelsCount} Parcels)</span>
-              <span>•</span>
-              <span><strong>Budget:</strong> {formatCurrencyINR(c.sanctionedBudget)}</span>
+              <span className="text-slate-300">•</span>
+              <span><strong>Extent:</strong> {c.totalExtentHa} Ha ({c.totalParcelsCount} Parcels)</span>
+              <span className="text-slate-300">•</span>
+              <span><strong>Sanctioned Budget:</strong> {formatCurrencyINR(c.sanctionedBudget)}</span>
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2.5">
             <button
               onClick={() => setOverrideModalOpen(true)}
-              className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 text-xs font-bold text-slate-700 dark:text-slate-200 transition-colors"
+              className="px-3.5 py-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors shadow-xs cursor-pointer"
             >
               {language === 'en' ? 'Override AI Risk' : 'एआई जोखिम ओवरराइड'}
             </button>
@@ -201,71 +202,76 @@ export const CaseWorkspace: React.FC<{ onNavigateToOcr?: () => void }> = ({ onNa
                   setSelectedNextStage(nextStage);
                   setTransitionModalOpen(true);
                 }}
-                className={`px-4 py-2 rounded-xl text-xs font-black shadow-md flex items-center gap-1.5 transition-all ${
+                className={`px-4 py-2 rounded-lg text-xs font-bold shadow-xs flex items-center gap-2 transition-all cursor-pointer ${
                   openBlockingIssues.length > 0
                     ? 'bg-amber-600 hover:bg-amber-700 text-white'
-                    : 'bg-blue-800 hover:bg-blue-900 text-white'
+                    : 'bg-[#002642] hover:bg-[#0b3866] text-white'
                 }`}
               >
                 <span>{language === 'en' ? 'Advance Statutory Stage' : 'अगले चरण में बढ़ाएं'}</span>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
         </div>
 
-        {/* Statutory Stage Progress Steps */}
-        <div className="pt-5 overflow-x-auto">
-          <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
-            {language === 'en' ? 'RFCTLARR Act 2013 Statutory Stage Progress:' : 'भूमि अधिग्रहण सांविधिक चरण प्रगति:'}
-          </p>
-          <div className="flex items-center justify-between min-w-[700px] gap-2">
+        {/* 2026 Statutory Stage Progress Timeline */}
+        <div className="pt-2">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+              {language === 'en' ? 'RFCTLARR Act 2013 Statutory Lifecycle Pipeline' : 'भूमि अधिग्रहण सांविधिक चरण प्रगति'}
+            </span>
+            <span className="text-xs text-slate-400">
+              Stage {currentStageIndex + 1} of {stageOrder.length}
+            </span>
+          </div>
+          
+          <div className="flex items-center justify-between min-w-[700px] gap-2 overflow-x-auto pb-1">
             {stageOrder.map((stg, index) => {
               const isPast = index < currentStageIndex;
               const isCurrent = index === currentStageIndex;
-              const isFuture = index > currentStageIndex;
 
               const stageNames: Record<CaseStage, string> = {
-                STAGE_1_SIA: '1. Sec 4 SIA',
-                STAGE_2_PRELIM_NOTIF: '2. Sec 11 Notif',
-                STAGE_3_OBJECTIONS: '3. Sec 15 Hearing',
-                STAGE_4_DECLARATION: '4. Sec 19 Decl.',
-                STAGE_5_AWARD_COMPENSATION: '5. Sec 23 Award',
-                STAGE_6_DISBURSEMENT: '6. Sec 38 Payout',
-                STAGE_7_COMPLETED: '7. Handover',
+                STAGE_1_SIA: 'Sec 4 SIA',
+                STAGE_2_PRELIM_NOTIF: 'Sec 11 Notif',
+                STAGE_3_OBJECTIONS: 'Sec 15 Hearing',
+                STAGE_4_DECLARATION: 'Sec 19 Decl.',
+                STAGE_5_AWARD_COMPENSATION: 'Sec 23 Award',
+                STAGE_6_DISBURSEMENT: 'Sec 38 Payout',
+                STAGE_7_COMPLETED: 'Handover',
               };
 
               return (
-                <div key={stg} className="flex-1 flex flex-col items-center text-center relative group">
+                <div key={stg} className="flex-1 flex flex-col items-center text-center relative">
                   {index > 0 && (
                     <div 
-                      className={`absolute top-3.5 -left-1/2 w-full h-1 -z-0 ${
-                        isPast ? 'bg-emerald-600' : isCurrent ? 'bg-blue-600' : 'bg-slate-200 dark:bg-slate-800'
+                      className={`absolute top-3.5 -left-1/2 w-full h-0.5 -z-0 ${
+                        isPast ? 'bg-emerald-600' : isCurrent ? 'bg-[#002642]' : 'bg-slate-200'
                       }`} 
                     />
                   )}
                   
                   <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black z-10 transition-all ${
+                    className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold z-10 transition-all ${
                       isPast
-                        ? 'bg-emerald-600 text-white ring-4 ring-emerald-100 dark:ring-emerald-950'
+                        ? 'bg-emerald-600 text-white ring-2 ring-emerald-100'
                         : isCurrent
-                        ? 'bg-blue-700 text-white ring-4 ring-blue-100 dark:ring-blue-950 animate-pulse'
-                        : 'bg-slate-200 dark:bg-slate-800 text-slate-500'
+                        ? 'bg-[#002642] text-white ring-4 ring-[#002642]/20 font-black'
+                        : 'bg-slate-100 text-slate-400 border border-slate-200'
                     }`}
                   >
                     {isPast ? <Check className="w-4 h-4" /> : index + 1}
                   </div>
 
-                  <span className={`text-[11px] font-bold mt-2 ${
-                    isCurrent ? 'text-blue-700 dark:text-blue-300' : isPast ? 'text-slate-800 dark:text-slate-200' : 'text-slate-400'
+                  <span className={`text-[11px] font-semibold mt-2 ${
+                    isCurrent ? 'text-[#002642] font-bold' : isPast ? 'text-slate-700' : 'text-slate-400'
                   }`}>
                     {stageNames[stg]}
                   </span>
 
                   {isCurrent && (
-                    <span className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold mt-0.5">
-                      Deadline: {formatDate(c.stageDeadline)}
+                    <span className="text-[10px] text-amber-700 font-semibold mt-0.5 bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200">
+                      Due: {formatDate(c.stageDeadline)}
                     </span>
                   )}
                 </div>
@@ -277,62 +283,66 @@ export const CaseWorkspace: React.FC<{ onNavigateToOcr?: () => void }> = ({ onNa
 
       {/* Blocking Validation Banner if Present */}
       {openBlockingIssues.length > 0 && (
-        <div className="p-4 bg-red-50 dark:bg-red-950/60 border-2 border-red-400 dark:border-red-800 rounded-2xl flex items-start justify-between gap-4">
+        <div className="p-4 bg-red-50/90 border border-red-200 rounded-xl flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
-            <ShieldAlert className="w-6 h-6 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+            <ShieldAlert className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
             <div>
-              <h4 className="text-sm font-black text-red-900 dark:text-red-200">
+              <h4 className="text-xs font-bold text-red-900 uppercase tracking-wide">
                 {language === 'en' 
                   ? `Statutory Transition Blocked: ${openBlockingIssues.length} Blocking Validation Issue(s)` 
                   : `सांविधिक चरण परिवर्तन बाधित: ${openBlockingIssues.length} अवरोधक त्रुटियां`}
               </h4>
-              <p className="text-xs text-red-800 dark:text-red-300 mt-0.5">
+              <p className="text-xs text-red-700 mt-0.5">
                 {openBlockingIssues.map(i => i.ruleTitle).join(' • ')}
               </p>
             </div>
           </div>
           <button
             onClick={() => setActiveTab('VALIDATION')}
-            className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold text-xs whitespace-nowrap"
+            className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold text-xs whitespace-nowrap cursor-pointer shadow-xs transition-colors"
           >
             {language === 'en' ? 'Resolve Issues' : 'त्रुटियां हल करें'}
           </button>
         </div>
       )}
 
-      {/* Workspace Sub Tabs */}
-      <div className="border-b border-slate-200 dark:border-slate-800 flex overflow-x-auto">
-        {[
-          { id: 'OVERVIEW', label: 'Case Summary & Timeline', count: undefined },
-          { id: 'PARCELS', label: 'Land Parcels & 7/12 Owners', count: c.parcels.length },
-          { id: 'RERA_INTEGRATION', label: 'RERA Status & Cross-Ref', count: caseReraRecords.length, badgeText: sec11ViolationsInCase > 0 ? `${sec11ViolationsInCase} Violation` : undefined, isDanger: sec11ViolationsInCase > 0 },
-          { id: 'NOTICES', label: 'Statutory Notices', count: c.notices.length },
-          { id: 'OBJECTIONS', label: 'Sec 15 Objections', count: c.objections.length },
-          { id: 'COMPENSATION', label: 'Awards & DBT Payouts', count: c.awards.length },
-          { id: 'VALIDATION', label: 'Validation Rules', count: c.validationIssues.length },
-          { id: 'AI_EXPLANATION', label: 'AI Delay Explainability', count: c.explanationFactors.length },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
-            className={`px-4 py-3 text-xs font-bold border-b-2 transition-all whitespace-nowrap flex items-center gap-2 ${
-              activeTab === tab.id
-                ? 'border-blue-700 text-blue-800 dark:text-blue-300 dark:border-blue-400 bg-blue-50/50 dark:bg-blue-950/20'
-                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-            }`}
-          >
-            <span>{tab.label}</span>
-            {tab.count !== undefined && (
-              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
-                (tab as any).isDanger
-                  ? 'bg-red-700 text-white animate-pulse'
-                  : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
-              }`}>
-                {(tab as any).badgeText ? (tab as any).badgeText : tab.count}
-              </span>
-            )}
-          </button>
-        ))}
+      {/* Workspace Sub Tabs Navigation */}
+      <div className="gov-surface-card p-1">
+        <div className="flex overflow-x-auto scrollbar-none gap-1">
+          {[
+            { id: 'OVERVIEW', label: 'Case Summary & Timeline', count: undefined },
+            { id: 'PARCELS', label: 'Land Parcels & 7/12', count: c.parcels.length },
+            { id: 'RERA_INTEGRATION', label: 'RERA Cross-Ref', count: caseReraRecords.length, badgeText: sec11ViolationsInCase > 0 ? `${sec11ViolationsInCase} Violation` : undefined, isDanger: sec11ViolationsInCase > 0 },
+            { id: 'NOTICES', label: 'Statutory Notices', count: c.notices.length },
+            { id: 'OBJECTIONS', label: 'Sec 15 Objections', count: c.objections.length },
+            { id: 'COMPENSATION', label: 'Awards & DBT Payouts', count: c.awards.length },
+            { id: 'VALIDATION', label: 'Validation Rules', count: c.validationIssues.length },
+            { id: 'AI_EXPLANATION', label: 'AI Risk Factors', count: c.explanationFactors.length },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`px-3.5 py-2 text-xs font-semibold rounded-lg transition-all whitespace-nowrap flex items-center gap-2 cursor-pointer ${
+                activeTab === tab.id
+                  ? 'bg-[#002642] text-white shadow-xs font-bold'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+              }`}
+            >
+              <span>{tab.label}</span>
+              {tab.count !== undefined && (
+                <span className={`px-1.5 py-0.2 rounded-md text-[10px] font-mono font-bold ${
+                  (tab as any).isDanger
+                    ? 'bg-red-600 text-white animate-pulse'
+                    : activeTab === tab.id
+                    ? 'bg-white/20 text-white'
+                    : 'bg-slate-100 text-slate-600 border border-slate-200'
+                }`}>
+                  {(tab as any).badgeText ? (tab as any).badgeText : tab.count}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Sub Tab 1: OVERVIEW */}
@@ -551,31 +561,31 @@ export const CaseWorkspace: React.FC<{ onNavigateToOcr?: () => void }> = ({ onNa
                   )}
 
                   {/* Owners Table */}
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
+                  <div className="overflow-x-auto rounded-lg border border-slate-200">
+                    <table className="gov-table-2026">
                       <thead>
-                        <tr className="text-slate-500 border-b border-slate-200 dark:border-slate-700">
-                          <th className="py-2 px-2">Owner Name (Khatedar)</th>
-                          <th className="py-2 px-2">Interest Type</th>
-                          <th className="py-2 px-2">Ownership Share</th>
-                          <th className="py-2 px-2">Aadhaar (Masked)</th>
-                          <th className="py-2 px-2">Bank Mandate</th>
-                          <th className="py-2 px-2">Contact</th>
+                        <tr>
+                          <th>Owner Name (Khatedar)</th>
+                          <th>Interest Type</th>
+                          <th>Ownership Share</th>
+                          <th>Aadhaar (Masked)</th>
+                          <th>Bank Mandate</th>
+                          <th>Contact</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      <tbody>
                         {owners.map((owner) => (
                           <tr key={owner.id}>
-                            <td className="py-2 px-2 font-semibold text-slate-900 dark:text-slate-100">
+                            <td className="font-semibold text-slate-900">
                               {owner.ownerName} ({owner.ownerNameHi})
                             </td>
-                            <td className="py-2 px-2 text-slate-600 dark:text-slate-400">{owner.interestType}</td>
-                            <td className="py-2 px-2 font-mono font-bold text-blue-700 dark:text-blue-300">
+                            <td className="text-slate-600">{owner.interestType}</td>
+                            <td className="font-mono font-bold text-[#002642]">
                               {(owner.ownershipShare * 100).toFixed(0)}% ({owner.ownershipShare})
                             </td>
-                            <td className="py-2 px-2 font-mono text-slate-600 dark:text-slate-400">{owner.governmentIdentifierMasked}</td>
-                            <td className="py-2 px-2 font-mono text-emerald-700 dark:text-emerald-400">{owner.bankAccountMasked || 'Verified'}</td>
-                            <td className="py-2 px-2 text-slate-600 dark:text-slate-400">{owner.contactNumber}</td>
+                            <td className="font-mono text-slate-500">{owner.governmentIdentifierMasked}</td>
+                            <td className="font-mono text-emerald-700 font-semibold">{owner.bankAccountMasked || 'Verified'}</td>
+                            <td className="text-slate-500">{owner.contactNumber}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -590,38 +600,43 @@ export const CaseWorkspace: React.FC<{ onNavigateToOcr?: () => void }> = ({ onNa
 
       {/* Sub Tab 3: STATUTORY NOTICES */}
       {activeTab === 'NOTICES' && (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4">
-          <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
-            {language === 'en' ? 'Statutory Notices & Service Log' : 'सांविधिक नोटिस एवं तामील पंजी'}
-          </h3>
+        <div className="gov-surface-card p-5 space-y-4">
+          <div className="border-b border-slate-100 pb-3">
+            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
+              {language === 'en' ? 'Statutory Notices & Service Log' : 'सांविधिक नोटिस एवं तामील पंजी'}
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Service tracking and gazette notifications under RFCTLARR 2013
+            </p>
+          </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
+          <div className="overflow-x-auto rounded-lg border border-slate-200">
+            <table className="gov-table-2026">
               <thead>
-                <tr className="bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">
-                  <th className="py-3 px-3">Notice Type</th>
-                  <th className="py-3 px-3">Issuing Authority</th>
-                  <th className="py-3 px-3">Issue Date</th>
-                  <th className="py-3 px-3">Publication Mode</th>
-                  <th className="py-3 px-3">Response Deadline</th>
-                  <th className="py-3 px-3">Service Details</th>
-                  <th className="py-3 px-3">Status</th>
+                <tr>
+                  <th>Notice Type</th>
+                  <th>Issuing Authority</th>
+                  <th>Issue Date</th>
+                  <th>Publication Mode</th>
+                  <th>Response Deadline</th>
+                  <th>Service Details</th>
+                  <th>Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody>
                 {c.notices.map((n) => (
                   <tr key={n.id}>
-                    <td className="py-3 px-3 font-bold text-blue-900 dark:text-blue-300">{n.noticeType}</td>
-                    <td className="py-3 px-3 text-slate-700 dark:text-slate-300">{n.issuingAuthority}</td>
-                    <td className="py-3 px-3">{formatDate(n.issueDate)}</td>
-                    <td className="py-3 px-3 text-slate-600 dark:text-slate-400">{n.publicationMode}</td>
-                    <td className="py-3 px-3 font-semibold text-amber-700 dark:text-amber-400">{formatDate(n.responseDeadline)}</td>
-                    <td className="py-3 px-3 text-slate-600 dark:text-slate-400">
+                    <td className="font-bold text-[#002642]">{n.noticeType}</td>
+                    <td className="text-slate-700">{n.issuingAuthority}</td>
+                    <td className="text-slate-600">{formatDate(n.issueDate)}</td>
+                    <td className="text-slate-600">{n.publicationMode}</td>
+                    <td className="font-semibold text-amber-700">{formatDate(n.responseDeadline)}</td>
+                    <td className="text-slate-600">
                       {n.serviceDate ? `${formatDate(n.serviceDate)} via ${n.serviceMode}` : 'Pending Proof'}
                     </td>
-                    <td className="py-3 px-3">
-                      <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${
-                        n.isBreached ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800'
+                    <td>
+                      <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold ${
+                        n.isBreached ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                       }`}>
                         {n.isBreached ? 'Breached' : 'Active Window'}
                       </span>
@@ -636,13 +651,13 @@ export const CaseWorkspace: React.FC<{ onNavigateToOcr?: () => void }> = ({ onNa
 
       {/* Sub Tab 4: SECTION 15 OBJECTIONS */}
       {activeTab === 'OBJECTIONS' && (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4">
-          <div className="flex justify-between items-center">
+        <div className="gov-surface-card p-5 space-y-4">
+          <div className="border-b border-slate-100 pb-3 flex justify-between items-center">
             <div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
                 {language === 'en' ? 'Section 15 Public Objections & Representation Disposal' : 'धारा 15 लोक आपत्तियां एवं निराकरण'}
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-slate-500 mt-0.5">
                 {language === 'en' ? 'All objections must be legally disposed of under Section 15(2) before Section 19 Declaration.' : 'धारा 19 घोषणा से पूर्व सभी आपत्तियों का विधिक निस्तारण अनिवार्य है।'}
               </p>
             </div>
@@ -650,33 +665,33 @@ export const CaseWorkspace: React.FC<{ onNavigateToOcr?: () => void }> = ({ onNa
 
           <div className="space-y-3">
             {c.objections.map((obj) => (
-              <div key={obj.id} className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 space-y-2">
+              <div key={obj.id} className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-2.5">
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-xs text-slate-900 dark:text-slate-100">
+                      <span className="font-bold text-xs text-slate-900">
                         {obj.objectorName}
                       </span>
                       <span className="text-[11px] text-slate-500">({obj.objectorContact})</span>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
                         {obj.groundsCategory}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-700 dark:text-slate-300 mt-1 italic">
+                    <p className="text-xs text-slate-700 mt-1 italic">
                       "{obj.substance}"
                     </p>
                   </div>
 
-                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                    obj.disposalState === 'PENDING' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' :
-                    obj.disposalState === 'ACCEPTED' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' :
-                    'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
+                  <span className={`px-2.5 py-0.5 rounded-md text-xs font-bold ${
+                    obj.disposalState === 'PENDING' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                    obj.disposalState === 'ACCEPTED' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                    'bg-red-50 text-red-700 border border-red-200'
                   }`}>
                     {obj.disposalState}
                   </span>
                 </div>
 
-                <div className="pt-2 border-t border-slate-200 dark:border-slate-700 flex flex-wrap justify-between items-center gap-2 text-xs">
+                <div className="pt-2 border-t border-slate-200 flex flex-wrap justify-between items-center gap-2 text-xs">
                   <span className="text-slate-500">Received on: {formatDate(obj.receiptDate)}</span>
                   
                   {obj.disposalState === 'PENDING' ? (
@@ -685,12 +700,12 @@ export const CaseWorkspace: React.FC<{ onNavigateToOcr?: () => void }> = ({ onNa
                         setDisposingObjectionId(obj.id);
                         setDisposalReasons('');
                       }}
-                      className="px-3 py-1 bg-blue-800 hover:bg-blue-900 text-white rounded-lg font-bold text-xs"
+                      className="px-3 py-1.5 bg-[#002642] hover:bg-[#0b3866] text-white rounded-lg font-semibold text-xs shadow-xs transition-colors cursor-pointer"
                     >
                       {language === 'en' ? 'Record Section 15 Order' : 'धारा 15 आदेश पारित करें'}
                     </button>
                   ) : (
-                    <div className="text-slate-600 dark:text-slate-300 text-[11px]">
+                    <div className="text-slate-600 text-[11px]">
                       <strong>Order Reasons:</strong> {obj.disposalReasons} (Decided by: {obj.decidingOfficer})
                     </div>
                   )}
@@ -703,35 +718,35 @@ export const CaseWorkspace: React.FC<{ onNavigateToOcr?: () => void }> = ({ onNa
 
       {/* Sub Tab 5: COMPENSATION AWARDS & DBT PAYOUTS */}
       {activeTab === 'COMPENSATION' && (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-6">
-          <div className="flex justify-between items-center">
+        <div className="gov-surface-card p-5 space-y-5">
+          <div className="border-b border-slate-100 pb-3 flex justify-between items-center">
             <div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
                 {language === 'en' ? 'Section 23 Compensation Awards & DBT PFMS Ledger' : 'धारा 23 मुआवजा पंचाट एवं प्रत्यक्ष लाभ अंतरण (DBT)'}
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                {language === 'en' ? 'Arithmetic verified: Basic Value + 100% Solatium (Sec 30) + 12% Additional Component.' : 'अंकगणितीय सत्यापन: मूल मूल्य + 100% तोषण (संबलन) + 12% अतिरिक्त घटक।'}
+              <p className="text-xs text-slate-500 mt-0.5">
+                {language === 'en' ? 'Statutory calculation: Basic Value + 100% Solatium (Sec 30) + 12% Additional Component.' : 'अंकगणितीय सत्यापन: मूल मूल्य + 100% तोषण (संबलन) + 12% अतिरिक्त घटक।'}
               </p>
             </div>
           </div>
 
           <div className="space-y-4">
             {c.awards.map((award) => (
-              <div key={award.id} className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 space-y-3">
-                <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-slate-700">
+              <div key={award.id} className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-3">
+                <div className="flex justify-between items-center pb-2.5 border-b border-slate-200">
                   <div>
-                    <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                    <h4 className="text-sm font-bold text-slate-900">
                       {award.ownerName}
                     </h4>
                     <p className="text-xs text-slate-500">Determined on {formatDate(award.determinationDate)} by {award.determiningAuthority}</p>
                   </div>
                   <div className="text-right">
-                    <div className="font-mono font-black text-base text-blue-900 dark:text-blue-300">
+                    <div className="font-mono font-black text-base text-[#002642]">
                       {formatCurrencyINR(award.totalAmount)}
                     </div>
                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                      award.disbursementState === 'FULLY_PAID' ? 'bg-emerald-100 text-emerald-800' :
-                      award.disbursementState === 'PART_PAID' ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'
+                      award.disbursementState === 'FULLY_PAID' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                      award.disbursementState === 'PART_PAID' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-red-50 text-red-700 border border-red-200'
                     }`}>
                       {award.disbursementState}
                     </span>
@@ -741,9 +756,9 @@ export const CaseWorkspace: React.FC<{ onNavigateToOcr?: () => void }> = ({ onNa
                 {/* Itemized Components */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                   {award.components.map((comp) => (
-                    <div key={comp.id} className="p-2 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex justify-between">
-                      <span className="text-slate-600 dark:text-slate-400">{comp.label}:</span>
-                      <span className="font-mono font-bold">{formatCurrencyINR(comp.amount)}</span>
+                    <div key={comp.id} className="p-2.5 rounded-lg bg-white border border-slate-200 flex justify-between">
+                      <span className="text-slate-600 font-medium">{comp.label}:</span>
+                      <span className="font-mono font-bold text-slate-900">{formatCurrencyINR(comp.amount)}</span>
                     </div>
                   ))}
                 </div>
@@ -755,25 +770,30 @@ export const CaseWorkspace: React.FC<{ onNavigateToOcr?: () => void }> = ({ onNa
 
       {/* Sub Tab 6: VALIDATION RULES */}
       {activeTab === 'VALIDATION' && (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-5 space-y-4">
-          <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
-            {language === 'en' ? 'Automated Rule Execution & Issue Queue' : 'स्वचालित नियम सत्यापन एवं त्रुटि सूची'}
-          </h3>
+        <div className="gov-surface-card p-5 space-y-4">
+          <div className="border-b border-slate-100 pb-3">
+            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
+              {language === 'en' ? 'Automated Rule Execution & Issue Queue' : 'स्वचालित नियम सत्यापन एवं त्रुटि सूची'}
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Deterministic statutory rule evaluation engine under RFCTLARR Act 2013
+            </p>
+          </div>
 
           <div className="space-y-3">
             {c.validationIssues.map((issue) => (
-              <div key={issue.id} className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <div key={issue.id} className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                 <div>
                   <div className="flex items-center gap-2">
                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                       issue.severity === 'BLOCKING' ? 'bg-red-600 text-white' :
-                      issue.severity === 'MAJOR' ? 'bg-amber-500 text-white' : 'bg-blue-600 text-white'
+                      issue.severity === 'MAJOR' ? 'bg-amber-600 text-white' : 'bg-blue-600 text-white'
                     }`}>
                       {issue.severity}
                     </span>
-                    <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100">{issue.ruleTitle}</h4>
+                    <h4 className="text-xs font-bold text-slate-900">{issue.ruleTitle}</h4>
                   </div>
-                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">{issue.description}</p>
+                  <p className="text-xs text-slate-600 mt-1">{issue.description}</p>
                   <p className="text-[11px] font-mono text-slate-500 mt-0.5">Observed: {issue.observedValues}</p>
                 </div>
 
@@ -782,7 +802,7 @@ export const CaseWorkspace: React.FC<{ onNavigateToOcr?: () => void }> = ({ onNa
                     <>
                       <button
                         onClick={() => resolveValidationIssue(c.id, issue.id, 'Corrected manually by officer')}
-                        className="px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold"
+                        className="px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
                       >
                         {language === 'en' ? 'Resolve (Corrected)' : 'हल करें'}
                       </button>
@@ -791,13 +811,13 @@ export const CaseWorkspace: React.FC<{ onNavigateToOcr?: () => void }> = ({ onNa
                           setWaivingIssueId(issue.id);
                           setWaiverReason('');
                         }}
-                        className="px-3 py-1.5 rounded-lg bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold"
+                        className="px-3 py-1.5 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-semibold shadow-xs transition-colors cursor-pointer"
                       >
                         {language === 'en' ? 'Waive (Collector)' : 'माफ करें'}
                       </button>
                     </>
                   ) : (
-                    <span className="px-2.5 py-1 rounded text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                    <span className="px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                       {issue.resolutionState}
                     </span>
                   )}
@@ -810,46 +830,52 @@ export const CaseWorkspace: React.FC<{ onNavigateToOcr?: () => void }> = ({ onNa
 
       {/* Sub Tab 7: AI DELAY EXPLAINABILITY */}
       {activeTab === 'AI_EXPLANATION' && (
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 space-y-6">
-          <div className="flex justify-between items-start">
+        <div className="gov-surface-card p-5 space-y-5">
+          <div className="border-b border-slate-100 pb-3 flex justify-between items-start flex-wrap gap-2">
             <div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-amber-500" />
-                {language === 'en' ? 'Top Delay Explanation Factors (SHAP Feature Contributions)' : 'शीर्ष विलंब व्याख्या कारक (SHAP विश्लेषण)'}
-              </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-amber-500" />
+                  <span>{language === 'en' ? 'Top Delay Explanation Factors (SHAP Contributions)' : 'शीर्ष विलंब व्याख्या कारक (SHAP)'}</span>
+                </h3>
+                <span className="text-[10px] font-bold px-2 py-0.5 bg-blue-50 text-blue-800 rounded-md border border-blue-200">
+                  Decision Support
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
                 {language === 'en' ? 'Calibrated delay probability: ' : 'कैलिब्रेटेड विलंब संभावना: '}
-                <strong className="text-red-600 font-mono text-sm">{Math.round(c.riskProbability * 100)}% ({c.riskBand})</strong>
+                <strong className="text-red-600 font-mono text-xs">{Math.round(c.riskProbability * 100)}% ({c.riskBand})</strong>
+                <span className="text-slate-400 ml-2">Requires officer independent administrative review.</span>
               </p>
             </div>
-            <span className="text-xs font-mono text-slate-500">Model: {c.modelVersion}</span>
+            <span className="text-xs font-mono text-slate-400 bg-slate-50 px-2 py-1 rounded border border-slate-200">Model: {c.modelVersion}</span>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             {c.explanationFactors.map((factor) => {
               const isDelayIncrease = factor.direction === 'INCREASES_DELAY';
               const widthPct = Math.abs(factor.magnitude) * 150;
 
               return (
-                <div key={factor.featureName} className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 space-y-2">
+                <div key={factor.featureName} className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-2">
                   <div className="flex justify-between items-center text-xs">
-                    <span className="font-bold text-slate-900 dark:text-slate-100">
+                    <span className="font-bold text-slate-900">
                       {language === 'en' ? factor.label : factor.labelHi}
                     </span>
-                    <span className={`font-mono font-bold ${isDelayIncrease ? 'text-red-600' : 'text-emerald-600'}`}>
+                    <span className={`font-mono font-bold ${isDelayIncrease ? 'text-red-600' : 'text-emerald-700'}`}>
                       {isDelayIncrease ? `+${(factor.magnitude * 100).toFixed(0)}% Risk Impact` : `${(factor.magnitude * 100).toFixed(0)}% Mitigation`}
                     </span>
                   </div>
 
                   {/* Impact bar */}
-                  <div className="h-2 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                  <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
                     <div
-                      className={`h-full rounded-full ${isDelayIncrease ? 'bg-red-500' : 'bg-emerald-500'}`}
+                      className={`h-full rounded-full transition-all duration-300 ${isDelayIncrease ? 'bg-red-500' : 'bg-emerald-600'}`}
                       style={{ width: `${Math.min(widthPct, 100)}%` }}
                     />
                   </div>
 
-                  <p className="text-xs text-slate-600 dark:text-slate-400">
+                  <p className="text-xs text-slate-600">
                     {factor.description}
                   </p>
                 </div>
@@ -870,17 +896,17 @@ export const CaseWorkspace: React.FC<{ onNavigateToOcr?: () => void }> = ({ onNa
 
       {/* Advance Stage Modal */}
       {transitionModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
-            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
+          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+            <h3 className="text-base font-bold text-slate-900">
               {language === 'en' ? 'Advance Statutory Stage' : 'सांविधिक चरण आगे बढ़ाएं'}
             </h3>
-            <p className="text-xs text-slate-600 dark:text-slate-400">
-              Transitioning from <strong className="text-blue-700">{c.stage.replace(/_/g, ' ')}</strong> to <strong className="text-emerald-700">{selectedNextStage.replace(/_/g, ' ')}</strong>.
+            <p className="text-xs text-slate-600">
+              Transitioning from <strong className="text-[#002642]">{c.stage.replace(/_/g, ' ')}</strong> to <strong className="text-emerald-700">{selectedNextStage.replace(/_/g, ' ')}</strong>.
             </p>
 
             {openBlockingIssues.length > 0 && (
-              <div className="p-3 bg-red-50 dark:bg-red-950/60 border border-red-300 rounded-xl text-xs text-red-800 dark:text-red-200">
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-800">
                 ⚠ Warning: {openBlockingIssues.length} BLOCKING issues are open. Transition will be rejected unless resolved or waived by Collector.
               </div>
             )}
@@ -888,13 +914,13 @@ export const CaseWorkspace: React.FC<{ onNavigateToOcr?: () => void }> = ({ onNa
             <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={() => setTransitionModalOpen(false)}
-                className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-bold"
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={handleStageTransition}
-                className="px-4 py-2 bg-blue-800 hover:bg-blue-900 text-white rounded-lg text-xs font-bold"
+                className="px-4 py-2 bg-[#002642] hover:bg-[#0b3866] text-white rounded-lg text-xs font-semibold cursor-pointer shadow-xs"
               >
                 Confirm Transition
               </button>

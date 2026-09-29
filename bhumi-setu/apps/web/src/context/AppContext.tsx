@@ -198,6 +198,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     root.classList.remove('font-normal', 'font-large', 'font-xlarge');
     root.classList.add(`font-${fontScale}`);
+
+    if (fontScale === 'xlarge') {
+      root.style.fontSize = '18px';
+    } else if (fontScale === 'large') {
+      root.style.fontSize = '16px';
+    } else {
+      root.style.fontSize = '14px';
+    }
   }, [isDarkMode, isHighContrast, fontScale]);
 
   // Stage Transition with BLOCKING validation issue enforcement (Req 5.7)

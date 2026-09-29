@@ -25,6 +25,8 @@ export type ReraPerformanceStatus =
 export interface ReraZoneAggregatedStatus {
   zoneId: string;
   zoneName: string;
+  id?: string;
+  name?: string;
   zoneNameHi: string;
   district: string;
   majorProjectCorridor: string;

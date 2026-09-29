@@ -11,11 +11,11 @@ import {
 export const DEMO_USERS: UserSession[] = [
   {
     id: 'USR-COL-01',
-    name: 'Dr. Rajeshwar Sharma, IAS',
-    nameHi: 'डॉ. राजेश्वर शर्मा, आईएएस',
+    name: 'Demo Officer (District Collector)',
+    nameHi: 'डेमो अधिकारी (जिलाधिकारी)',
     role: 'DISTRICT_COLLECTOR',
-    designation: 'District Collector & Magistrate',
-    designationHi: 'जिलाधिकारी एवं दंडाधिकारी, पुणे',
+    designation: 'Demo District Collector & Magistrate',
+    designationHi: 'डेमो जिलाधिकारी एवं दंडाधिकारी, पुणे',
     email: 'collector.pune@revenue.gov.in',
     mobile: '+91 94220 11001',
     jurisdiction: ['Pune', 'Nashik', 'Haveli', 'Khed', 'Purandar'],
@@ -33,8 +33,8 @@ export const DEMO_USERS: UserSession[] = [
   },
   {
     id: 'USR-LAO-02',
-    name: 'Smt. Anjali Deshmukh, MCS',
-    nameHi: 'श्रीमती अंजलि देशमुख, एमसीएस',
+    name: 'Demo CALA Officer (LAO)',
+    nameHi: 'डेमो सक्षम प्राधिकारी (भू-अधिग्रहण)',
     role: 'LAO',
     designation: 'Competent Authority for Land Acquisition (CALA)',
     designationHi: 'सक्षम प्राधिकारी एवं भूमि अधिग्रहण अधिकारी',
@@ -55,8 +55,8 @@ export const DEMO_USERS: UserSession[] = [
   },
   {
     id: 'USR-SRV-03',
-    name: 'Shri Vikram Patil',
-    nameHi: 'श्री विक्रम पाटिल',
+    name: 'Demo Survey Officer (DILR)',
+    nameHi: 'डेमो सर्वेक्षण अधिकारी (डीआईएलआर)',
     role: 'SURVEY_OFFICER',
     designation: 'District Inspector of Land Records (DILR)',
     designationHi: 'भूमि अभिलेख जिला निरीक्षक',
@@ -77,8 +77,8 @@ export const DEMO_USERS: UserSession[] = [
   },
   {
     id: 'USR-CIT-01',
-    name: 'Shri Tukaram Bapu Jadhav',
-    nameHi: 'श्री तुकाराम बापू जाधव',
+    name: 'Demo Citizen (Landowner)',
+    nameHi: 'डेमो नागरिक (खातेदार)',
     role: 'CITIZEN',
     designation: 'Landowner (Khatedar)',
     designationHi: 'भूमिस्वामी / खातेदार',

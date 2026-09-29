@@ -72,19 +72,19 @@ export const UnifiedLandSearch: React.FC<{
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Top Banner / Disclaimer */}
-      <div className="bg-[#002642] text-white p-4 rounded-xs border-b-2 border-[#f37021] flex flex-wrap justify-between items-center gap-3">
+      <div className="gov-surface-card p-5 flex flex-wrap justify-between items-center gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-bold">
+            <h2 className="text-base sm:text-lg font-bold text-slate-900">
               {language === 'en' ? 'Search Land Records' : 'भू-अभिलेख खोजें'}
             </h2>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-[#f37021] text-white tracking-wider">
+            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
               SAMPLE DATA
             </span>
           </div>
-          <p className="text-xs text-slate-300 mt-0.5">
+          <p className="text-xs text-slate-500 mt-1">
             {language === 'en'
               ? 'Multi-mode query engine across State RoR, Cadastral Maps, and Bhu-Aadhaar ULPIN.'
               : 'राज्य अधिकार अभिलेख, भू-नक्शा एवं १४-अंकीय भू-आधार के लिए एकीकृत खोज प्रणाली।'}
@@ -93,7 +93,7 @@ export const UnifiedLandSearch: React.FC<{
 
         <button
           onClick={handleLoadDemo}
-          className="px-3.5 py-1.5 bg-white/10 hover:bg-white/20 text-white font-bold text-xs rounded-xs border border-white/25 flex items-center gap-1.5 transition-colors"
+          className="px-3.5 py-1.5 bg-[#002642] hover:bg-[#0b3866] text-white font-semibold text-xs rounded-lg flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
         >
           <Sparkles className="w-3.5 h-3.5 text-amber-300" />
           <span>{language === 'en' ? 'Load Sample Property (MH-NGP)' : 'नमूना रिकॉर्ड लोड करें'}</span>
@@ -101,66 +101,67 @@ export const UnifiedLandSearch: React.FC<{
       </div>
 
       {/* Search Mode Tabs */}
-      <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-2">
-        <button
-          onClick={() => setSearchMode('LOCATION')}
-          className={`px-3.5 py-2 text-xs font-bold rounded-xs flex items-center gap-1.5 transition-colors ${
-            searchMode === 'LOCATION'
-              ? 'bg-[#002642] text-white shadow-xs'
-              : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
-          }`}
-        >
-          <MapPin className="w-3.5 h-3.5" />
-          <span>{language === 'en' ? 'Search by Hierarchy (State → Village)' : 'स्थान आधारित खोज'}</span>
-        </button>
+      <div className="gov-surface-card p-1">
+        <div className="flex flex-wrap gap-1">
+          <button
+            onClick={() => setSearchMode('LOCATION')}
+            className={`px-3.5 py-2 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
+              searchMode === 'LOCATION'
+                ? 'bg-[#002642] text-white shadow-xs font-bold'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+            }`}
+          >
+            <MapPin className="w-3.5 h-3.5" />
+            <span>{language === 'en' ? 'Location Hierarchy (State → Village)' : 'स्थान आधारित खोज'}</span>
+          </button>
 
-        <button
-          onClick={() => setSearchMode('ULPIN')}
-          className={`px-3.5 py-2 text-xs font-bold rounded-xs flex items-center gap-1.5 transition-colors ${
-            searchMode === 'ULPIN'
-              ? 'bg-[#002642] text-white shadow-xs'
-              : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
-          }`}
-        >
-          <Sparkles className="w-3.5 h-3.5 text-[#f37021]" />
-          <span>{language === 'en' ? 'Search by ULPIN / Bhu-Aadhaar' : 'भू-आधार (ULPIN) द्वारा'}</span>
-        </button>
+          <button
+            onClick={() => setSearchMode('ULPIN')}
+            className={`px-3.5 py-2 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
+              searchMode === 'ULPIN'
+                ? 'bg-[#002642] text-white shadow-xs font-bold'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+            <span>{language === 'en' ? 'ULPIN / Bhu-Aadhaar' : 'भू-आधार (ULPIN)'}</span>
+          </button>
 
-        <button
-          onClick={() => setSearchMode('SURVEY')}
-          className={`px-3.5 py-2 text-xs font-bold rounded-xs flex items-center gap-1.5 transition-colors ${
-            searchMode === 'SURVEY'
-              ? 'bg-[#002642] text-white shadow-xs'
-              : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
-          }`}
-        >
-          <FileText className="w-3.5 h-3.5" />
-          <span>{language === 'en' ? 'Search by Survey / Khasra No.' : 'सर्वे / खसरा क्रमांक द्वारा'}</span>
-        </button>
+          <button
+            onClick={() => setSearchMode('SURVEY')}
+            className={`px-3.5 py-2 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
+              searchMode === 'SURVEY'
+                ? 'bg-[#002642] text-white shadow-xs font-bold'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+            }`}
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span>{language === 'en' ? 'Survey / Gat Number' : 'सर्वे / गट क्रमांक'}</span>
+          </button>
+          <button
+            onClick={() => setSearchMode('OWNER')}
+            className={`px-3.5 py-2 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
+              searchMode === 'OWNER'
+                ? 'bg-[#002642] text-white shadow-xs font-bold'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+            }`}
+          >
+            <User className="w-3.5 h-3.5" />
+            <span>{language === 'en' ? 'Owner Name' : 'भूस्वामी नाम द्वारा'}</span>
+          </button>
 
-        <button
-          onClick={() => setSearchMode('OWNER')}
-          className={`px-3.5 py-2 text-xs font-bold rounded-xs flex items-center gap-1.5 transition-colors ${
-            searchMode === 'OWNER'
-              ? 'bg-[#002642] text-white shadow-xs'
-              : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
-          }`}
-        >
-          <User className="w-3.5 h-3.5" />
-          <span>{language === 'en' ? 'Search by Owner Name' : 'भूस्वामी नाम द्वारा'}</span>
-        </button>
-
-        <button
-          onClick={() => onNavigateTab('GIS_MAP')}
-          className="px-3.5 py-2 text-xs font-bold rounded-xs bg-[#138808] hover:bg-[#0f6c06] text-white flex items-center gap-1.5 shadow-xs transition-colors"
-        >
-          <Map className="w-3.5 h-3.5" />
-          <span>{language === 'en' ? 'Search on Interactive Map' : 'मानचित्र पर खोजें'}</span>
-        </button>
+          <button
+            onClick={() => onNavigateTab('GIS_MAP')}
+            className="px-3.5 py-2 text-xs font-semibold rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer ml-auto"
+          >
+            <Map className="w-3.5 h-3.5" />
+            <span>{language === 'en' ? 'Open Cadastral Map' : 'भू-नक्शा खोलें'}</span>
+          </button>
+        </div>
       </div>
 
-      {/* Main Professional Search Card */}
-      <div className="bg-white border border-slate-300 rounded-xs shadow-sm p-5 text-xs text-left">
+      {/* Main Search Card */}
+      <div className="gov-surface-card p-5 text-xs text-left">
         <form onSubmit={handleSearch} className="space-y-4">
           {searchMode === 'LOCATION' && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

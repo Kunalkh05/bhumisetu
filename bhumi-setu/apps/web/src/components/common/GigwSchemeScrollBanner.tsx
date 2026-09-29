@@ -215,7 +215,7 @@ export const GigwSchemeScrollBanner: React.FC<GigwSchemeScrollBannerProps> = ({
   return (
     <>
       <section
-        className={`w-full bg-white border border-slate-300 shadow-sm rounded-xs overflow-hidden select-none ${className}`}
+        className={`w-full bg-white border border-slate-200/90 shadow-sm rounded-2xl overflow-hidden select-none ${className}`}
         aria-label={language === 'en' ? 'Government Flagship Welfare Schemes' : 'भारत सरकार की प्रमुख जन-कल्याणकारी योजनाएं'}
         role="region"
         onMouseEnter={() => setIsHovered(true)}
@@ -238,12 +238,12 @@ export const GigwSchemeScrollBanner: React.FC<GigwSchemeScrollBannerProps> = ({
         <div className="bg-[#002642] text-white px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3 border-b border-[#0b3866]">
           {/* Left: State Emblem of India + Official Ministry Label */}
           <div className="flex items-center gap-3">
-            <div className="p-1 bg-white rounded-xs flex-shrink-0 shadow-xs">
+            <div className="p-1 bg-white rounded-md flex-shrink-0 shadow-xs">
               <NationalEmblem size={24} color="#002642" showSlogan={false} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[9px] font-black uppercase tracking-wider bg-[#f37021] text-white px-1.5 py-0.2 rounded-xs font-mono">
+                <span className="text-[9px] font-black uppercase tracking-wider bg-[#f37021] text-white px-2 py-0.2 rounded-full font-mono shadow-xs">
                   {language === 'en' ? 'GOVERNMENT OF INDIA' : 'भारत सरकार'}
                 </span>
                 <span className="text-[10px] text-slate-300 font-bold hidden sm:inline">
@@ -261,11 +261,11 @@ export const GigwSchemeScrollBanner: React.FC<GigwSchemeScrollBannerProps> = ({
           {/* Right: GIGW Accessibility & View Controls */}
           <div className="flex items-center gap-2" role="toolbar" aria-label="Scheme banner controls">
             {/* View Mode Switcher (Billboard vs Ribbon) */}
-            <div className="hidden md:inline-flex rounded-xs border border-slate-700 bg-slate-900/80 p-0.5 text-[10px] font-bold">
+            <div className="hidden md:inline-flex rounded-full border border-slate-700 bg-slate-900/80 p-0.5 text-[10px] font-bold">
               <button
                 onClick={() => setViewMode('billboard')}
-                className={`px-2 py-0.5 rounded-xs transition-colors cursor-pointer ${
-                  viewMode === 'billboard' ? 'bg-[#0b3866] text-white' : 'text-slate-400 hover:text-white'
+                className={`px-2.5 py-0.5 rounded-full transition-colors cursor-pointer ${
+                  viewMode === 'billboard' ? 'bg-[#0b3866] text-white shadow-xs' : 'text-slate-400 hover:text-white'
                 }`}
                 title="Full Billboard Showcase"
               >
@@ -273,8 +273,8 @@ export const GigwSchemeScrollBanner: React.FC<GigwSchemeScrollBannerProps> = ({
               </button>
               <button
                 onClick={() => setViewMode('ribbon')}
-                className={`px-2 py-0.5 rounded-xs transition-colors cursor-pointer ${
-                  viewMode === 'ribbon' ? 'bg-[#0b3866] text-white' : 'text-slate-400 hover:text-white'
+                className={`px-2.5 py-0.5 rounded-full transition-colors cursor-pointer ${
+                  viewMode === 'ribbon' ? 'bg-[#0b3866] text-white shadow-xs' : 'text-slate-400 hover:text-white'
                 }`}
                 title="Compact Ribbon View"
               >
@@ -285,7 +285,7 @@ export const GigwSchemeScrollBanner: React.FC<GigwSchemeScrollBannerProps> = ({
             {/* GIGW Mandated Pause / Play Button */}
             <button
               onClick={() => setIsPlaying(!isPlaying)}
-              className={`px-2.5 py-1 rounded-xs text-[11px] font-bold flex items-center gap-1.5 transition-colors cursor-pointer border ${
+              className={`px-3 py-1 rounded-full text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer border ${
                 isPlaying 
                   ? 'bg-slate-800 text-slate-200 hover:text-white border-slate-600' 
                   : 'bg-amber-400 text-slate-950 font-black border-amber-300 shadow-xs'
@@ -310,7 +310,7 @@ export const GigwSchemeScrollBanner: React.FC<GigwSchemeScrollBannerProps> = ({
             {/* Prev / Next Controls */}
             <button
               onClick={handlePrev}
-              className="p-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xs border border-slate-600 cursor-pointer"
+              className="p-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-full border border-slate-600 cursor-pointer transition-colors"
               title="Previous Scheme"
               aria-label="Previous Scheme"
             >
@@ -318,7 +318,7 @@ export const GigwSchemeScrollBanner: React.FC<GigwSchemeScrollBannerProps> = ({
             </button>
             <button
               onClick={handleNext}
-              className="p-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xs border border-slate-600 cursor-pointer"
+              className="p-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-full border border-slate-600 cursor-pointer transition-colors"
               title="Next Scheme"
               aria-label="Next Scheme"
             >
@@ -326,7 +326,7 @@ export const GigwSchemeScrollBanner: React.FC<GigwSchemeScrollBannerProps> = ({
             </button>
 
             {/* Scheme Counter */}
-            <div className="bg-black/40 border border-white/10 px-2 py-0.5 rounded-xs font-mono text-[10px] text-amber-300">
+            <div className="bg-black/40 border border-white/10 px-2.5 py-0.5 rounded-full font-mono text-[10px] text-amber-300">
               <span>{activeIndex + 1}</span>
               <span className="opacity-60">/</span>
               <span>{totalSchemes}</span>
@@ -352,7 +352,7 @@ export const GigwSchemeScrollBanner: React.FC<GigwSchemeScrollBannerProps> = ({
                   {/* Scheme Badge + Ministry Stamp */}
                   <div className="flex flex-wrap items-center gap-2 text-xs">
                     <span className="text-xl">{decor.icon}</span>
-                    <span className={`px-2.5 py-0.5 rounded-xs text-[10px] font-black uppercase tracking-wider font-mono border ${decor.lightBg}`}>
+                    <span className={`px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider font-mono border shadow-xs ${decor.lightBg}`}>
                       {decor.badgeText}
                     </span>
                     <span className="text-slate-400 font-bold">•</span>
@@ -373,7 +373,7 @@ export const GigwSchemeScrollBanner: React.FC<GigwSchemeScrollBannerProps> = ({
 
                   {/* Statutory Reference Badge */}
                   {currentScheme.circularRef && (
-                    <div className="inline-flex items-center gap-2 px-2 py-0.5 bg-slate-100 border border-slate-300 rounded-xs text-[10px] font-mono text-slate-700">
+                    <div className="inline-flex items-center gap-2 px-2.5 py-0.5 bg-slate-100 border border-slate-200 rounded-md text-[10px] font-mono text-slate-700">
                       <FileText className="w-3 h-3 text-[#002642]" />
                       <span>Gazette Decree: <strong>{currentScheme.circularRef}</strong></span>
                     </div>
@@ -397,12 +397,12 @@ export const GigwSchemeScrollBanner: React.FC<GigwSchemeScrollBannerProps> = ({
 
                 {/* Official Call to Action Buttons */}
                 <div className="pt-3 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2.5">
                     <a
                       href={currentScheme.portalUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="px-4 py-2 bg-[#002642] hover:bg-[#0b3866] text-white font-bold text-xs rounded-xs flex items-center gap-1.5 shadow-xs transition-all hover:scale-102 cursor-pointer"
+                      className="px-4 py-2 bg-[#002642] hover:bg-[#0b3866] text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-sm hover:shadow-md transition-all transform hover:-translate-y-0.5 cursor-pointer"
                     >
                       <span>{currentScheme.bannerCtaText || (language === 'en' ? 'Official Portal ↗' : 'आधिकारिक पोर्टल ↗')}</span>
                       <ExternalLink className="w-3.5 h-3.5" />
@@ -410,7 +410,7 @@ export const GigwSchemeScrollBanner: React.FC<GigwSchemeScrollBannerProps> = ({
 
                     <button
                       onClick={() => openModal(currentScheme)}
-                      className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 font-bold text-xs rounded-xs flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
+                      className="px-4 py-2 bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-xs hover:shadow-sm transition-all cursor-pointer"
                     >
                       <Info className="w-3.5 h-3.5 text-[#0b3866]" />
                       <span>{language === 'en' ? 'View Guidelines' : 'दिशानिर्देश देखें'}</span>
@@ -423,7 +423,7 @@ export const GigwSchemeScrollBanner: React.FC<GigwSchemeScrollBannerProps> = ({
                           message: `Downloading official gazette decree for ${currentScheme.shortName} (PDF)`,
                         });
                       }}
-                      className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xs flex items-center gap-1.5 border border-slate-300 transition-colors cursor-pointer"
+                      className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl flex items-center gap-1.5 border border-slate-200 transition-all cursor-pointer shadow-xs"
                       title="Download Official Notification"
                     >
                       <Download className="w-3.5 h-3.5 text-slate-600" />
@@ -441,7 +441,7 @@ export const GigwSchemeScrollBanner: React.FC<GigwSchemeScrollBannerProps> = ({
 
               {/* Right Column (4 cols): Authentic Official Government Poster Card */}
               <div className="lg:col-span-4 flex flex-col">
-                <div className={`h-full rounded-xs p-5 bg-gradient-to-br ${decor.posterTheme} text-white shadow-md flex flex-col justify-between relative overflow-hidden border border-white/10`}>
+                <div className={`h-full rounded-xl p-5 bg-gradient-to-br ${decor.posterTheme} text-white shadow-lg flex flex-col justify-between relative overflow-hidden border border-white/10`}>
                   {/* Decorative subtle national seal background */}
                   <div className="absolute right-[-20px] bottom-[-20px] opacity-10 pointer-events-none">
                     <NationalEmblem size={160} color="#ffffff" showSlogan={false} />

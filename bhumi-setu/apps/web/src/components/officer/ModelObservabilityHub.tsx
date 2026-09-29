@@ -32,20 +32,20 @@ export const ModelObservabilityHub: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 space-y-6 animate-in fade-in">
+    <div className="max-w-7xl mx-auto space-y-5 animate-in fade-in">
       {/* Top Header */}
-      <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-wrap justify-between items-center gap-4">
+      <div className="gov-surface-card p-5 flex flex-wrap justify-between items-center gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
-              <BrainCircuit className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-              {language === 'en' ? 'AI Model Performance, Calibration & Drift Hub (Req 18 & 31)' : 'एआई मॉडल प्रदर्शन, कैलिब्रेशन एवं ड्रिफ्ट हब'}
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+              <BrainCircuit className="w-5 h-5 text-[#002642]" />
+              <span>{language === 'en' ? 'AI Model Performance, Calibration & Drift Hub' : 'एआई मॉडल प्रदर्शन, कैलिब्रेशन एवं ड्रिफ्ट हब'}</span>
             </h2>
-            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-              Status: HEALTHY
+            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              HEALTHY • CALIBRATED
             </span>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-500 mt-1">
             {language === 'en'
               ? 'Realized delay rates vs predicted probabilities, Population Stability Index (PSI) feature drift, and right-censoring logs.'
               : 'वास्तविक विलंब दर बनाम अनुमानित संभावना, फ़ीचर ड्रिफ्ट पीएसआई एवं राइट-सेंसरिंग सांख्यिकी।'}
@@ -55,7 +55,7 @@ export const ModelObservabilityHub: React.FC = () => {
         <button
           onClick={handleTriggerRetraining}
           disabled={retrainingRunning}
-          className="px-4 py-2 bg-indigo-700 hover:bg-indigo-800 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm transition-all disabled:opacity-50"
+          className="px-4 py-2 bg-[#002642] hover:bg-[#0b3866] text-white rounded-lg text-xs font-semibold flex items-center gap-2 shadow-xs transition-all disabled:opacity-50 cursor-pointer"
         >
           <RotateCcw className={`w-3.5 h-3.5 ${retrainingRunning ? 'animate-spin' : ''}`} />
           <span>{retrainingRunning ? 'Training on Point-in-Time Features...' : 'Trigger Model Retraining'}</span>
@@ -64,96 +64,107 @@ export const ModelObservabilityHub: React.FC = () => {
 
       {/* Primary Statistical Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">PR-AUC (Precision-Recall)</span>
-          <div className="text-3xl font-black text-slate-900 dark:text-slate-100 font-mono mt-1">
-            {modelStats.prAuc.toFixed(3)}
+        <div className="gov-surface-card p-4 sm:p-5 flex flex-col justify-between">
+          <div>
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">PR-AUC Score</span>
+            <div className="text-3xl font-black text-slate-900 font-mono mt-1">
+              {modelStats.prAuc.toFixed(3)}
+            </div>
           </div>
-          <div className="mt-2 text-xs text-emerald-600 font-semibold flex items-center gap-1">
+          <div className="mt-3 pt-3 border-t border-slate-100 text-xs text-emerald-700 font-medium flex items-center gap-1">
             <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>Lift: +{(modelStats.precisionRecallLift * 100).toFixed(0)}% over Base Rate ({modelStats.evaluationLabelBaseRate})</span>
+            <span>+{(modelStats.precisionRecallLift * 100).toFixed(0)}% Lift over Base Rate ({modelStats.evaluationLabelBaseRate})</span>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">ROC-AUC Score</span>
-          <div className="text-3xl font-black text-slate-900 dark:text-slate-100 font-mono mt-1">
-            {modelStats.rocAuc.toFixed(3)}
+        <div className="gov-surface-card p-4 sm:p-5 flex flex-col justify-between">
+          <div>
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">ROC-AUC Score</span>
+            <div className="text-3xl font-black text-slate-900 font-mono mt-1">
+              {modelStats.rocAuc.toFixed(3)}
+            </div>
           </div>
-          <div className="mt-2 text-xs text-slate-500">
+          <div className="mt-3 pt-3 border-t border-slate-100 text-xs text-slate-500">
             <span>Threshold required: ≥ 0.75 (Exceeds by +0.11)</span>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Expected Calibration Error (ECE)</span>
-          <div className="text-3xl font-black text-indigo-600 dark:text-indigo-400 font-mono mt-1">
-            {modelStats.eceCalibration.toFixed(3)}
+        <div className="gov-surface-card p-4 sm:p-5 flex flex-col justify-between">
+          <div>
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Expected Calibration (ECE)</span>
+            <div className="text-3xl font-black text-[#002642] font-mono mt-1">
+              {modelStats.eceCalibration.toFixed(3)}
+            </div>
           </div>
-          <div className="mt-2 text-xs text-emerald-600 font-semibold">
+          <div className="mt-3 pt-3 border-t border-slate-100 text-xs text-emerald-700 font-medium">
             <span>Passes threshold (≤ 0.05 ECE over 10 bins)</span>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Right-Censored Rows Log (Q1)</span>
-          <div className="text-3xl font-black text-slate-900 dark:text-slate-100 font-mono mt-1">
-            {modelStats.censoredRowCount} <span className="text-sm font-normal text-slate-500">({(modelStats.censoringRate * 100).toFixed(1)}%)</span>
+        <div className="gov-surface-card p-4 sm:p-5 flex flex-col justify-between">
+          <div>
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Right-Censored Rows (Q1)</span>
+            <div className="text-3xl font-black text-slate-900 font-mono mt-1">
+              {modelStats.censoredRowCount} <span className="text-xs font-normal text-slate-500">({(modelStats.censoringRate * 100).toFixed(1)}%)</span>
+            </div>
           </div>
-          <div className="mt-2 text-xs text-slate-500">
+          <div className="mt-3 pt-3 border-t border-slate-100 text-xs text-slate-500">
             <span>Excluded to prevent optimistic leakage bias</span>
           </div>
         </div>
       </div>
 
       {/* Realized vs Predicted Calibration Matrix */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Realized Delay Rate Table */}
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-          <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <BarChart2 className="w-4 h-4 text-blue-700" />
-            {language === 'en' ? 'Post-Promotion Realized Delay vs Predicted Probability' : 'वास्तविक विलंब बनाम अनुमानित प्रायिकता'}
-          </h3>
+        <div className="gov-surface-card p-5 space-y-4">
+          <div className="border-b border-slate-100 pb-3">
+            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+              <BarChart2 className="w-4 h-4 text-[#002642]" />
+              <span>{language === 'en' ? 'Post-Promotion Realized Delay vs Predicted Probability' : 'वास्तविक विलंब बनाम अनुमानित प्रायिकता'}</span>
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">Empirical validation of model calibration across 10 probability bins</p>
+          </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
+          <div className="overflow-x-auto rounded-lg border border-slate-200">
+            <table className="gov-table-2026">
               <thead>
-                <tr className="border-b border-slate-200 dark:border-slate-700 text-slate-500">
-                  <th className="py-2.5 px-3">Risk Band</th>
-                  <th className="py-2.5 px-3">Mean Predicted (p̂)</th>
-                  <th className="py-2.5 px-3">Realized Delay Rate (ȳ)</th>
-                  <th className="py-2.5 px-3">Divergence (|p̂ - ȳ|)</th>
-                  <th className="py-2.5 px-3">Status</th>
+                <tr>
+                  <th>Risk Band</th>
+                  <th>Mean Predicted (p̂)</th>
+                  <th>Realized Delay Rate (ȳ)</th>
+                  <th>Divergence</th>
+                  <th>Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-mono">
+              <tbody className="font-mono text-xs">
                 <tr>
-                  <td className="py-2.5 px-3 font-sans font-bold text-emerald-700">LOW (p &lt; 0.25)</td>
-                  <td className="py-2.5 px-3">11.0%</td>
-                  <td className="py-2.5 px-3">8.0%</td>
-                  <td className="py-2.5 px-3 text-slate-600">0.030</td>
-                  <td className="py-2.5 px-3 text-emerald-600 font-sans font-bold">✓ Calibrated</td>
+                  <td className="font-sans font-bold text-emerald-700">LOW (p &lt; 0.25)</td>
+                  <td>11.0%</td>
+                  <td>8.0%</td>
+                  <td className="text-slate-600">0.030</td>
+                  <td className="font-sans font-bold text-emerald-700">✓ Calibrated</td>
                 </tr>
                 <tr>
-                  <td className="py-2.5 px-3 font-sans font-bold text-blue-700">MEDIUM (0.25 - 0.50)</td>
-                  <td className="py-2.5 px-3">36.0%</td>
-                  <td className="py-2.5 px-3">32.0%</td>
-                  <td className="py-2.5 px-3 text-slate-600">0.040</td>
-                  <td className="py-2.5 px-3 text-emerald-600 font-sans font-bold">✓ Calibrated</td>
+                  <td className="font-sans font-bold text-blue-700">MEDIUM (0.25 - 0.50)</td>
+                  <td>36.0%</td>
+                  <td>32.0%</td>
+                  <td className="text-slate-600">0.040</td>
+                  <td className="font-sans font-bold text-emerald-700">✓ Calibrated</td>
                 </tr>
                 <tr>
-                  <td className="py-2.5 px-3 font-sans font-bold text-amber-700">HIGH (0.50 - 0.75)</td>
-                  <td className="py-2.5 px-3">62.0%</td>
-                  <td className="py-2.5 px-3">64.0%</td>
-                  <td className="py-2.5 px-3 text-slate-600">0.020</td>
-                  <td className="py-2.5 px-3 text-emerald-600 font-sans font-bold">✓ Calibrated</td>
+                  <td className="font-sans font-bold text-amber-700">HIGH (0.50 - 0.75)</td>
+                  <td>62.0%</td>
+                  <td>64.0%</td>
+                  <td className="text-slate-600">0.020</td>
+                  <td className="font-sans font-bold text-emerald-700">✓ Calibrated</td>
                 </tr>
                 <tr>
-                  <td className="py-2.5 px-3 font-sans font-bold text-red-700">CRITICAL (p ≥ 0.75)</td>
-                  <td className="py-2.5 px-3">84.0%</td>
-                  <td className="py-2.5 px-3">88.0%</td>
-                  <td className="py-2.5 px-3 text-slate-600">0.040</td>
-                  <td className="py-2.5 px-3 text-emerald-600 font-sans font-bold">✓ Calibrated</td>
+                  <td className="font-sans font-bold text-red-700">CRITICAL (p ≥ 0.75)</td>
+                  <td>84.0%</td>
+                  <td>88.0%</td>
+                  <td className="text-slate-600">0.040</td>
+                  <td className="font-sans font-bold text-emerald-700">✓ Calibrated</td>
                 </tr>
               </tbody>
             </table>
@@ -161,31 +172,34 @@ export const ModelObservabilityHub: React.FC = () => {
         </div>
 
         {/* Feature Drift (PSI) Monitor */}
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-amber-500" />
-              {language === 'en' ? 'Feature Drift (Population Stability Index - PSI)' : 'फ़ीचर ड्रिफ्ट (पीएसआई) निगरानी'}
-            </h3>
-            <span className="text-[11px] text-slate-500">Cadence: 7 Days</span>
+        <div className="gov-surface-card p-5 space-y-4">
+          <div className="border-b border-slate-100 pb-3 flex justify-between items-center">
+            <div>
+              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-amber-500" />
+                <span>{language === 'en' ? 'Feature Drift (Population Stability Index - PSI)' : 'फ़ीचर ड्रिफ्ट (पीएसआई) निगरानी'}</span>
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">Automated detection of covariate shifts</p>
+            </div>
+            <span className="text-[11px] text-slate-400 font-mono">Cadence: 7d</span>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {modelStats.featureDriftPSI.map((item) => (
-              <div key={item.featureName} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 flex justify-between items-center text-xs">
+              <div key={item.featureName} className="p-3 rounded-lg bg-slate-50/70 border border-slate-200 flex justify-between items-center text-xs">
                 <div>
-                  <span className="font-mono font-bold text-slate-900 dark:text-slate-100 block">
+                  <span className="font-mono font-bold text-slate-900 block">
                     {item.featureName}
                   </span>
-                  <span className="text-[10px] text-slate-500">Baseline training window vs last 7 days</span>
+                  <span className="text-[11px] text-slate-500">Baseline training window vs last 7 days</span>
                 </div>
 
                 <div className="text-right">
-                  <span className="font-mono font-bold text-slate-800 dark:text-slate-200 text-sm">
+                  <span className="font-mono font-bold text-slate-900 text-sm">
                     PSI: {item.psiValue.toFixed(3)}
                   </span>
                   <span className={`block text-[10px] font-bold ${
-                    item.status === 'NORMAL' ? 'text-emerald-600' : 'text-amber-600'
+                    item.status === 'NORMAL' ? 'text-emerald-700' : 'text-amber-700'
                   }`}>
                     {item.status} (&lt; 0.20 Threshold)
                   </span>

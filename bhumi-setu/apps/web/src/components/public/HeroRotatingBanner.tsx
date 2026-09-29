@@ -11,7 +11,8 @@ import {
   Sparkles,
   ArrowRight,
   ExternalLink,
-  Layers
+  Layers,
+  Mic
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { PublicTab } from '../common/GovNavigation';
@@ -145,9 +146,50 @@ export const HeroRotatingBanner: React.FC<{
   onNavigate: (tab: PublicTab) => void;
   onOpenReport?: () => void;
 }> = ({ onNavigate }) => {
-  const { language } = useApp();
+  const { language, addToast } = useApp();
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [quickSearch, setQuickSearch] = useState('');
+  const [isListening, setIsListening] = useState(false);
+
+  const handleVoiceSearch = () => {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      try {
+        const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        const recognition = new SpeechRec();
+        recognition.lang = language === 'hi' ? 'hi-IN' : 'en-IN';
+        setIsListening(true);
+        recognition.onresult = (event: any) => {
+          const transcript = event.results[0][0].transcript;
+          setQuickSearch(transcript);
+          setIsListening(false);
+          addToast({
+            type: 'info',
+            message: `Voice search recognized: "${transcript}"`,
+            messageHi: `आवाज पहचानी गई: "${transcript}"`
+          });
+          onNavigate('SEARCH');
+        };
+        recognition.onerror = () => {
+          setIsListening(false);
+        };
+        recognition.onend = () => {
+          setIsListening(false);
+        };
+        recognition.start();
+      } catch {
+        setIsListening(false);
+      }
+    } else {
+      addToast({
+        type: 'info',
+        message: 'Speech recognition is simulating for your browser.',
+        messageHi: 'आवाज इनपुट अनुकरण किया जा रहा है।'
+      });
+      setQuickSearch('Gat 123 Besa Nagpur');
+      setTimeout(() => onNavigate('SEARCH'), 800);
+    }
+  };
 
   // Auto-rotate every 4.5 seconds
   useEffect(() => {
@@ -227,42 +269,114 @@ export const HeroRotatingBanner: React.FC<{
             </div>
 
             {/* Scheme Synchronized Dynamic Sub-headline */}
-            <div className="p-3 bg-white/10 backdrop-blur-sm border-l-3 border-[#f37021] rounded-xs max-w-2xl">
+            <div className="p-4 bg-white/10 backdrop-blur-md border border-white/20 border-l-4 border-l-[#f37021] rounded-2xl max-w-2xl shadow-lg">
               <div className="text-xs font-bold text-amber-300">
                 {language === 'en' ? currentSlide.title : currentSlide.titleHi}
               </div>
-              <p className="text-[11px] text-slate-200 mt-0.5 line-clamp-2">
+              <p className="text-[11px] text-slate-200 mt-1 line-clamp-2 leading-relaxed">
                 {language === 'en' ? currentSlide.tagline : currentSlide.taglineHi}
               </p>
             </div>
 
+            {/* Direct Quick Search Bar with Voice Input */}
+            <div className="pt-2 max-w-2xl">
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  onNavigate('SEARCH');
+                }}
+                className="bg-white p-2 rounded-2xl shadow-2xl flex items-center gap-2 border-2 border-amber-400 focus-within:ring-4 focus-within:ring-amber-400/30 transition-all"
+              >
+                <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-slate-100/90 rounded-xl text-[11px] font-bold text-[#002642] border border-slate-200 flex-shrink-0">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#138808]"></span>
+                  <span>Maharashtra</span>
+                </div>
+                <div className="pl-1 text-slate-400">
+                  <Search className="w-4 h-4 text-[#002642]" />
+                </div>
+                <input
+                  type="text"
+                  value={quickSearch}
+                  onChange={(e) => setQuickSearch(e.target.value)}
+                  placeholder={language === 'en' 
+                    ? "Search Survey / Gat No. (e.g. 142/A), 14-digit ULPIN, or Village..." 
+                    : "सर्वे / गट क्रमांक (उदा. १४२/अ), १४-अंकीय भू-आधार (ULPIN) या गाँव..."}
+                  className="flex-1 bg-transparent text-slate-800 text-xs sm:text-sm font-semibold focus:outline-none placeholder:text-slate-400 min-w-[140px]"
+                />
+                <button
+                  type="button"
+                  onClick={handleVoiceSearch}
+                  className={`p-2 rounded-xl transition-all flex items-center gap-1.5 text-[11px] font-bold cursor-pointer ${
+                    isListening 
+                      ? 'bg-red-500 text-white animate-pulse shadow-xs' 
+                      : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                  }`}
+                  title={language === 'en' ? "Search by Voice" : "बोलकर खोजें"}
+                  aria-label="Search by Voice"
+                >
+                  <Mic className={`w-3.5 h-3.5 ${isListening ? 'text-white' : 'text-[#f37021]'}`} />
+                  <span className="hidden sm:inline">{language === 'en' ? 'Voice' : 'बोलें'}</span>
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 bg-gradient-to-r from-[#f37021] to-[#e65100] hover:from-[#e65100] hover:to-[#c2410c] text-white font-extrabold text-xs rounded-xl flex items-center gap-1.5 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 cursor-pointer flex-shrink-0"
+                >
+                  <span>{language === 'en' ? 'Search' : 'खोजें'}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </form>
+
+              {/* Instant sample search chips for zero cognitive load */}
+              <div className="flex flex-wrap items-center gap-2 mt-2.5 text-[10px]">
+                <span className="text-slate-300 font-semibold">{language === 'en' ? 'Quick samples:' : 'त्वरित नमूने:'}</span>
+                {[
+                  { label: '📍 Gat 142/A Besa', value: 'Gat 142/A Besa', tab: 'SEARCH' },
+                  { label: '🆔 ULPIN: 27712049001234', value: '27712049001234', tab: 'SEARCH' },
+                  { label: '⚡ One Property View', value: '', tab: 'PROPERTY_INTEL' },
+                  { label: '🔄 Mutation Tracker', value: '', tab: 'MUTATION' }
+                ].map((chip, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      if (chip.value) setQuickSearch(chip.value);
+                      onNavigate(chip.tab as any);
+                    }}
+                    className="px-3 py-1 bg-white/15 hover:bg-white/25 text-amber-200 border border-white/20 rounded-full transition-all cursor-pointer shadow-xs"
+                  >
+                    {chip.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Primary, Secondary & Third Action CTAs */}
             <div className="flex flex-wrap items-center gap-3 pt-2">
-              {/* Primary CTA */}
-              <button
-                onClick={() => onNavigate('SEARCH')}
-                className="px-5 py-2.5 bg-[#f37021] hover:bg-[#d95a10] text-white font-extrabold text-xs sm:text-sm rounded-xs shadow-md flex items-center gap-2 transition-all transform hover:-translate-y-0.5"
-              >
-                <Search className="w-4 h-4" />
-                <span>{language === 'en' ? 'Search Land' : 'भू-अभिलेख खोजें'}</span>
-              </button>
-
               {/* Secondary CTA */}
               <button
                 onClick={() => onNavigate('DOC_VERIFY')}
-                className="px-5 py-2.5 bg-white text-[#002642] hover:bg-slate-100 font-extrabold text-xs sm:text-sm rounded-xs shadow-md flex items-center gap-2 transition-all transform hover:-translate-y-0.5"
+                className="px-4 py-2.5 bg-white text-[#002642] hover:bg-slate-100 font-extrabold text-xs rounded-xl shadow-md hover:shadow-lg flex items-center gap-1.5 transition-all transform hover:-translate-y-0.5 cursor-pointer"
               >
-                <FileCheck className="w-4 h-4 text-[#002642]" />
-                <span>{language === 'en' ? 'Verify Document' : 'दस्तावेज सत्यापन'}</span>
+                <FileCheck className="w-3.5 h-3.5 text-[#002642]" />
+                <span>{language === 'en' ? 'AI Document Verification' : 'दस्तावेज सत्यापन'}</span>
               </button>
 
               {/* Third CTA */}
               <button
                 onClick={() => onNavigate('SCHEMES')}
-                className="px-4 py-2.5 bg-white/15 hover:bg-white/25 border border-white/30 text-white font-bold text-xs sm:text-sm rounded-xs transition-colors flex items-center gap-1.5"
+                className="px-4 py-2.5 bg-white/15 hover:bg-white/25 border border-white/30 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
               >
-                <Landmark className="w-4 h-4 text-amber-300" />
-                <span>{language === 'en' ? 'Explore Schemes' : 'योजनाएं देखें'}</span>
+                <Landmark className="w-3.5 h-3.5 text-amber-300" />
+                <span>{language === 'en' ? 'Explore 9 Schemes' : '९ प्रमुख योजनाएं'}</span>
+              </button>
+
+              {/* Fourth CTA */}
+              <button
+                onClick={() => onNavigate('PROPERTY_INTEL')}
+                className="px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-extrabold text-xs rounded-xl shadow-md hover:shadow-lg flex items-center gap-1.5 transition-all transform hover:-translate-y-0.5 cursor-pointer"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                <span>{language === 'en' ? 'One Property — One View' : 'एकल संपत्ति दृश्य'}</span>
               </button>
             </div>
 
@@ -277,54 +391,96 @@ export const HeroRotatingBanner: React.FC<{
             </div>
           </div>
 
-          {/* Right Column: Hon'ble Prime Minister Dignitary & Vision Card */}
+          {/* Right Column: Citizen Quick Service & Verification Desk (Tasks > Marketing) */}
           <div className="lg:col-span-4">
-            <div className="bg-white/10 backdrop-blur-md border border-white/25 rounded-xs p-4 shadow-xl text-left space-y-3">
-              <div className="flex items-center gap-3.5">
-                {/* Official Cutout Studio Portrait with Clean Framing */}
-                <div className="relative flex-shrink-0">
-                  <div className="w-20 h-24 sm:w-24 sm:h-28 rounded-xs overflow-hidden border-2 border-[#f37021] bg-white shadow-md flex items-center justify-center">
-                    <img 
-                      src="/assets/pm_modi_2023.jpg" 
-                      alt={language === 'en' ? 'Shri Narendra Modi, Prime Minister of India' : 'श्री नरेन्द्र मोदी, माननीय प्रधानमंत्री'} 
-                      className="w-full h-full object-cover object-top"
-                    />
+            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-5 shadow-xl text-left space-y-3.5">
+              <div className="flex items-center justify-between pb-2 border-b border-white/15">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-amber-400 text-[#002642] flex items-center justify-center font-bold">
+                    <FileCheck className="w-4 h-4 text-[#002642]" />
                   </div>
-                  <div className="absolute -top-1.5 -left-1.5 px-1.5 py-0.5 bg-[#f37021] text-white font-bold text-[9px] rounded-xs shadow-xs uppercase tracking-wider">
-                    {language === 'en' ? 'Leadership' : 'नेतृत्व'}
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <div className="text-xs font-extrabold text-white leading-tight">
-                    {language === 'en' ? 'Shri Narendra Modi' : 'श्री नरेन्द्र मोदी'}
-                  </div>
-                  <div className="text-[11px] text-[#f37021] font-bold">
-                    {language === 'en' ? "Hon'ble Prime Minister of India" : 'माननीय प्रधानमंत्री, भारत'}
-                  </div>
-                  <div className="text-[10px] text-slate-300">
-                    {language === 'en' ? 'Government of India' : 'भारत सरकार'}
+                  <div>
+                    <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+                      {language === 'en' ? 'Citizen Service Desk' : 'नागरिक सेवा केंद्र'}
+                    </h3>
+                    <span className="text-[10px] text-amber-200">
+                      {language === 'en' ? 'Direct Self-Service Gateway' : 'प्रत्यक्ष स्व-सेवा गेटवे'}
+                    </span>
                   </div>
                 </div>
+                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                  LIVE
+                </span>
               </div>
 
-              {/* Authentic Vision Quote */}
-              <div className="border-t border-white/20 pt-2.5">
-                <blockquote className="text-[11px] italic text-amber-200 font-serif leading-relaxed">
-                  {language === 'en'
-                    ? '"Transparent land records and time-bound compensation empower our farmers and establish the foundation of Viksit Bharat."'
-                    : '“पारदर्शी भू-अभिलेख और समयबद्ध मुआवजा हमारे किसानों को सशक्त बनाकर विकसित भारत का आधार स्थापित करते हैं।”'}
-                </blockquote>
+              {/* High-Impact Service Task Links */}
+              <div className="space-y-2">
+                <button
+                  onClick={() => onNavigate('PROPERTY_INTEL')}
+                  className="w-full p-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-left transition-all group cursor-pointer flex items-center justify-between"
+                >
+                  <div>
+                    <div className="text-xs font-bold text-white group-hover:text-amber-300 transition-colors">
+                      {language === 'en' ? '1. One Property — One View' : '१. एकल संपत्ति दृश्य'}
+                    </div>
+                    <div className="text-[10px] text-slate-300">
+                      {language === 'en' ? '7/12 RoR, SRO Deeds & Cadastre in one place' : 'सात-बारा, पंजीयन एवं नक्शा का समग्र दृश्य'}
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-amber-300 group-hover:translate-x-0.5 transition-all" />
+                </button>
+
+                <button
+                  onClick={() => onNavigate('DOC_VERIFY')}
+                  className="w-full p-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-left transition-all group cursor-pointer flex items-center justify-between"
+                >
+                  <div>
+                    <div className="text-xs font-bold text-white group-hover:text-amber-300 transition-colors">
+                      {language === 'en' ? '2. Verify Sale Deed & RoR' : '२. दस्तावेज एवं विलेख सत्यापन'}
+                    </div>
+                    <div className="text-[10px] text-slate-300">
+                      {language === 'en' ? 'AI OCR cross-verification for name & survey match' : 'स्वतः विलेख मिलान व विसंगति जांच'}
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-amber-300 group-hover:translate-x-0.5 transition-all" />
+                </button>
+
+                <button
+                  onClick={() => onNavigate('MUTATION')}
+                  className="w-full p-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-left transition-all group cursor-pointer flex items-center justify-between"
+                >
+                  <div>
+                    <div className="text-xs font-bold text-white group-hover:text-amber-300 transition-colors">
+                      {language === 'en' ? '3. Track Ferfar / Mutation' : '३. दाखिल-खारिज स्थिति जांचें'}
+                    </div>
+                    <div className="text-[10px] text-slate-300">
+                      {language === 'en' ? 'Real-time 15-day notice window tracker' : 'नामांतरण आवेदन एवं आपत्ति की वास्तविक स्थिति'}
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-amber-300 group-hover:translate-x-0.5 transition-all" />
+                </button>
+
+                <button
+                  onClick={() => onNavigate('GIS_MAP')}
+                  className="w-full p-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-left transition-all group cursor-pointer flex items-center justify-between"
+                >
+                  <div>
+                    <div className="text-xs font-bold text-white group-hover:text-amber-300 transition-colors">
+                      {language === 'en' ? '4. PostGIS Cadastral Map' : '४. डिजिटल भू-नक्शा (PostGIS)'}
+                    </div>
+                    <div className="text-[10px] text-slate-300">
+                      {language === 'en' ? 'Check parcel boundaries & corridor overlaps' : 'पार्सल सीमा रेखा एवं सरकारी गलियारा ओवरलैप'}
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-amber-300 group-hover:translate-x-0.5 transition-all" />
+                </button>
               </div>
 
-              {/* Quick Jump to One Property One View */}
-              <button
-                onClick={() => onNavigate('PROPERTY_INTEL')}
-                className="w-full mt-1 py-1.5 bg-white/10 hover:bg-white/20 border border-white/30 rounded-xs text-[11px] text-white font-semibold flex items-center justify-between px-3 transition-colors"
-              >
-                <span>{language === 'en' ? 'View Demo Intelligence Card' : 'डेमो कार्ड देखें'}</span>
-                <ChevronRight className="w-3.5 h-3.5 text-amber-300" />
-              </button>
+              {/* SIH Disclaimer Badge */}
+              <div className="pt-2 border-t border-white/15 flex items-center justify-between text-[10px] text-amber-200">
+                <span>Academic / SIH Prototype</span>
+                <span className="font-mono text-slate-300">DPI Standard 2026</span>
+              </div>
             </div>
           </div>
         </div>
@@ -356,7 +512,7 @@ export const HeroRotatingBanner: React.FC<{
 
             <button
               onClick={() => setIsPaused(!isPaused)}
-              className="p-1.5 rounded-xs bg-white/10 hover:bg-white/20 text-white transition-colors"
+              className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
               title={isPaused ? "Play Carousel" : "Pause Carousel"}
               aria-label={isPaused ? "Play Carousel" : "Pause Carousel"}
             >
@@ -365,7 +521,7 @@ export const HeroRotatingBanner: React.FC<{
 
             <button
               onClick={() => setCurrentSlideIndex((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)}
-              className="p-1.5 rounded-xs bg-white/10 hover:bg-white/20 text-white transition-colors"
+              className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
               title="Previous Scheme"
               aria-label="Previous Scheme"
             >
@@ -374,7 +530,7 @@ export const HeroRotatingBanner: React.FC<{
 
             <button
               onClick={() => setCurrentSlideIndex((prev) => (prev + 1) % HERO_SLIDES.length)}
-              className="p-1.5 rounded-xs bg-white/10 hover:bg-white/20 text-white transition-colors"
+              className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
               title="Next Scheme"
               aria-label="Next Scheme"
             >

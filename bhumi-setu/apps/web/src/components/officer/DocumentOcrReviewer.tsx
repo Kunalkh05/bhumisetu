@@ -65,32 +65,32 @@ export const DocumentOcrReviewer: React.FC = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 space-y-6 animate-in fade-in">
+    <div className="max-w-7xl mx-auto space-y-5 animate-in fade-in">
       {/* Header Bar */}
-      <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-wrap justify-between items-center gap-4">
+      <div className="gov-surface-card p-5 flex flex-wrap justify-between items-center gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
-              <FileSearch className="w-5 h-5 text-blue-700 dark:text-blue-400" />
-              {language === 'en' ? 'Document Digitization & Human-in-the-Loop OCR Verification' : 'दस्तावेज डिजिटलीकरण एवं ओसीआर मानवीय सत्यापन'}
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+              <FileSearch className="w-5 h-5 text-[#002642]" />
+              <span>{language === 'en' ? 'Document Digitization & Human-in-the-Loop OCR Verification' : 'दस्तावेज डिजिटलीकरण एवं ओसीआर मानवीय सत्यापन'}</span>
             </h2>
-            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300">
+            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
               Script: {doc.detectedScript}
             </span>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-500 mt-1">
             {language === 'en' 
-              ? 'Multi-script OCR extraction with bounding box coordinates and confidence threshold routing (Q4 Compliance).'
+              ? 'Multi-script OCR extraction with bounding box coordinates and confidence threshold routing.'
               : 'बाउंडिंग बॉक्स निर्देशांक एवं विश्वास सीमा आधारित बहुभाषी ओसीआर सत्यापन प्रणाली।'}
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           {/* Document Selector */}
           <select
             value={selectedDocId}
             onChange={(e) => setSelectedDocId(e.target.value)}
-            className="text-xs font-bold bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-slate-800 dark:text-slate-200"
+            className="text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#002642]/20 cursor-pointer"
           >
             {selectedCase.documents.map((d) => (
               <option key={d.id} value={d.id}>
@@ -101,7 +101,7 @@ export const DocumentOcrReviewer: React.FC = () => {
 
           <button
             onClick={handleSimulateUpload}
-            className="px-3 py-2 bg-blue-800 hover:bg-blue-900 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
+            className="px-3.5 py-1.5 bg-[#002642] hover:bg-[#0b3866] text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
           >
             <Upload className="w-3.5 h-3.5" />
             <span>{language === 'en' ? 'Upload Record' : 'दस्तावेज अपलोड करें'}</span>
@@ -110,7 +110,7 @@ export const DocumentOcrReviewer: React.FC = () => {
       </div>
 
       {/* Main Split Interface (Document Canvas Preview on Left, Fields Extracted on Right) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Left 7 Cols: Simulated Scanned Document Canvas */}
         <div className="lg:col-span-7 bg-slate-900 rounded-2xl border border-slate-800 shadow-xl overflow-hidden flex flex-col justify-between">
           <div className="p-3.5 bg-slate-950/80 border-b border-slate-800 flex justify-between items-center text-xs text-slate-300">
