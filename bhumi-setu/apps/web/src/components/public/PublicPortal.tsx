@@ -197,20 +197,20 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
   return (
     <div id="main-content" className="w-full bg-[#f8fafc] text-slate-800 text-xs min-h-screen">
       {/* 1. Official S3WaaS News Marquee Ticker */}
-      <div className="bg-[#fff9e6] border-b border-[#ffd27f] text-slate-900 py-1.5 px-4 flex items-center gap-3">
-        <div className="flex items-center gap-1.5 flex-shrink-0">
-          <div className="bg-[#f37021] text-white px-2.5 py-0.5 font-bold text-[11px] uppercase flex items-center gap-1.5 rounded-xs shadow-xs">
+      <div className="bg-[#fff9e6] border-b border-[#ffd27f] text-slate-900 py-2 px-4 flex items-center gap-3">
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="bg-[#f37021] text-white px-3 py-1 font-bold text-[11px] uppercase flex items-center gap-1.5 rounded-full shadow-xs">
             <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
             <span>{language === 'en' ? "WHAT'S NEW" : 'नवीनतम'}</span>
           </div>
           <button
             type="button"
             onClick={() => setIsMarqueePaused(!isMarqueePaused)}
-            className="p-1 rounded-xs bg-amber-100 hover:bg-amber-200 text-slate-800 border border-amber-300 transition-colors cursor-pointer"
+            className="p-1.5 rounded-full bg-amber-100 hover:bg-amber-200 text-slate-800 border border-amber-300 shadow-xs transition-colors cursor-pointer"
             title={isMarqueePaused ? (language === 'en' ? "Play news ticker" : "समाचार शुरू करें") : (language === 'en' ? "Pause news ticker" : "समाचार रोकें")}
             aria-label={isMarqueePaused ? "Play news ticker" : "Pause news ticker"}
           >
-            {isMarqueePaused ? <Play className="w-3 h-3 text-[#002642]" /> : <Pause className="w-3 h-3 text-[#002642]" />}
+            {isMarqueePaused ? <Play className="w-3.5 h-3.5 text-[#002642]" /> : <Pause className="w-3.5 h-3.5 text-[#002642]" />}
           </button>
         </div>
         <div className="overflow-hidden whitespace-nowrap flex-1 text-[11px] font-medium text-slate-800">
@@ -225,7 +225,7 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
         </div>
         <button
           onClick={() => setActiveTab('SCHEMES')}
-          className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 bg-[#002642] hover:bg-[#0b3866] text-white text-[11px] font-bold rounded-xs flex-shrink-0 transition-colors cursor-pointer"
+          className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#002642] hover:bg-[#0b3866] text-white text-[11px] font-bold rounded-full flex-shrink-0 shadow-xs transition-all cursor-pointer"
         >
           <Landmark className="w-3.5 h-3.5 text-amber-300" />
           <span>{language === 'en' ? 'Flagship Schemes' : 'प्रमुख योजनाएं'}</span>
@@ -243,37 +243,37 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
 
             {/* 2. Dashboard Statistics Cards (Section 16) */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-left">
-              <div className="bg-white p-4 rounded-xs border border-slate-300 shadow-2xs">
-                <span className="text-[10px] uppercase font-bold text-slate-400">States &amp; UTs Covered</span>
+              <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">States &amp; UTs Covered</span>
                 <div className="text-xl sm:text-2xl font-black text-[#002642] mt-1">28 States + 8 UTs</div>
-                <div className="text-[10px] text-amber-700 font-semibold mt-0.5 flex items-center gap-1">
+                <div className="text-[10px] text-amber-700 font-semibold mt-1 flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
                   <span>Demo State Directory</span>
                 </div>
               </div>
 
-              <div className="bg-white p-4 rounded-xs border border-slate-300 shadow-2xs">
-                <span className="text-[10px] uppercase font-bold text-slate-400">Land Records Integrated</span>
+              <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Land Records Integrated</span>
                 <div className="text-xl sm:text-2xl font-black text-[#002642] mt-1">Prototype Layer</div>
-                <div className="text-[10px] text-emerald-700 font-semibold mt-0.5 flex items-center gap-1">
+                <div className="text-[10px] text-emerald-700 font-semibold mt-1 flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                   <span>RoR + GIS + ULPIN</span>
                 </div>
               </div>
 
-              <div className="bg-white p-4 rounded-xs border border-slate-300 shadow-2xs">
-                <span className="text-[10px] uppercase font-bold text-slate-400">Digital Services</span>
+              <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Digital Services</span>
                 <div className="text-xl sm:text-2xl font-black text-[#002642] mt-1">12+ Workflows</div>
-                <div className="text-[10px] text-blue-700 font-semibold mt-0.5 flex items-center gap-1">
+                <div className="text-[10px] text-blue-700 font-semibold mt-1 flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
                   <span>Mutation, Search, OCR</span>
                 </div>
               </div>
 
-              <div className="bg-white p-4 rounded-xs border border-slate-300 shadow-2xs">
-                <span className="text-[10px] uppercase font-bold text-slate-400">Document Types Supported</span>
+              <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Document Types Supported</span>
                 <div className="text-xl sm:text-2xl font-black text-[#002642] mt-1">8+ Formats</div>
-                <div className="text-[10px] text-purple-700 font-semibold mt-0.5 flex items-center gap-1">
+                <div className="text-[10px] text-purple-700 font-semibold mt-1 flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
                   <span>7/12, RoR, Deeds, Khasra</span>
                 </div>
@@ -281,19 +281,19 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
             </div>
 
             {/* 3. Core Product USP Section: ONE PROPERTY — ONE INTELLIGENCE VIEW (Section 23) */}
-            <div className="bg-gradient-to-r from-[#002642] via-[#0b3866] to-[#00172d] text-white p-6 rounded-xs border-l-4 border-l-[#f37021] text-left shadow-md space-y-4">
-              <div className="flex flex-wrap justify-between items-center gap-2">
+            <div className="bg-gradient-to-r from-[#002642] via-[#0b3866] to-[#00172d] text-white p-6 sm:p-7 rounded-2xl border-l-4 border-l-[#f37021] text-left shadow-lg space-y-4">
+              <div className="flex flex-wrap justify-between items-center gap-3">
                 <div>
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#f37021] text-white">
+                  <span className="px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#f37021] text-white shadow-xs">
                     CENTRAL PLATFORM USP
                   </span>
-                  <h3 className="text-lg sm:text-xl font-black tracking-tight text-white mt-1">
+                  <h3 className="text-lg sm:text-xl font-black tracking-tight text-white mt-1.5">
                     “ONE PROPERTY — ONE INTELLIGENCE VIEW”
                   </h3>
                 </div>
                 <button
                   onClick={() => setActiveTab('PROPERTY_INTEL')}
-                  className="px-4 py-2 bg-white text-[#002642] hover:bg-slate-100 font-extrabold text-xs rounded-xs flex items-center gap-1.5 shadow-xs transition-colors"
+                  className="px-4 py-2.5 bg-white text-[#002642] hover:bg-slate-100 font-extrabold text-xs rounded-xl flex items-center gap-1.5 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 cursor-pointer"
                 >
                   <span>Open Intelligence Dashboard</span>
                   <ChevronRight className="w-3.5 h-3.5 text-[#f37021]" />
@@ -304,7 +304,7 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
                 Instead of forcing a citizen to navigate multiple disconnected portals, BHUMISETU unifies:
               </p>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 text-center text-xs">
+              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5 text-center text-xs">
                 {[
                   { title: 'Land Record', sub: '7/12 & RoR' },
                   { title: 'Cadastral Map', sub: 'BhuNaksha' },
@@ -315,9 +315,9 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
                   { title: 'Timeline', sub: '2018–2026' },
                   { title: 'Risk Analysis', sub: '12 Checks' }
                 ].map((item, idx) => (
-                  <div key={idx} className="p-2 bg-white/10 hover:bg-white/20 rounded-xs border border-white/15 transition-colors">
+                  <div key={idx} className="p-2.5 bg-white/10 hover:bg-white/20 rounded-xl border border-white/15 transition-all backdrop-blur-xs">
                     <div className="font-extrabold text-white text-[11px]">{item.title}</div>
-                    <div className="text-[9px] text-amber-300 mt-0.5">{item.sub}</div>
+                    <div className="text-[9px] text-amber-300 mt-0.5 font-medium">{item.sub}</div>
                   </div>
                 ))}
               </div>
@@ -327,80 +327,80 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <button
                 onClick={() => setActiveTab('SEARCH')}
-                className="p-4 bg-white text-left text-slate-800 rounded-xs shadow-xs hover:shadow-md transition-all border-t-3 border-[#002642] hover:-translate-y-0.5 group"
+                className="p-5 bg-white text-left text-slate-800 rounded-2xl shadow-sm hover:shadow-xl transition-all border border-slate-200/90 border-t-4 border-t-[#002642] hover:-translate-y-1 group cursor-pointer"
               >
                 <div className="flex items-center justify-between">
-                  <div className="w-9 h-9 rounded-xs bg-[#e8f1f8] text-[#002642] flex items-center justify-center font-bold">
+                  <div className="w-11 h-11 rounded-xl bg-[#e8f1f8] text-[#002642] flex items-center justify-center font-bold shadow-xs">
                     <Search className="w-5 h-5 text-[#002642]" />
                   </div>
-                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#002642] transition-colors" />
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#002642] group-hover:translate-x-0.5 transition-all" />
                 </div>
-                <div className="mt-3 font-bold text-sm text-[#002642]">
+                <div className="mt-3.5 font-bold text-sm text-[#002642]">
                   {language === 'en' ? 'Unified Land Search' : 'भू-अभिलेख खोजें'}
                 </div>
-                <div className="text-[11px] text-slate-500 mt-0.5">
+                <div className="text-[11px] text-slate-500 mt-1">
                   State → District → Village → Survey / ULPIN
                 </div>
               </button>
 
               <button
                 onClick={() => setActiveTab('DOC_VERIFY')}
-                className="p-4 bg-white text-left text-slate-800 rounded-xs shadow-xs hover:shadow-md transition-all border-t-3 border-[#f37021] hover:-translate-y-0.5 group"
+                className="p-5 bg-white text-left text-slate-800 rounded-2xl shadow-sm hover:shadow-xl transition-all border border-slate-200/90 border-t-4 border-t-[#f37021] hover:-translate-y-1 group cursor-pointer"
               >
                 <div className="flex items-center justify-between">
-                  <div className="w-9 h-9 rounded-xs bg-amber-50 text-[#f37021] flex items-center justify-center font-bold">
+                  <div className="w-11 h-11 rounded-xl bg-amber-50 text-[#f37021] flex items-center justify-center font-bold shadow-xs">
                     <FileCheck className="w-5 h-5 text-[#f37021]" />
                   </div>
-                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#f37021] transition-colors" />
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#f37021] group-hover:translate-x-0.5 transition-all" />
                 </div>
-                <div className="mt-3 font-bold text-sm text-[#002642]">
+                <div className="mt-3.5 font-bold text-sm text-[#002642]">
                   {language === 'en' ? 'AI Document Verification' : 'दस्तावेज सत्यापन'}
                 </div>
-                <div className="text-[11px] text-slate-500 mt-0.5">
+                <div className="text-[11px] text-slate-500 mt-1">
                   OCR extraction &amp; cross-comparison
                 </div>
               </button>
 
               <button
                 onClick={() => setActiveTab('MUTATION')}
-                className="p-4 bg-white text-left text-slate-800 rounded-xs shadow-xs hover:shadow-md transition-all border-t-3 border-[#138808] hover:-translate-y-0.5 group"
+                className="p-5 bg-white text-left text-slate-800 rounded-2xl shadow-sm hover:shadow-xl transition-all border border-slate-200/90 border-t-4 border-t-[#138808] hover:-translate-y-1 group cursor-pointer"
               >
                 <div className="flex items-center justify-between">
-                  <div className="w-9 h-9 rounded-xs bg-emerald-50 text-[#138808] flex items-center justify-center font-bold">
+                  <div className="w-11 h-11 rounded-xl bg-emerald-50 text-[#138808] flex items-center justify-center font-bold shadow-xs">
                     <Clock className="w-5 h-5 text-[#138808]" />
                   </div>
-                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#138808] transition-colors" />
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#138808] group-hover:translate-x-0.5 transition-all" />
                 </div>
-                <div className="mt-3 font-bold text-sm text-[#002642]">
+                <div className="mt-3.5 font-bold text-sm text-[#002642]">
                   {language === 'en' ? 'Track Mutation' : 'दाखिल-खारिज स्थिति'}
                 </div>
-                <div className="text-[11px] text-slate-500 mt-0.5">
+                <div className="text-[11px] text-slate-500 mt-1">
                   Real-time status for MUT-MH-2026-001245
                 </div>
               </button>
 
               <button
                 onClick={() => setActiveTab('GIS_MAP')}
-                className="p-4 bg-white text-left text-slate-800 rounded-xs shadow-xs hover:shadow-md transition-all border-t-3 border-sky-600 hover:-translate-y-0.5 group"
+                className="p-5 bg-white text-left text-slate-800 rounded-2xl shadow-sm hover:shadow-xl transition-all border border-slate-200/90 border-t-4 border-t-sky-600 hover:-translate-y-1 group cursor-pointer"
               >
                 <div className="flex items-center justify-between">
-                  <div className="w-9 h-9 rounded-xs bg-sky-50 text-sky-600 flex items-center justify-center font-bold">
+                  <div className="w-11 h-11 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center font-bold shadow-xs">
                     <Map className="w-5 h-5 text-sky-600" />
                   </div>
-                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-sky-600 transition-colors" />
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-sky-600 group-hover:translate-x-0.5 transition-all" />
                 </div>
-                <div className="mt-3 font-bold text-sm text-[#002642]">
+                <div className="mt-3.5 font-bold text-sm text-[#002642]">
                   {language === 'en' ? 'Cadastral GIS Map' : 'भू-नक्शा GIS'}
                 </div>
-                <div className="text-[11px] text-slate-500 mt-0.5">
+                <div className="text-[11px] text-slate-500 mt-1">
                   Inspect parcel boundaries &amp; infrastructure
                 </div>
               </button>
             </div>
 
             {/* 5. Security & Privacy Principles Section (Section 17) */}
-            <div className="bg-white border border-slate-300 rounded-xs p-5 shadow-xs text-xs text-left space-y-3">
-              <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+            <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-sm text-xs text-left space-y-4">
+              <div className="flex items-center gap-2 border-b border-slate-200 pb-3">
                 <ShieldCheck className="w-4 h-4 text-[#138808]" />
                 <h4 className="font-extrabold text-xs uppercase tracking-wide text-[#002642]">
                   Security, Privacy &amp; Data Governance Principles (DPDP Act 2023)
@@ -408,20 +408,20 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-slate-600 text-[11px]">
-                <div className="p-2.5 bg-slate-50 rounded-xs border border-slate-200">
-                  <strong className="text-slate-800 block mb-0.5">Masked Personal Identifiers:</strong>
+                <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80">
+                  <strong className="text-slate-800 block mb-1">Masked Personal Identifiers:</strong>
                   Real landowner names and Aadhaar numbers are never displayed publicly. Fictional sample records are utilized.
                 </div>
-                <div className="p-2.5 bg-slate-50 rounded-xs border border-slate-200">
-                  <strong className="text-slate-800 block mb-0.5">Zero Permanent Storage:</strong>
+                <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80">
+                  <strong className="text-slate-800 block mb-1">Zero Permanent Storage:</strong>
                   Uploaded deeds and 7/12 extracts are processed in-memory for OCR extraction and are immediately discarded.
                 </div>
-                <div className="p-2.5 bg-slate-50 rounded-xs border border-slate-200">
-                  <strong className="text-slate-800 block mb-0.5">Non-Legal Preliminary Status:</strong>
+                <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80">
+                  <strong className="text-slate-800 block mb-1">Non-Legal Preliminary Status:</strong>
                   All findings are labeled as preliminary variances. They do not constitute official title certification or legal advice.
                 </div>
-                <div className="p-2.5 bg-slate-50 rounded-xs border border-slate-200">
-                  <strong className="text-slate-800 block mb-0.5">Authentic Gateways Only:</strong>
+                <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80">
+                  <strong className="text-slate-800 block mb-1">Authentic Gateways Only:</strong>
                   We direct citizens exclusively to verified state revenue URLs (Mahabhulekh, AnyRoR, Bhoomi, UP Bhulekh).
                 </div>
               </div>
@@ -434,7 +434,7 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
             />
 
             {/* PM National Land Reforms & Infrastructure Mission Showcase */}
-            <div className="bg-white border border-slate-300 rounded-xs shadow-xs overflow-hidden">
+            <div className="bg-white border border-slate-200/90 rounded-2xl shadow-sm overflow-hidden">
               <div className="tiranga-strip"></div>
               <div className="grid grid-cols-1 lg:grid-cols-12 items-center">
                 {/* Left: Official Photograph of PM Narendra Modi at Development Dedication */}
@@ -444,26 +444,26 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
                     alt={language === 'en' ? 'Prime Minister Narendra Modi dedicating national infrastructure projects' : 'प्रधानमंत्री नरेन्द्र मोदी राष्ट्र को विकास परियोजनाएं समर्पित करते हुए'} 
                     className="w-full h-full object-cover object-center"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-4">
-                    <span className="px-2 py-0.5 bg-[#f37021] text-white font-extrabold text-[9px] uppercase rounded-xs w-max mb-1">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-5">
+                    <span className="px-2.5 py-0.5 bg-[#f37021] text-white font-extrabold text-[9px] uppercase rounded-full w-max mb-1.5 shadow-xs">
                       {language === 'en' ? 'National Mission' : 'राष्ट्रीय मिशन'}
                     </span>
                     <h4 className="text-white font-bold text-sm leading-tight">
                       {language === 'en' ? 'Empowering Citizens Through Digitized Land Governance' : 'डिजिटल भू-प्रशासन से नागरिकों का सशक्तिकरण'}
                     </h4>
-                    <p className="text-slate-300 text-[10px] mt-0.5">
+                    <p className="text-slate-300 text-[10px] mt-1 font-normal">
                       {language === 'en' ? 'PM Narendra Modi dedicating key national corridors & SVAMITVA cards' : 'माननीय प्रधानमंत्री द्वारा राष्ट्रीय गलियारों एवं स्वामित्व संपत्ति पत्रकों का लोकार्पण'}
                     </p>
                   </div>
                 </div>
 
                 {/* Right: Key Statutory Pillars & Directives */}
-                <div className="lg:col-span-7 p-5 sm:p-6 space-y-4 text-left">
-                  <div className="flex items-center gap-2">
+                <div className="lg:col-span-7 p-6 sm:p-7 space-y-4 text-left">
+                  <div className="flex items-center gap-3">
                     <img 
                       src="/assets/pm_modi_2023.jpg" 
                       alt="PM Modi Avatar" 
-                      className="w-9 h-9 rounded-full object-cover object-top border-2 border-[#f37021] shadow-2xs"
+                      className="w-10 h-10 rounded-full object-cover object-top border-2 border-[#f37021] shadow-xs ring-2 ring-orange-100"
                     />
                     <div>
                       <div className="text-xs font-bold text-[#002642]">
@@ -476,42 +476,42 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    <div className="p-3 bg-amber-50/70 border-l-3 border-[#f37021] rounded-xs">
-                      <div className="font-bold text-[#c2410c] text-[11px] flex items-center gap-1">
+                    <div className="p-3.5 bg-amber-50/70 border-l-4 border-[#f37021] rounded-xl shadow-xs">
+                      <div className="font-bold text-[#c2410c] text-[11px] flex items-center gap-1.5">
                         <CheckCircle2 className="w-3.5 h-3.5 text-[#f37021]" />
                         <span>{language === 'en' ? '100% DBT Compensation' : '१००% प्रत्यक्ष बैंक अंतरण'}</span>
                       </div>
-                      <p className="text-[10px] text-slate-600 mt-1">
+                      <p className="text-[10px] text-slate-600 mt-1 leading-relaxed">
                         {language === 'en' ? 'Direct crediting to Aadhaar-linked accounts via PFMS, zero intermediaries.' : 'पीएफएमएस के माध्यम से सीधे आधार-संबद्ध बैंक खातों में भुगतान, पूर्ण पारदर्शिता।'}
                       </p>
                     </div>
 
-                    <div className="p-3 bg-blue-50/70 border-l-3 border-[#0b3866] rounded-xs">
-                      <div className="font-bold text-[#0b3866] text-[11px] flex items-center gap-1">
+                    <div className="p-3.5 bg-blue-50/70 border-l-4 border-[#0b3866] rounded-xl shadow-xs">
+                      <div className="font-bold text-[#0b3866] text-[11px] flex items-center gap-1.5">
                         <CheckCircle2 className="w-3.5 h-3.5 text-[#0b3866]" />
                         <span>{language === 'en' ? 'Statutory Solatium & Interest' : 'सांविधिक तोषण एवं ब्याज'}</span>
                       </div>
-                      <p className="text-[10px] text-slate-600 mt-1">
+                      <p className="text-[10px] text-slate-600 mt-1 leading-relaxed">
                         {language === 'en' ? 'Mandatory 100% solatium and 12% annual interest on market value guaranteed.' : 'बाजार मूल्य पर अनिवार्य १००% तोषण एवं १२% वार्षिक ब्याज की कानूनी गारंटी।'}
                       </p>
                     </div>
 
-                    <div className="p-3 bg-emerald-50/70 border-l-3 border-[#138808] rounded-xs">
-                      <div className="font-bold text-[#138808] text-[11px] flex items-center gap-1">
+                    <div className="p-3.5 bg-emerald-50/70 border-l-4 border-[#138808] rounded-xl shadow-xs">
+                      <div className="font-bold text-[#138808] text-[11px] flex items-center gap-1.5">
                         <CheckCircle2 className="w-3.5 h-3.5 text-[#138808]" />
                         <span>{language === 'en' ? 'Drone Cadastral Mapping' : 'ड्रोन आधारित डिजिटल नक्शा'}</span>
                       </div>
-                      <p className="text-[10px] text-slate-600 mt-1">
+                      <p className="text-[10px] text-slate-600 mt-1 leading-relaxed">
                         {language === 'en' ? 'Sub-centimeter GIS boundary precision under SVAMITVA for boundary dispute elimination.' : 'स्वामित्व योजना अंतर्गत उप-सेंटीमीटर जीआईएस सटीकता से सीमा विवादों का उन्मूलन।'}
                       </p>
                     </div>
 
-                    <div className="p-3 bg-purple-50/70 border-l-3 border-[#6b21a8] rounded-xs">
-                      <div className="font-bold text-[#6b21a8] text-[11px] flex items-center gap-1">
+                    <div className="p-3.5 bg-purple-50/70 border-l-4 border-[#6b21a8] rounded-xl shadow-xs">
+                      <div className="font-bold text-[#6b21a8] text-[11px] flex items-center gap-1.5">
                         <CheckCircle2 className="w-3.5 h-3.5 text-[#6b21a8]" />
                         <span>{language === 'en' ? 'Time-Bound Sec 15 Disposal' : 'समयबद्ध आपत्ति निस्तारण'}</span>
                       </div>
-                      <p className="text-[10px] text-slate-600 mt-1">
+                      <p className="text-[10px] text-slate-600 mt-1 leading-relaxed">
                         {language === 'en' ? '60-day statutory window with mandatory personal hearing by Collector.' : 'कलेक्टर द्वारा व्यक्तिगत सुनवाई के साथ ६० दिनों की वैधानिक समय-सीमा।'}
                       </p>
                     </div>
@@ -522,8 +522,8 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
 
             {/* S3WaaS National Statistics Strip */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="swaas-card p-4 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xs bg-[#e8f1f8] flex items-center justify-center text-[#0b3866] flex-shrink-0">
+              <div className="swaas-card p-5 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-[#e8f1f8] flex items-center justify-center text-[#0b3866] flex-shrink-0 shadow-xs">
                   <FolderKanban className="w-6 h-6" />
                 </div>
                 <div>
@@ -535,8 +535,8 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
                 </div>
               </div>
 
-              <div className="swaas-card p-4 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xs bg-amber-50 flex items-center justify-center text-[#f37021] flex-shrink-0">
+              <div className="swaas-card p-5 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center text-[#f37021] flex-shrink-0 shadow-xs">
                   <Layers className="w-6 h-6" />
                 </div>
                 <div>
@@ -548,8 +548,8 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
                 </div>
               </div>
 
-              <div className="swaas-card p-4 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xs bg-emerald-50 flex items-center justify-center text-[#138808] flex-shrink-0">
+              <div className="swaas-card p-5 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-[#138808] flex-shrink-0 shadow-xs">
                   <IndianRupee className="w-6 h-6" />
                 </div>
                 <div>
@@ -561,8 +561,8 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
                 </div>
               </div>
 
-              <div className="swaas-card p-4 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xs bg-blue-50 flex items-center justify-center text-[#0b3866] flex-shrink-0">
+              <div className="swaas-card p-5 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-[#0b3866] flex-shrink-0 shadow-xs">
                   <FileCheck className="w-6 h-6" />
                 </div>
                 <div>
@@ -645,7 +645,7 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
                             <td className="text-right whitespace-nowrap">
                               <button
                                 onClick={() => setSelectedCaseDetailId(c.id)}
-                                className="px-2.5 py-1 text-xs font-semibold bg-[#e8f1f8] hover:bg-[#0b3866] text-[#0b3866] hover:text-white rounded-xs transition-colors inline-flex items-center gap-1"
+                                className="px-3 py-1 text-xs font-semibold bg-[#e8f1f8] hover:bg-[#0b3866] text-[#0b3866] hover:text-white rounded-lg transition-all inline-flex items-center gap-1.5 shadow-xs cursor-pointer"
                               >
                                 <Eye className="w-3 h-3" />
                                 <span>{language === 'en' ? 'View' : 'देखें'}</span>
@@ -657,10 +657,10 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
                     </table>
                   </div>
 
-                  <div className="p-3 bg-slate-50 border-t border-slate-200 text-center">
+                  <div className="p-3.5 bg-slate-50 border-t border-slate-200 text-center">
                     <button
                       onClick={() => setActiveTab('NOTICES')}
-                      className="text-xs font-bold text-[#0b3866] hover:underline"
+                      className="text-xs font-bold text-[#0b3866] hover:underline cursor-pointer"
                     >
                       {language === 'en' ? 'View All Official Gazette Publications (4,892 Records) →' : 'सभी राजपत्र अधिसूचनाएं देखें (४,८९२ अभिलेख) →'}
                     </button>
@@ -668,8 +668,8 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
                 </div>
 
                 {/* Statutory Acquisition Lifecycle (RFCTLARR Act 2013) */}
-                <div className="swaas-card p-5 space-y-4">
-                  <div className="border-b border-slate-200 pb-2">
+                <div className="swaas-card p-6 space-y-4">
+                  <div className="border-b border-slate-200 pb-3">
                     <h3 className="font-bold text-sm text-[#002642] flex items-center gap-2">
                       <ShieldCheck className="w-4 h-4 text-[#138808]" />
                       <span>{language === 'en' ? 'Statutory Land Acquisition Process (RFCTLARR Act, 2013)' : 'सांविधिक भूमि अधिग्रहण प्रक्रिया (अधिनियम २०१३)'}</span>
@@ -680,34 +680,34 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-                    <div className="p-3 bg-slate-50 border-l-3 border-[#0b3866] rounded-xs space-y-1">
-                      <div className="text-[10px] font-bold text-[#0b3866] uppercase">Stage 1</div>
+                    <div className="p-3.5 bg-slate-50 border-l-4 border-[#0b3866] rounded-xl space-y-1 shadow-xs">
+                      <div className="text-[10px] font-bold text-[#0b3866] uppercase tracking-wider">Stage 1</div>
                       <div className="font-bold text-slate-800">Section 11 Notice</div>
-                      <p className="text-[11px] text-slate-600">
+                      <p className="text-[11px] text-slate-600 leading-relaxed">
                         Preliminary notification &amp; Social Impact Assessment (SIA) published in Official Gazette.
                       </p>
                     </div>
 
-                    <div className="p-3 bg-amber-50/60 border-l-3 border-[#f37021] rounded-xs space-y-1">
-                      <div className="text-[10px] font-bold text-[#f37021] uppercase">Stage 2 (60 Days)</div>
+                    <div className="p-3.5 bg-amber-50/60 border-l-4 border-[#f37021] rounded-xl space-y-1 shadow-xs">
+                      <div className="text-[10px] font-bold text-[#f37021] uppercase tracking-wider">Stage 2 (60 Days)</div>
                       <div className="font-bold text-slate-800">Section 15 Objections</div>
-                      <p className="text-[11px] text-slate-600">
+                      <p className="text-[11px] text-slate-600 leading-relaxed">
                         Statutory 60-day window for landholders to register objections and seek formal hearing.
                       </p>
                     </div>
 
-                    <div className="p-3 bg-slate-50 border-l-3 border-[#0b3866] rounded-xs space-y-1">
-                      <div className="text-[10px] font-bold text-[#0b3866] uppercase">Stage 3 (12 Months)</div>
+                    <div className="p-3.5 bg-slate-50 border-l-4 border-[#0b3866] rounded-xl space-y-1 shadow-xs">
+                      <div className="text-[10px] font-bold text-[#0b3866] uppercase tracking-wider">Stage 3 (12 Months)</div>
                       <div className="font-bold text-slate-800">Section 19 Declaration</div>
-                      <p className="text-[11px] text-slate-600">
+                      <p className="text-[11px] text-slate-600 leading-relaxed">
                         Final declaration of land required for public purpose after disposal of all objections.
                       </p>
                     </div>
 
-                    <div className="p-3 bg-emerald-50/60 border-l-3 border-[#138808] rounded-xs space-y-1">
-                      <div className="text-[10px] font-bold text-[#138808] uppercase">Stage 4</div>
+                    <div className="p-3.5 bg-emerald-50/60 border-l-4 border-[#138808] rounded-xl space-y-1 shadow-xs">
+                      <div className="text-[10px] font-bold text-[#138808] uppercase tracking-wider">Stage 4</div>
                       <div className="font-bold text-slate-800">Section 23 &amp; DBT Award</div>
-                      <p className="text-[11px] text-slate-600">
+                      <p className="text-[11px] text-slate-600 leading-relaxed">
                         Award determination with 100% statutory solatium &amp; direct bank transfer via PFMS.
                       </p>
                     </div>
@@ -718,15 +718,15 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
               {/* Right Column (4 cols): Quick Search, Statutory Protections & Support */}
               <div className="lg:col-span-4 space-y-6">
                 {/* S3WaaS Quick Search Card */}
-                <div className="swaas-card p-4 space-y-3">
-                  <div className="border-b border-slate-200 pb-2">
+                <div className="swaas-card p-5 space-y-3.5">
+                  <div className="border-b border-slate-200 pb-2.5">
                     <h3 className="font-bold text-sm text-[#002642] flex items-center gap-1.5">
                       <Search className="w-4 h-4 text-[#f37021]" />
                       <span>{language === 'en' ? 'Quick Record Search' : 'त्वरित अभिलेख खोज'}</span>
                     </h3>
                   </div>
 
-                  <div className="space-y-2.5">
+                  <div className="space-y-3">
                     <div>
                       <label className="text-[11px] font-semibold text-slate-700 block mb-1">
                         Select District:
@@ -734,7 +734,7 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
                       <select
                         value={searchDistrict}
                         onChange={(e) => setSearchDistrict(e.target.value)}
-                        className="w-full p-2 border border-slate-300 rounded-xs bg-white text-xs font-medium focus:outline-none focus:ring-1 focus:ring-[#0b3866]"
+                        className="w-full p-2.5 border border-slate-200 rounded-xl bg-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#0b3866]/30 shadow-xs cursor-pointer"
                       >
                         <option value="ALL">-- All Districts (महाराष्ट्र) --</option>
                         <option value="Pune">Pune (पुणे)</option>
@@ -752,13 +752,13 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
                         placeholder="e.g. 142/A, 201/1"
                         value={searchGatNumber}
                         onChange={(e) => setSearchGatNumber(e.target.value)}
-                        className="w-full p-2 border border-slate-300 rounded-xs bg-white text-xs focus:outline-none focus:ring-1 focus:ring-[#0b3866]"
+                        className="w-full p-2.5 border border-slate-200 rounded-xl bg-white text-xs focus:outline-none focus:ring-2 focus:ring-[#0b3866]/30 shadow-xs"
                       />
                     </div>
 
                     <button
                       onClick={() => setActiveTab('SEARCH')}
-                      className="w-full py-2 bg-[#0b3866] hover:bg-[#082c52] text-white font-bold text-xs rounded-xs transition-colors flex items-center justify-center gap-1.5"
+                      className="w-full py-2.5 bg-[#0b3866] hover:bg-[#082c52] text-white font-bold text-xs rounded-xl transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
                     >
                       <Search className="w-3.5 h-3.5" />
                       <span>{language === 'en' ? 'Search Database' : 'अभिलेख खोजें'}</span>
@@ -770,15 +770,15 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
                 <GovSchemeSidebarAd schemeCode="SVAMITVA" language={language} />
 
                 {/* Statutory Rights of Landowners Card */}
-                <div className="swaas-card p-4 space-y-3 bg-[#fdfdfd]">
-                  <div className="border-b border-slate-200 pb-2">
-                    <h3 className="font-bold text-sm text-[#002642] flex items-center gap-1.5">
+                <div className="swaas-card p-5 space-y-3.5 bg-white">
+                  <div className="border-b border-slate-200 pb-2.5">
+                    <h3 className="font-bold text-sm text-[#002642] flex items-center gap-2">
                       <ShieldCheck className="w-4 h-4 text-[#138808]" />
                       <span>{language === 'en' ? 'Statutory Landowner Rights' : 'भूस्वामी सांविधिक अधिकार'}</span>
                     </h3>
                   </div>
 
-                  <ul className="space-y-2 text-[11px] text-slate-700">
+                  <ul className="space-y-2.5 text-[11px] text-slate-700">
                     <li className="flex items-start gap-2">
                       <Check className="w-4 h-4 text-[#138808] flex-shrink-0 mt-0.5" />
                       <span><strong>100% Solatium:</strong> Mandated 100% equivalent solatium added to basic land value u/s 30.</span>
@@ -802,7 +802,7 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
                 <GovSchemeSidebarAd schemeCode="PM-KISAN" language={language} />
 
                 {/* S3WaaS Toll-Free Helpdesk Card */}
-                <div className="swaas-card p-4 space-y-2 border-l-4 border-l-[#f37021]">
+                <div className="swaas-card p-5 space-y-2.5 border-l-4 border-l-[#f37021]">
                   <div className="font-bold text-xs text-[#002642] flex items-center gap-2">
                     <Phone className="w-4 h-4 text-[#f37021]" />
                     <span>{language === 'en' ? 'Landowner Assistance Helpline' : 'भूस्वामी सहायता केंद्र'}</span>
@@ -810,7 +810,7 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
                   <div className="text-xl font-bold font-mono text-[#0b3866]">
                     1800-11-2013
                   </div>
-                  <p className="text-[11px] text-slate-500">
+                  <p className="text-[11px] text-slate-500 leading-relaxed">
                     Monday to Friday, 9:00 AM – 6:00 PM (Toll-Free, Ministry of Rural Development)
                   </p>
                 </div>
@@ -821,13 +821,13 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
             <GovSchemeAdGrid language={language} />
 
             {/* Allied Government Portals Grid (S3WaaS Standard Integration Hub) */}
-            <div className="swaas-card p-5 space-y-3">
-              <div className="border-b border-slate-200 pb-2 flex justify-between items-center">
-                <span className="font-bold text-xs text-[#002642] tracking-wide uppercase flex items-center gap-1.5">
+            <div className="swaas-card p-6 space-y-4">
+              <div className="border-b border-slate-200 pb-3 flex justify-between items-center">
+                <span className="font-bold text-xs text-[#002642] tracking-wide uppercase flex items-center gap-2">
                   <Landmark className="w-4 h-4 text-[#f37021]" />
                   <span>{language === 'en' ? 'ALLIED GOVERNMENT OF INDIA PORTALS' : 'संबद्ध राष्ट्रीय पोर्टल'}</span>
                 </span>
-                <span className="text-[10px] text-slate-400">National Single Window Integrations</span>
+                <span className="text-[10px] text-slate-400 font-medium">National Single Window Integrations</span>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -835,7 +835,7 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
                   href="https://bhoomirashi.gov.in" 
                   target="_blank" 
                   rel="noreferrer"
-                  className="p-3 bg-slate-50 hover:bg-white border border-slate-200 hover:border-[#0b3866] transition-all text-center rounded-xs block group"
+                  className="p-3.5 bg-slate-50/80 hover:bg-white border border-slate-200/90 hover:border-[#0b3866] transition-all text-center rounded-xl block group shadow-xs hover:shadow-md hover:-translate-y-0.5"
                 >
                   <div className="text-[11px] font-bold text-[#0b3866] group-hover:text-[#f37021]">BHOOMI RASHI</div>
                   <div className="text-[10px] text-slate-500 mt-0.5">MoRTH Highways</div>
@@ -845,7 +845,7 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
                   href="https://gatishakti.gov.in" 
                   target="_blank" 
                   rel="noreferrer"
-                  className="p-3 bg-slate-50 hover:bg-white border border-slate-200 hover:border-[#0b3866] transition-all text-center rounded-xs block group"
+                  className="p-3.5 bg-slate-50/80 hover:bg-white border border-slate-200/90 hover:border-[#0b3866] transition-all text-center rounded-xl block group shadow-xs hover:shadow-md hover:-translate-y-0.5"
                 >
                   <div className="text-[11px] font-bold text-[#138808] group-hover:text-[#f37021]">PM GATI SHAKTI</div>
                   <div className="text-[10px] text-slate-500 mt-0.5">National Master Plan</div>
@@ -855,7 +855,7 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
                   href="https://bhunaksha.gov.in" 
                   target="_blank" 
                   rel="noreferrer"
-                  className="p-3 bg-slate-50 hover:bg-white border border-slate-200 hover:border-[#0b3866] transition-all text-center rounded-xs block group"
+                  className="p-3.5 bg-slate-50/80 hover:bg-white border border-slate-200/90 hover:border-[#0b3866] transition-all text-center rounded-xl block group shadow-xs hover:shadow-md hover:-translate-y-0.5"
                 >
                   <div className="text-[11px] font-bold text-[#0b3866] group-hover:text-[#f37021]">BHUNAKSHA (NIC)</div>
                   <div className="text-[10px] text-slate-500 mt-0.5">Cadastral Maps</div>
@@ -865,7 +865,7 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
                   href="https://mahabhulekh.maharashtra.gov.in" 
                   target="_blank" 
                   rel="noreferrer"
-                  className="p-3 bg-slate-50 hover:bg-white border border-slate-200 hover:border-[#0b3866] transition-all text-center rounded-xs block group"
+                  className="p-3.5 bg-slate-50/80 hover:bg-white border border-slate-200/90 hover:border-[#0b3866] transition-all text-center rounded-xl block group shadow-xs hover:shadow-md hover:-translate-y-0.5"
                 >
                   <div className="text-[11px] font-bold text-[#0b3866] group-hover:text-[#f37021]">MAHABHULEKH</div>
                   <div className="text-[10px] text-slate-500 mt-0.5">7/12 Land Records</div>
@@ -875,7 +875,7 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
                   href="https://pfms.nic.in" 
                   target="_blank" 
                   rel="noreferrer"
-                  className="p-3 bg-slate-50 hover:bg-white border border-slate-200 hover:border-[#0b3866] transition-all text-center rounded-xs block group"
+                  className="p-3.5 bg-slate-50/80 hover:bg-white border border-slate-200/90 hover:border-[#0b3866] transition-all text-center rounded-xl block group shadow-xs hover:shadow-md hover:-translate-y-0.5"
                 >
                   <div className="text-[11px] font-bold text-[#0b3866] group-hover:text-[#f37021]">PFMS DBT</div>
                   <div className="text-[10px] text-slate-500 mt-0.5">Public Finance</div>
@@ -885,7 +885,7 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
                   href="https://dilrmp.gov.in" 
                   target="_blank" 
                   rel="noreferrer"
-                  className="p-3 bg-slate-50 hover:bg-white border border-slate-200 hover:border-[#0b3866] transition-all text-center rounded-xs block group"
+                  className="p-3.5 bg-slate-50/80 hover:bg-white border border-slate-200/90 hover:border-[#0b3866] transition-all text-center rounded-xl block group shadow-xs hover:shadow-md hover:-translate-y-0.5"
                 >
                   <div className="text-[11px] font-bold text-[#0b3866] group-hover:text-[#f37021]">DILRMP</div>
                   <div className="text-[10px] text-slate-500 mt-0.5">Land Modernisation</div>

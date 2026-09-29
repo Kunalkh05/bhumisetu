@@ -269,11 +269,11 @@ export const HeroRotatingBanner: React.FC<{
             </div>
 
             {/* Scheme Synchronized Dynamic Sub-headline */}
-            <div className="p-3 bg-white/10 backdrop-blur-sm border-l-3 border-[#f37021] rounded-xs max-w-2xl">
+            <div className="p-4 bg-white/10 backdrop-blur-md border border-white/20 border-l-4 border-l-[#f37021] rounded-2xl max-w-2xl shadow-lg">
               <div className="text-xs font-bold text-amber-300">
                 {language === 'en' ? currentSlide.title : currentSlide.titleHi}
               </div>
-              <p className="text-[11px] text-slate-200 mt-0.5 line-clamp-2">
+              <p className="text-[11px] text-slate-200 mt-1 line-clamp-2 leading-relaxed">
                 {language === 'en' ? currentSlide.tagline : currentSlide.taglineHi}
               </p>
             </div>
@@ -285,9 +285,9 @@ export const HeroRotatingBanner: React.FC<{
                   e.preventDefault();
                   onNavigate('SEARCH');
                 }}
-                className="bg-white p-1 sm:p-1.5 rounded-xs shadow-xl flex items-center gap-2 border-2 border-amber-400"
+                className="bg-white p-2 rounded-2xl shadow-2xl flex items-center gap-2 border-2 border-amber-400 focus-within:ring-4 focus-within:ring-amber-400/30 transition-all"
               >
-                <div className="pl-2 text-slate-500">
+                <div className="pl-2.5 text-slate-500">
                   <Search className="w-4 h-4 text-[#002642]" />
                 </div>
                 <input
@@ -302,9 +302,9 @@ export const HeroRotatingBanner: React.FC<{
                 <button
                   type="button"
                   onClick={handleVoiceSearch}
-                  className={`p-1.5 rounded-xs transition-colors flex items-center gap-1 text-[11px] font-bold ${
+                  className={`p-2 rounded-xl transition-all flex items-center gap-1.5 text-[11px] font-bold cursor-pointer ${
                     isListening 
-                      ? 'bg-red-500 text-white animate-pulse' 
+                      ? 'bg-red-500 text-white animate-pulse shadow-xs' 
                       : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
                   }`}
                   title={language === 'en' ? "Search by Voice" : "बोलकर खोजें"}
@@ -315,7 +315,7 @@ export const HeroRotatingBanner: React.FC<{
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#f37021] hover:bg-[#d95a10] text-white font-extrabold text-xs rounded-xs flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                  className="px-5 py-2.5 bg-gradient-to-r from-[#f37021] to-[#e65100] hover:from-[#e65100] hover:to-[#c2410c] text-white font-extrabold text-xs rounded-xl flex items-center gap-1.5 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 cursor-pointer"
                 >
                   <span>{language === 'en' ? 'Search' : 'खोजें'}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -323,7 +323,7 @@ export const HeroRotatingBanner: React.FC<{
               </form>
 
               {/* Instant sample search chips for zero cognitive load */}
-              <div className="flex flex-wrap items-center gap-1.5 mt-2 text-[10px]">
+              <div className="flex flex-wrap items-center gap-2 mt-2.5 text-[10px]">
                 <span className="text-slate-300 font-semibold">{language === 'en' ? 'Quick samples:' : 'त्वरित नमूने:'}</span>
                 {[
                   { label: 'Gat 123/4 Besa', tab: 'SEARCH' },
@@ -337,7 +337,7 @@ export const HeroRotatingBanner: React.FC<{
                       setQuickSearch(chip.label);
                       onNavigate(chip.tab as any);
                     }}
-                    className="px-2 py-0.5 bg-white/15 hover:bg-white/30 text-amber-200 border border-white/20 rounded-xs transition-colors cursor-pointer"
+                    className="px-3 py-1 bg-white/15 hover:bg-white/25 text-amber-200 border border-white/20 rounded-full transition-all cursor-pointer shadow-xs"
                   >
                     {chip.label}
                   </button>
@@ -346,11 +346,11 @@ export const HeroRotatingBanner: React.FC<{
             </div>
 
             {/* Primary, Secondary & Third Action CTAs */}
-            <div className="flex flex-wrap items-center gap-3 pt-1">
+            <div className="flex flex-wrap items-center gap-3 pt-2">
               {/* Secondary CTA */}
               <button
                 onClick={() => onNavigate('DOC_VERIFY')}
-                className="px-4 py-2 bg-white text-[#002642] hover:bg-slate-100 font-extrabold text-xs rounded-xs shadow-md flex items-center gap-1.5 transition-all transform hover:-translate-y-0.5"
+                className="px-4 py-2.5 bg-white text-[#002642] hover:bg-slate-100 font-extrabold text-xs rounded-xl shadow-md hover:shadow-lg flex items-center gap-1.5 transition-all transform hover:-translate-y-0.5 cursor-pointer"
               >
                 <FileCheck className="w-3.5 h-3.5 text-[#002642]" />
                 <span>{language === 'en' ? 'AI Document Verification' : 'दस्तावेज सत्यापन'}</span>
@@ -359,7 +359,7 @@ export const HeroRotatingBanner: React.FC<{
               {/* Third CTA */}
               <button
                 onClick={() => onNavigate('SCHEMES')}
-                className="px-4 py-2 bg-white/15 hover:bg-white/25 border border-white/30 text-white font-bold text-xs rounded-xs transition-colors flex items-center gap-1.5"
+                className="px-4 py-2.5 bg-white/15 hover:bg-white/25 border border-white/30 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
               >
                 <Landmark className="w-3.5 h-3.5 text-amber-300" />
                 <span>{language === 'en' ? 'Explore 9 Schemes' : '९ प्रमुख योजनाएं'}</span>
@@ -368,7 +368,7 @@ export const HeroRotatingBanner: React.FC<{
               {/* Fourth CTA */}
               <button
                 onClick={() => onNavigate('PROPERTY_INTEL')}
-                className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-extrabold text-xs rounded-xs shadow-md flex items-center gap-1.5 transition-all"
+                className="px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-extrabold text-xs rounded-xl shadow-md hover:shadow-lg flex items-center gap-1.5 transition-all transform hover:-translate-y-0.5 cursor-pointer"
               >
                 <Sparkles className="w-3.5 h-3.5 text-amber-300" />
                 <span>{language === 'en' ? 'One Property — One View' : 'एकल संपत्ति दृश्य'}</span>
@@ -388,18 +388,18 @@ export const HeroRotatingBanner: React.FC<{
 
           {/* Right Column: Hon'ble Prime Minister Dignitary & Vision Card */}
           <div className="lg:col-span-4">
-            <div className="bg-white/10 backdrop-blur-md border border-white/25 rounded-xs p-4 shadow-xl text-left space-y-3">
+            <div className="bg-white/12 backdrop-blur-lg border border-white/20 rounded-2xl p-5 shadow-2xl text-left space-y-3.5">
               <div className="flex items-center gap-3.5">
                 {/* Official Cutout Studio Portrait with Clean Framing */}
                 <div className="relative flex-shrink-0">
-                  <div className="w-20 h-24 sm:w-24 sm:h-28 rounded-xs overflow-hidden border-2 border-[#f37021] bg-white shadow-md flex items-center justify-center">
+                  <div className="w-20 h-24 sm:w-24 sm:h-28 rounded-xl overflow-hidden border-2 border-[#f37021] bg-white shadow-md ring-2 ring-white/20 flex items-center justify-center">
                     <img 
                       src="/assets/pm_modi_2023.jpg" 
                       alt={language === 'en' ? 'Shri Narendra Modi, Prime Minister of India' : 'श्री नरेन्द्र मोदी, माननीय प्रधानमंत्री'} 
                       className="w-full h-full object-cover object-top"
                     />
                   </div>
-                  <div className="absolute -top-1.5 -left-1.5 px-1.5 py-0.5 bg-[#f37021] text-white font-bold text-[9px] rounded-xs shadow-xs uppercase tracking-wider">
+                  <div className="absolute -top-1.5 -left-1.5 px-2 py-0.5 bg-[#f37021] text-white font-black text-[9px] rounded-full shadow-xs uppercase tracking-wider">
                     {language === 'en' ? 'Leadership' : 'नेतृत्व'}
                   </div>
                 </div>
@@ -418,7 +418,7 @@ export const HeroRotatingBanner: React.FC<{
               </div>
 
               {/* Authentic Vision Quote */}
-              <div className="border-t border-white/20 pt-2.5">
+              <div className="border-t border-white/20 pt-3">
                 <blockquote className="text-[11px] italic text-amber-200 font-serif leading-relaxed">
                   {language === 'en'
                     ? '"Transparent land records and time-bound compensation empower our farmers and establish the foundation of Viksit Bharat."'
@@ -429,7 +429,7 @@ export const HeroRotatingBanner: React.FC<{
               {/* Quick Jump to One Property One View */}
               <button
                 onClick={() => onNavigate('PROPERTY_INTEL')}
-                className="w-full mt-1 py-1.5 bg-white/10 hover:bg-white/20 border border-white/30 rounded-xs text-[11px] text-white font-semibold flex items-center justify-between px-3 transition-colors"
+                className="w-full mt-1 py-2 px-3.5 bg-white/15 hover:bg-white/25 border border-white/30 rounded-xl text-[11px] text-white font-semibold flex items-center justify-between transition-all cursor-pointer shadow-xs"
               >
                 <span>{language === 'en' ? 'View Demo Intelligence Card' : 'डेमो कार्ड देखें'}</span>
                 <ChevronRight className="w-3.5 h-3.5 text-amber-300" />
@@ -465,7 +465,7 @@ export const HeroRotatingBanner: React.FC<{
 
             <button
               onClick={() => setIsPaused(!isPaused)}
-              className="p-1.5 rounded-xs bg-white/10 hover:bg-white/20 text-white transition-colors"
+              className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
               title={isPaused ? "Play Carousel" : "Pause Carousel"}
               aria-label={isPaused ? "Play Carousel" : "Pause Carousel"}
             >
@@ -474,7 +474,7 @@ export const HeroRotatingBanner: React.FC<{
 
             <button
               onClick={() => setCurrentSlideIndex((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)}
-              className="p-1.5 rounded-xs bg-white/10 hover:bg-white/20 text-white transition-colors"
+              className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
               title="Previous Scheme"
               aria-label="Previous Scheme"
             >
@@ -483,7 +483,7 @@ export const HeroRotatingBanner: React.FC<{
 
             <button
               onClick={() => setCurrentSlideIndex((prev) => (prev + 1) % HERO_SLIDES.length)}
-              className="p-1.5 rounded-xs bg-white/10 hover:bg-white/20 text-white transition-colors"
+              className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
               title="Next Scheme"
               aria-label="Next Scheme"
             >

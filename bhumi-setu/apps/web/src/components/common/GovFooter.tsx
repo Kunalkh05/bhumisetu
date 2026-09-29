@@ -138,12 +138,12 @@ export const GovFooter: React.FC = () => {
             <span>{language === 'en' ? 'Flagship National Campaigns' : 'प्रमुख राष्ट्रीय अभियान'}</span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
             <a 
               href="https://digitalindia.gov.in" 
               target="_blank" 
               rel="noreferrer"
-              className="px-2.5 py-1 bg-white/5 hover:bg-white/10 border border-slate-700 hover:border-slate-500 rounded-xs text-[11px] text-slate-200 transition-colors flex items-center gap-1.5"
+              className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-slate-700/80 hover:border-slate-500 rounded-full text-[11px] text-slate-200 transition-all flex items-center gap-1.5 shadow-xs"
             >
               <span className="font-bold text-sky-400">Digital India</span>
               <span className="text-[10px] text-slate-400 hidden sm:inline">&bull; Power To Empower</span>
@@ -153,7 +153,7 @@ export const GovFooter: React.FC = () => {
               href="https://gatishakti.gov.in" 
               target="_blank" 
               rel="noreferrer"
-              className="px-2.5 py-1 bg-white/5 hover:bg-white/10 border border-slate-700 hover:border-slate-500 rounded-xs text-[11px] text-slate-200 transition-colors flex items-center gap-1.5"
+              className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-slate-700/80 hover:border-slate-500 rounded-full text-[11px] text-slate-200 transition-all flex items-center gap-1.5 shadow-xs"
             >
               <span className="font-bold text-amber-400">PM GatiShakti</span>
               <span className="text-[10px] text-slate-400 hidden sm:inline">&bull; National Master Plan</span>
@@ -163,7 +163,7 @@ export const GovFooter: React.FC = () => {
               href="https://svamitva.nic.in" 
               target="_blank" 
               rel="noreferrer"
-              className="px-2.5 py-1 bg-white/5 hover:bg-white/10 border border-slate-700 hover:border-slate-500 rounded-xs text-[11px] text-slate-200 transition-colors flex items-center gap-1.5"
+              className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-slate-700/80 hover:border-slate-500 rounded-full text-[11px] text-slate-200 transition-all flex items-center gap-1.5 shadow-xs"
             >
               <span className="font-bold text-orange-400">SVAMITVA</span>
               <span className="text-[10px] text-slate-400 hidden sm:inline">&bull; Meri Zameen, Mera Haq</span>
@@ -173,7 +173,7 @@ export const GovFooter: React.FC = () => {
               href="https://mygov.in" 
               target="_blank" 
               rel="noreferrer"
-              className="px-2.5 py-1 bg-white/5 hover:bg-white/10 border border-slate-700 hover:border-slate-500 rounded-xs text-[11px] text-slate-200 transition-colors flex items-center gap-1.5"
+              className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-slate-700/80 hover:border-slate-500 rounded-full text-[11px] text-slate-200 transition-all flex items-center gap-1.5 shadow-xs"
             >
               <span className="font-bold text-emerald-400">MyGov</span>
               <span className="text-[10px] text-slate-400 hidden sm:inline">&bull; Meri Sarkar</span>
@@ -183,7 +183,7 @@ export const GovFooter: React.FC = () => {
               href="https://data.gov.in" 
               target="_blank" 
               rel="noreferrer"
-              className="px-2.5 py-1 bg-white/5 hover:bg-white/10 border border-slate-700 hover:border-slate-500 rounded-xs text-[11px] text-slate-200 transition-colors flex items-center gap-1.5"
+              className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-slate-700/80 hover:border-slate-500 rounded-full text-[11px] text-slate-200 transition-all flex items-center gap-1.5 shadow-xs"
             >
               <span className="font-bold text-purple-400">Data.gov.in</span>
               <span className="text-[10px] text-slate-400 hidden sm:inline">&bull; Open Data</span>
@@ -193,7 +193,7 @@ export const GovFooter: React.FC = () => {
               href="https://india.gov.in" 
               target="_blank" 
               rel="noreferrer"
-              className="px-2.5 py-1 bg-white/5 hover:bg-white/10 border border-slate-700 hover:border-slate-500 rounded-xs text-[11px] text-slate-200 transition-colors flex items-center gap-1.5"
+              className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-slate-700/80 hover:border-slate-500 rounded-full text-[11px] text-slate-200 transition-all flex items-center gap-1.5 shadow-xs"
             >
               <span className="font-bold text-blue-400">India.gov.in</span>
               <span className="text-[10px] text-slate-400 hidden sm:inline">&bull; National Portal</span>
@@ -203,8 +203,8 @@ export const GovFooter: React.FC = () => {
       </div>
 
       {/* 3. Mandatory Civic-Tech Academic Disclaimer & Credits (Section 20) */}
-      <div className="bg-[#00101e] border-t border-slate-800 py-3.5 px-4 sm:px-6">
-        <div className="max-w-7xl mx-auto p-3 bg-amber-500/10 border border-amber-500/30 rounded-xs text-[11px] text-amber-200/90 leading-relaxed text-left">
+      <div className="bg-[#00101e] border-t border-slate-800 py-4 px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto p-4 bg-amber-500/10 border border-amber-500/25 rounded-xl text-[11px] text-amber-200/90 leading-relaxed text-left shadow-xs">
           <strong>Mandatory Academic &amp; Legal Disclaimer: </strong>
           “BhuMiseTu is a prototype civic-tech platform created for demonstration and academic purposes. It is not an official Government of India portal. Information shown may be simulated or aggregated from publicly available sources and should not be treated as legal title verification, government certification, or legal advice.”
         </div>

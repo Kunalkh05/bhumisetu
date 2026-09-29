@@ -107,10 +107,10 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
             <span className="text-slate-600 hidden md:inline">|</span>
 
             {/* Font Sizing Controls (A- / A / A+) */}
-            <div className="flex items-center bg-[#0b3866] border border-slate-600 rounded-xs overflow-hidden" role="group" aria-label="Text Size Controls">
+            <div className="flex items-center bg-[#0b3866]/80 backdrop-blur-xs border border-slate-600/70 rounded-md overflow-hidden shadow-xs" role="group" aria-label="Text Size Controls">
               <button
                 onClick={() => setFontScale('normal')}
-                className={`px-1.5 py-0.5 text-[11px] font-bold transition-colors ${fontScale === 'normal' ? 'bg-[#f37021] text-white' : 'text-slate-300 hover:text-white'}`}
+                className={`px-2 py-0.5 text-[11px] font-bold transition-all ${fontScale === 'normal' ? 'bg-[#f37021] text-white shadow-xs' : 'text-slate-300 hover:text-white hover:bg-white/10'}`}
                 title="Standard Text Size (A-)"
                 aria-pressed={fontScale === 'normal'}
               >
@@ -118,7 +118,7 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
               </button>
               <button
                 onClick={() => setFontScale('large')}
-                className={`px-1.5 py-0.5 text-[11px] font-bold border-x border-slate-600 transition-colors ${fontScale === 'large' ? 'bg-[#f37021] text-white' : 'text-slate-300 hover:text-white'}`}
+                className={`px-2 py-0.5 text-[11px] font-bold border-x border-slate-600/70 transition-all ${fontScale === 'large' ? 'bg-[#f37021] text-white shadow-xs' : 'text-slate-300 hover:text-white hover:bg-white/10'}`}
                 title="Large Text Size (A)"
                 aria-pressed={fontScale === 'large'}
               >
@@ -126,7 +126,7 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
               </button>
               <button
                 onClick={() => setFontScale('xlarge')}
-                className={`px-1.5 py-0.5 text-[11px] font-bold transition-colors ${fontScale === 'xlarge' ? 'bg-[#f37021] text-white' : 'text-slate-300 hover:text-white'}`}
+                className={`px-2 py-0.5 text-[11px] font-bold transition-all ${fontScale === 'xlarge' ? 'bg-[#f37021] text-white shadow-xs' : 'text-slate-300 hover:text-white hover:bg-white/10'}`}
                 title="Extra Large Text Size (A+)"
                 aria-pressed={fontScale === 'xlarge'}
               >
@@ -137,10 +137,10 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
             {/* High Contrast Toggle */}
             <button
               onClick={() => setIsHighContrast(!isHighContrast)}
-              className={`px-2 py-0.5 rounded-xs border text-[11px] font-semibold flex items-center gap-1 transition-colors ${
+              className={`px-2.5 py-0.5 rounded-md border text-[11px] font-semibold flex items-center gap-1.5 transition-all shadow-xs ${
                 isHighContrast 
-                  ? 'bg-amber-400 text-black border-amber-400 font-bold' 
-                  : 'bg-[#0b3866] border-slate-600 text-slate-200 hover:text-white'
+                  ? 'bg-amber-400 text-black border-amber-400 font-bold ring-2 ring-amber-300/40' 
+                  : 'bg-[#0b3866]/80 border-slate-600/70 text-slate-200 hover:text-white hover:bg-[#134679]'
               }`}
               title="Toggle High Contrast"
             >
@@ -151,7 +151,7 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
             {/* Language Switcher */}
             <button
               onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
-              className="px-2.5 py-0.5 bg-[#f37021] text-white font-bold text-[11px] rounded-xs hover:bg-[#d95a10] flex items-center gap-1 shadow-xs transition-colors"
+              className="px-3 py-0.5 bg-[#f37021] hover:bg-[#d95a10] text-white font-bold text-[11px] rounded-md flex items-center gap-1.5 shadow-xs hover:shadow-sm transition-all"
               title="Switch Language"
             >
               <Globe className="w-3 h-3" />
@@ -159,7 +159,7 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
             </button>
 
             {/* Toll Free Helpline */}
-            <div className="hidden xl:flex items-center gap-1 text-[11px] text-slate-300 pl-2 border-l border-slate-700">
+            <div className="hidden xl:flex items-center gap-1 text-[11px] text-slate-300 pl-2.5 border-l border-slate-700/80">
               <Phone className="w-3 h-3 text-[#f37021]" />
               <span>{language === 'en' ? 'Toll Free:' : 'टोल फ्री:'} <strong className="text-white">1800-11-2013</strong></span>
             </div>
@@ -168,14 +168,14 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
       </div>
 
       {/* 3. S3WaaS Main Emblem & Branding Banner */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap justify-between items-center gap-4 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap justify-between items-center gap-4 bg-white">
         {/* Left: Authentic State Emblem of India + Department Details */}
         <div className="flex items-center gap-4">
-          <div className="flex-shrink-0">
-            <NationalEmblem size={52} color="#002642" showSlogan={true} />
+          <div className="flex-shrink-0 drop-shadow-xs">
+            <NationalEmblem size={54} color="#002642" showSlogan={true} />
           </div>
 
-          <div className="border-l border-slate-300 pl-4 py-0.5">
+          <div className="border-l border-slate-200 pl-4 py-0.5">
             <div className="text-[12px] font-semibold text-[#002642] tracking-wide">
               {language === 'en' 
                 ? 'Civic-Tech Land Intelligence Layer • Academic & SIH Demonstration' 
@@ -187,17 +187,17 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
                 : 'डिजिटल भारत भू-आधुनिकीकरण (DILRMP एवं स्वामित्व) से प्रेरित'}
             </div>
             <div className="flex items-center gap-2 mt-1">
-              <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#0b3866] leading-none">
+              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#0b3866] leading-none">
                 BHUMISETU
               </h1>
               <span className="text-base sm:text-lg font-bold text-[#f37021] leading-none">
                 | भूमिसेतु
               </span>
-              <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-amber-400 text-black">
+              <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black bg-amber-100 text-amber-900 border border-amber-300/80 shadow-xs tracking-wider">
                 PROTOTYPE
               </span>
             </div>
-            <p className="text-[10px] text-slate-600 mt-0.5 hidden sm:block font-semibold">
+            <p className="text-[11px] text-slate-600 mt-1 hidden sm:block font-medium">
               {language === 'en'
                 ? 'Unified AI-Powered Land Intelligence & Verification Platform'
                 : 'एकीकृत एआई-संचालित भू-आसूचना एवं प्रारंभिक सत्यापन मंच'}
@@ -213,7 +213,7 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
               <img 
                 src="/assets/pm_modi_2023.jpg" 
                 alt={language === 'en' ? 'Shri Narendra Modi, Hon\'ble Prime Minister of India' : 'श्री नरेन्द्र मोदी, माननीय प्रधानमंत्री'} 
-                className="w-12 h-12 rounded-full object-cover object-top border-2 border-[#f37021] shadow-xs"
+                className="w-12 h-12 rounded-full object-cover object-top border-2 border-[#f37021] shadow-sm ring-2 ring-orange-100"
               />
               <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-[#138808] border-2 border-white rounded-full flex items-center justify-center text-[8px] text-white font-bold" title="Prime Minister of India">
                 🇮🇳
@@ -246,23 +246,23 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
           </div>
 
           {/* S3WaaS Portal Mode Switcher (Citizen Services vs Officer Portal) */}
-          <div className="inline-flex rounded-xs border border-slate-300 bg-slate-100 p-0.5 shadow-2xs">
+          <div className="inline-flex rounded-full border border-slate-200 bg-slate-100/90 p-1 shadow-xs">
             <button
               onClick={() => setPortalMode('CITIZEN')}
-              className={`px-3 py-1.5 text-xs font-bold transition-all rounded-xs ${
+              className={`px-3.5 py-1.5 text-xs font-bold transition-all rounded-full cursor-pointer ${
                 portalMode === 'CITIZEN'
                   ? 'bg-[#0b3866] text-white shadow-xs'
-                  : 'text-slate-700 hover:text-[#0b3866] hover:bg-slate-200'
+                  : 'text-slate-700 hover:text-[#0b3866] hover:bg-slate-200/70'
               }`}
             >
               {language === 'en' ? 'Citizen Services' : 'नागरिक सेवा'}
             </button>
             <button
               onClick={() => setPortalMode('OFFICER')}
-              className={`px-3 py-1.5 text-xs font-bold transition-all rounded-xs flex items-center gap-1 ${
+              className={`px-3.5 py-1.5 text-xs font-bold transition-all rounded-full flex items-center gap-1.5 cursor-pointer ${
                 portalMode === 'OFFICER'
                   ? 'bg-[#138808] text-white shadow-xs'
-                  : 'text-slate-700 hover:text-[#138808] hover:bg-slate-200'
+                  : 'text-slate-700 hover:text-[#138808] hover:bg-slate-200/70'
               }`}
             >
               <ShieldCheck className="w-3.5 h-3.5" />
@@ -274,11 +274,11 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
           <div className="relative">
             <button
               onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-              className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-300 hover:border-[#0b3866] rounded-xs text-xs font-medium text-slate-800 transition-colors shadow-2xs"
+              className="flex items-center gap-2 px-3.5 py-1.5 bg-white border border-slate-200 hover:border-[#0b3866] rounded-full text-xs font-medium text-slate-800 transition-all shadow-xs hover:shadow-sm cursor-pointer"
               aria-expanded={userDropdownOpen}
               aria-haspopup="true"
             >
-              <div className="w-6 h-6 rounded-full bg-slate-100 text-[#0b3866] border border-slate-300 flex items-center justify-center text-xs">
+              <div className="w-6 h-6 rounded-full bg-slate-100 text-[#0b3866] border border-slate-200 flex items-center justify-center text-xs">
                 {currentUser.isCitizen ? <User className="w-3.5 h-3.5 text-slate-700" /> : <ShieldCheck className="w-3.5 h-3.5 text-[#138808]" />}
               </div>
               <div className="text-left hidden sm:block">
@@ -294,10 +294,10 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
 
             {/* Dropdown Menu */}
             {userDropdownOpen && (
-              <div className="absolute right-0 mt-1 w-80 bg-white border border-slate-300 shadow-xl rounded-xs z-50 text-slate-800 text-xs overflow-hidden">
-                <div className="bg-[#002642] text-white px-3 py-2 font-bold text-xs flex justify-between items-center border-b-2 border-[#f37021]">
+              <div className="absolute right-0 mt-1.5 w-80 bg-white border border-slate-200 shadow-2xl rounded-2xl z-50 text-slate-800 text-xs overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
+                <div className="bg-[#002642] text-white px-4 py-2.5 font-bold text-xs flex justify-between items-center border-b-2 border-[#f37021]">
                   <span>{language === 'en' ? 'Select Role / Persona' : 'उपयोगकर्ता भूमिका चुनें'}</span>
-                  <span className="text-[10px] bg-[#f37021] text-white font-bold px-1.5 py-0.5 rounded-xs">RBAC</span>
+                  <span className="text-[10px] bg-[#f37021] text-white font-bold px-2 py-0.5 rounded-full shadow-xs">RBAC</span>
                 </div>
 
                 <div className="divide-y divide-slate-100 max-h-80 overflow-y-auto">
@@ -305,8 +305,8 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
                     <button
                       key={user.id}
                       onClick={() => handleSwitchUser(user)}
-                      className={`w-full text-left px-3.5 py-2.5 flex items-start gap-2.5 hover:bg-slate-50 transition-colors ${
-                        currentUser.id === user.id ? 'bg-amber-50/80 border-l-3 border-[#f37021]' : ''
+                      className={`w-full text-left px-4 py-3 flex items-start gap-3 hover:bg-slate-50 transition-colors cursor-pointer ${
+                        currentUser.id === user.id ? 'bg-amber-50/80 border-l-4 border-[#f37021]' : ''
                       }`}
                     >
                       <div className="mt-0.5 text-slate-600">
@@ -328,13 +328,13 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
                 </div>
 
                 {onOpenDemoLogin && (
-                  <div className="p-2.5 bg-slate-50 border-t border-slate-200">
+                  <div className="p-3 bg-slate-50 border-t border-slate-200">
                     <button
                       onClick={() => {
                         setUserDropdownOpen(false);
                         onOpenDemoLogin();
                       }}
-                      className="w-full py-1.5 text-center bg-[#0b3866] hover:bg-[#082c52] text-white font-bold text-[11px] rounded-xs transition-colors"
+                      className="w-full py-2 text-center bg-[#0b3866] hover:bg-[#082c52] text-white font-bold text-[11px] rounded-lg transition-colors cursor-pointer shadow-xs"
                     >
                       {language === 'en' ? 'View Official Login Directory' : 'सभी आधिकारिक लॉगिन विवरण देखें'}
                     </button>
