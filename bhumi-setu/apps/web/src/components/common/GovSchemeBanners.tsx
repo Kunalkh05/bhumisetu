@@ -217,21 +217,43 @@ export const GovSchemeHeroCarousel: React.FC<GovSchemeBannersProps> = ({
               </div>
             </div>
 
-            {/* Scheme Headline & Slogan */}
-            <div className="space-y-1.5 max-w-4xl">
-              <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-snug">
-                {language === 'en' ? currentScheme.name : currentScheme.nameHi}
-              </h3>
-              
-              <div className="flex items-center gap-2">
-                <span className="text-xs sm:text-sm font-bold text-amber-300 italic">
-                  &ldquo;{language === 'en' ? currentScheme.slogan : currentScheme.sloganHi}&rdquo;
-                </span>
+            {/* Scheme Headline, Slogan & PM Badge */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-1.5 max-w-3xl">
+                <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-snug">
+                  {language === 'en' ? currentScheme.name : currentScheme.nameHi}
+                </h3>
+                
+                <div className="flex items-center gap-2">
+                  <span className="text-xs sm:text-sm font-bold text-amber-300 italic">
+                    &ldquo;{language === 'en' ? currentScheme.slogan : currentScheme.sloganHi}&rdquo;
+                  </span>
+                </div>
+
+                <p className="text-xs sm:text-sm text-slate-100/90 leading-relaxed max-w-3xl line-clamp-2">
+                  {language === 'en' ? currentScheme.description : currentScheme.descriptionHi}
+                </p>
               </div>
 
-              <p className="text-xs sm:text-sm text-slate-100/90 leading-relaxed max-w-3xl line-clamp-2">
-                {language === 'en' ? currentScheme.description : currentScheme.descriptionHi}
-              </p>
+              {/* PM Modi Dignitary Badge on Flagship Schemes */}
+              <div className="hidden md:flex items-center gap-2.5 bg-black/25 backdrop-blur-xs border border-white/20 p-2 rounded-xs flex-shrink-0 self-start sm:self-center">
+                <img 
+                  src="/assets/pm_modi_thumb.jpg" 
+                  alt="Shri Narendra Modi" 
+                  className="w-11 h-11 rounded-full object-cover object-top border-2 border-[#f37021] shadow-xs"
+                />
+                <div className="text-left">
+                  <div className="text-[11px] font-bold text-white leading-tight">
+                    {language === 'en' ? 'Shri Narendra Modi' : 'श्री नरेन्द्र मोदी'}
+                  </div>
+                  <div className="text-[9px] text-amber-300 font-medium">
+                    {language === 'en' ? "Hon'ble Prime Minister" : 'माननीय प्रधानमंत्री'}
+                  </div>
+                  <div className="text-[8px] text-slate-300 uppercase tracking-wider">
+                    {language === 'en' ? 'Government of India' : 'भारत सरकार'}
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Key Metrics Strip & CTA Buttons */}

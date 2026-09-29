@@ -202,10 +202,35 @@ export const GovHeader: React.FC<GovHeaderProps> = ({
           </div>
         </div>
 
-        {/* Right: S3WaaS Digital India Brand & Viksit Bharat Campaign + Unified Role/Portal Switcher */}
-        <div className="flex items-center gap-4">
+        {/* Right: S3WaaS Digital India Brand, PM Dignitary Badge & Unified Role/Portal Switcher */}
+        <div className="flex items-center gap-3.5">
+          {/* Official Dignitary: Hon'ble Prime Minister Shri Narendra Modi */}
+          <div className="hidden md:flex items-center gap-2.5 border-r border-slate-200 pr-3.5 py-0.5">
+            <div className="relative">
+              <img 
+                src="/assets/pm_modi_thumb.jpg" 
+                alt={language === 'en' ? 'Shri Narendra Modi, Hon\'ble Prime Minister of India' : 'श्री नरेन्द्र मोदी, माननीय प्रधानमंत्री'} 
+                className="w-12 h-12 rounded-full object-cover object-top border-2 border-[#f37021] shadow-xs"
+              />
+              <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-[#138808] border-2 border-white rounded-full flex items-center justify-center text-[8px] text-white font-bold" title="Prime Minister of India">
+                🇮🇳
+              </span>
+            </div>
+            <div className="flex flex-col text-left">
+              <span className="text-[12px] font-extrabold text-[#002642] leading-tight">
+                {language === 'en' ? 'Shri Narendra Modi' : 'श्री नरेन्द्र मोदी'}
+              </span>
+              <span className="text-[10px] text-[#f37021] font-bold leading-tight mt-0.5">
+                {language === 'en' ? "Hon'ble Prime Minister" : 'माननीय प्रधानमंत्री'}
+              </span>
+              <span className="text-[9px] text-slate-500 font-medium">
+                {language === 'en' ? 'Government of India' : 'भारत सरकार'}
+              </span>
+            </div>
+          </div>
+
           {/* Official Campaign Representation */}
-          <div className="hidden lg:flex items-center gap-3 border-r border-slate-200 pr-4">
+          <div className="hidden xl:flex items-center gap-3 border-r border-slate-200 pr-3.5">
             <div className="flex flex-col items-center justify-center">
               <span className="text-xs font-black tracking-wider text-[#002642] uppercase">Digital India</span>
               <span className="text-[9px] text-[#138808] font-bold">Power To Empower</span>
