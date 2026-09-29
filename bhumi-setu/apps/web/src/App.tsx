@@ -18,12 +18,15 @@ import { DpdpRetentionHub } from './components/officer/DpdpRetentionHub';
 import { AuditLogViewer } from './components/officer/AuditLogViewer';
 import { ReraIntegrationHub } from './components/officer/ReraIntegrationHub';
 import { DEMO_USERS } from './data/mockData';
+import { BhuMitraAiModal } from './components/citizen/BhuMitraAiModal';
+import { Bot } from 'lucide-react';
 
 const MainContent: React.FC<{ 
   publicTab: PublicTab; 
   setPublicTab: (tab: PublicTab) => void;
   onOpenDemoLogin: () => void;
-}> = ({ publicTab, setPublicTab }) => {
+  onOpenAiChat?: () => void;
+}> = ({ publicTab, setPublicTab, onOpenAiChat }) => {
   const { portalMode, setPortalMode, officerTab, setOfficerTab, setSelectedCaseId } = useApp();
 
   return (
@@ -32,6 +35,7 @@ const MainContent: React.FC<{
         <PublicPortal 
           activeTab={publicTab} 
           setActiveTab={setPublicTab}
+          onOpenAiChat={onOpenAiChat}
           onNavigateToOfficerCase={(caseId) => {
             setSelectedCaseId(caseId);
             setPortalMode('OFFICER');
@@ -145,6 +149,7 @@ const AppShell: React.FC<{
   setDemoLoginOpen: (open: boolean) => void;
 }> = ({ publicTab, setPublicTab, demoLoginOpen, setDemoLoginOpen }) => {
   const { isHighContrast, fontScale, currentUser, setCurrentUser, setPortalMode, addToast } = useApp();
+  const [bhuMitraOpen, setBhuMitraOpen] = useState(false);
 
   const handleSelectUser = (user: typeof DEMO_USERS[0]) => {
     setCurrentUser(user);
@@ -175,14 +180,49 @@ const AppShell: React.FC<{
       <GovNavigation 
         activeTab={publicTab}
         setActiveTab={setPublicTab}
+        onOpenAiChat={() => setBhuMitraOpen(true)}
       />
       <MainContent 
         publicTab={publicTab}
         setPublicTab={setPublicTab}
         onOpenDemoLogin={() => setDemoLoginOpen(true)}
+        onOpenAiChat={() => setBhuMitraOpen(true)}
       />
       <GovFooter />
       <ToastContainer />
+
+      {/* Citizen BhuMitra AI Assistant Modal */}
+      <BhuMitraAiModal 
+        isOpen={bhuMitraOpen} 
+        onClose={() => setBhuMitraOpen(false)}
+        onNavigateToTab={(tab) => {
+          setPublicTab(tab);
+          setBhuMitraOpen(false);
+        }}
+      />
+
+      {/* Floating Citizen BhuMitra AI Quick Assistant Trigger Button */}
+      <div className="fixed bottom-6 right-6 z-40">
+        <button
+          onClick={() => setBhuMitraOpen(true)}
+          className="flex items-center gap-2.5 px-4 py-3 bg-[#002642] hover:bg-[#0b3866] text-white rounded-full shadow-2xl border-2 border-amber-400 group hover:scale-105 transition-all cursor-pointer"
+          title="Ask BhuMitra AI Assistant"
+          aria-label="Open BhuMitra AI Assistant"
+        >
+          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-400 to-amber-300 text-[#002642] flex items-center justify-center font-black shadow-xs">
+            <Bot className="w-5 h-5 text-[#002642]" />
+          </div>
+          <div className="text-left pr-1 hidden sm:block">
+            <div className="text-xs font-black tracking-wide text-amber-300 flex items-center gap-1.5">
+              <span>BhuMitra AI</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            </div>
+            <div className="text-[10px] text-slate-200">
+              भू-अभिलेख AI सहायक
+            </div>
+          </div>
+        </button>
+      </div>
 
       {/* Official S3WaaS Demo Credentials Modal */}
       {demoLoginOpen && (

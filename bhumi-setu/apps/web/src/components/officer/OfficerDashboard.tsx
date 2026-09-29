@@ -123,7 +123,7 @@ export const OfficerDashboard: React.FC<{ onNavigateToCase: (caseId: string) => 
       <div className="bg-gradient-to-r from-[#002642] via-[#0b3866] to-[#002b49] text-white p-3.5 border-l-4 border-l-[#f37021] flex items-center justify-between gap-4 flex-wrap shadow-xs">
         <div className="flex items-center gap-3.5">
           <img 
-            src="/assets/pm_modi_thumb.jpg" 
+            src="/assets/pm_modi_2023.jpg" 
             alt="Shri Narendra Modi, Prime Minister of India" 
             className="w-12 h-12 rounded-full object-cover object-top border-2 border-[#f37021] shadow-xs flex-shrink-0"
           />

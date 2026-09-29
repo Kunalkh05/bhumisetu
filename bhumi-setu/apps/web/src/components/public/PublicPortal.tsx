@@ -49,19 +49,36 @@ import {
 import { GigwSchemeScrollBanner } from '../common/GigwSchemeScrollBanner';
 import { GOV_SCHEMES, GovScheme, SchemeCategory } from '../../data/govSchemesData';
 import { NationalEmblem } from '../common/NationalEmblem';
+import { HeroRotatingBanner } from './HeroRotatingBanner';
+import { UnifiedLandSearch } from '../citizen/UnifiedLandSearch';
+import { PropertyIntelligenceDashboard } from '../citizen/PropertyIntelligenceDashboard';
+import { AiDocumentVerification } from '../citizen/AiDocumentVerification';
+import { LandRiskAnalysis } from '../citizen/LandRiskAnalysis';
+import { PropertyMapIntelligence } from '../citizen/PropertyMapIntelligence';
+import { PropertyTimelineView } from '../citizen/PropertyTimelineView';
+import { MutationTrackerView } from '../citizen/MutationTrackerView';
+import { StatePortalDirectory } from '../citizen/StatePortalDirectory';
+import { GovSchemesView } from '../citizen/GovSchemesView';
+import { ReportGeneratorView } from '../citizen/ReportGeneratorView';
+import { HelpHowItWorksView } from '../citizen/HelpHowItWorksView';
+import { AboutPlatformView } from '../citizen/AboutPlatformView';
+import { SAMPLE_PROPERTY_DEMO, DemoProperty } from '../../data/landIntelligenceData';
 
 interface PublicPortalProps {
   activeTab: PublicTab;
   setActiveTab: (tab: PublicTab) => void;
   onNavigateToOfficerCase?: (caseId: string) => void;
+  onOpenAiChat?: () => void;
 }
 
 export const PublicPortal: React.FC<PublicPortalProps> = ({ 
   activeTab, 
   setActiveTab,
-  onNavigateToOfficerCase
+  onNavigateToOfficerCase,
+  onOpenAiChat
 }) => {
   const { cases, submitCitizenObjection, language, addToast } = useApp();
+  const [selectedProperty, setSelectedProperty] = useState<DemoProperty>(SAMPLE_PROPERTY_DEMO);
 
   // Search State
   const [searchState, setSearchState] = useState('Maharashtra');
@@ -207,133 +224,191 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
         {/* ============================================================ */}
         {activeTab === 'HOME' && (
           <div className="space-y-8">
-            {/* S3WaaS Standard Hero Section with Prime Minister's Vision */}
-            <div className="relative overflow-hidden rounded-xs border border-slate-200 bg-gradient-to-r from-[#002642] via-[#0b3866] to-[#134679] text-white shadow-sm">
-              <div className="p-6 sm:p-10 relative z-10 space-y-6">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-                  <div className="lg:col-span-8 space-y-4">
-                    <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-xs border border-white/20 px-3 py-1 rounded-xs text-[11px] font-semibold text-amber-300">
-                      <ShieldCheck className="w-3.5 h-3.5 text-amber-300" />
-                      <span>RFCTLARR ACT, 2013 • STATUTORY E-GOVERNANCE SYSTEM</span>
-                    </div>
+            {/* 1. Central Hero Rotating Background Carousel with PM Modi Cutout & 9 Schemes */}
+            <HeroRotatingBanner onNavigate={setActiveTab} />
 
-                    <div className="space-y-2">
-                      <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-tight">
-                        {language === 'en'
-                          ? 'National Land Acquisition Management & Compensation Tracking Portal'
-                          : 'राष्ट्रीय भूमि अधिग्रहण, मुआवजा निर्धारण एवं पुनर्वास प्रबंधन पोर्टल'}
-                      </h2>
-                      <p className="text-slate-200 text-xs sm:text-sm leading-relaxed max-w-2xl">
-                        {language === 'en'
-                          ? 'The single-window digital platform of the Government of India for transparent, time-bound land acquisition under the Right to Fair Compensation and Transparency in Land Acquisition, Rehabilitation and Resettlement Act, 2013.'
-                          : 'भूमि अधिग्रहण में उचित मुआवजा एवं पारदर्शिता का अधिकार अधिनियम, २०१३ के अंतर्गत भूमि अधिग्रहण अधिसूचनाओं, धारा १५ आपत्तियों एवं प्रत्यक्ष बैंक अंतरण का आधिकारिक राष्ट्रीय पोर्टल।'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Prime Minister Dignitary & Vision Card */}
-                  <div className="lg:col-span-4 bg-white/10 backdrop-blur-md border border-white/25 rounded-xs p-3.5 flex items-center gap-3.5 shadow-md">
-                    <div className="relative flex-shrink-0">
-                      <img 
-                        src="/assets/pm_modi_thumb.jpg" 
-                        alt={language === 'en' ? 'Shri Narendra Modi, Prime Minister of India' : 'श्री नरेन्द्र मोदी, माननीय प्रधानमंत्री'} 
-                        className="w-20 h-24 sm:w-24 sm:h-28 object-cover object-top rounded-xs border-2 border-[#f37021] shadow-md"
-                      />
-                      <div className="absolute -top-1.5 -left-1.5 px-1.5 py-0.5 bg-[#f37021] text-white font-bold text-[9px] rounded-xs shadow-xs uppercase tracking-wider">
-                        {language === 'en' ? 'Leadership' : 'नेतृत्व'}
-                      </div>
-                    </div>
-                    <div className="space-y-1.5 text-left">
-                      <div className="text-[11px] italic text-amber-200 leading-snug line-clamp-3 font-serif">
-                        {language === 'en'
-                          ? '"Transparent land records and time-bound compensation empower our farmers and establish the foundation of Viksit Bharat."'
-                          : '“पारदर्शी भू-अभिलेख और समयबद्ध मुआवजा हमारे किसानों को सशक्त बनाकर विकसित भारत का आधार स्थापित करते हैं।”'}
-                      </div>
-                      <div className="border-t border-white/20 pt-1">
-                        <div className="text-xs font-extrabold text-white leading-tight">
-                          {language === 'en' ? 'Shri Narendra Modi' : 'श्री नरेन्द्र मोदी'}
-                        </div>
-                        <div className="text-[10px] text-[#f37021] font-bold">
-                          {language === 'en' ? "Hon'ble Prime Minister of India" : 'माननीय प्रधानमंत्री, भारत'}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+            {/* 2. Dashboard Statistics Cards (Section 16) */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-left">
+              <div className="bg-white p-4 rounded-xs border border-slate-300 shadow-2xs">
+                <span className="text-[10px] uppercase font-bold text-slate-400">States &amp; UTs Covered</span>
+                <div className="text-xl sm:text-2xl font-black text-[#002642] mt-1">28 States + 8 UTs</div>
+                <div className="text-[10px] text-amber-700 font-semibold mt-0.5 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                  <span>Demo State Directory</span>
                 </div>
+              </div>
 
-                {/* S3WaaS 4 Primary Action Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
-                  <button
-                    onClick={() => setActiveTab('SEARCH')}
-                    className="p-4 bg-white text-left text-slate-800 rounded-xs shadow-sm hover:shadow-md transition-all border-t-3 border-[#0b3866] hover:-translate-y-0.5 group"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="w-9 h-9 rounded-xs bg-[#e8f1f8] text-[#0b3866] flex items-center justify-center font-bold">
-                        <Search className="w-5 h-5 text-[#0b3866]" />
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#0b3866] transition-colors" />
-                    </div>
-                    <div className="mt-3 font-bold text-sm text-[#002642]">
-                      {language === 'en' ? 'Search Land Records' : 'भू-अभिलेख खोजें'}
-                    </div>
-                    <div className="text-[11px] text-slate-500 mt-0.5">
-                      {language === 'en' ? 'Check Gat/Survey numbers & notices' : 'सर्वे क्रमांक एवं अधिसूचना देखें'}
-                    </div>
-                  </button>
+              <div className="bg-white p-4 rounded-xs border border-slate-300 shadow-2xs">
+                <span className="text-[10px] uppercase font-bold text-slate-400">Land Records Integrated</span>
+                <div className="text-xl sm:text-2xl font-black text-[#002642] mt-1">Prototype Layer</div>
+                <div className="text-[10px] text-emerald-700 font-semibold mt-0.5 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  <span>RoR + GIS + ULPIN</span>
+                </div>
+              </div>
 
-                  <button
-                    onClick={() => setActiveTab('NOTICES')}
-                    className="p-4 bg-white text-left text-slate-800 rounded-xs shadow-sm hover:shadow-md transition-all border-t-3 border-[#f37021] hover:-translate-y-0.5 group"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="w-9 h-9 rounded-xs bg-amber-50 text-[#f37021] flex items-center justify-center font-bold">
-                        <FileText className="w-5 h-5 text-[#f37021]" />
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#f37021] transition-colors" />
-                    </div>
-                    <div className="mt-3 font-bold text-sm text-[#002642]">
-                      {language === 'en' ? 'Gazette Notifications' : 'राजपत्र अधिसूचनाएं'}
-                    </div>
-                    <div className="text-[11px] text-slate-500 mt-0.5">
-                      {language === 'en' ? 'Sec 11, Sec 19 & Award decrees' : 'धारा ११, धारा १९ एवं अधिनिर्णय'}
-                    </div>
-                  </button>
+              <div className="bg-white p-4 rounded-xs border border-slate-300 shadow-2xs">
+                <span className="text-[10px] uppercase font-bold text-slate-400">Digital Services</span>
+                <div className="text-xl sm:text-2xl font-black text-[#002642] mt-1">12+ Workflows</div>
+                <div className="text-[10px] text-blue-700 font-semibold mt-0.5 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                  <span>Mutation, Search, OCR</span>
+                </div>
+              </div>
 
-                  <button
-                    onClick={() => setActiveTab('GRIEVANCE')}
-                    className="p-4 bg-white text-left text-slate-800 rounded-xs shadow-sm hover:shadow-md transition-all border-t-3 border-[#138808] hover:-translate-y-0.5 group"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="w-9 h-9 rounded-xs bg-emerald-50 text-[#138808] flex items-center justify-center font-bold">
-                        <AlertCircle className="w-5 h-5 text-[#138808]" />
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#138808] transition-colors" />
-                    </div>
-                    <div className="mt-3 font-bold text-sm text-[#002642]">
-                      {language === 'en' ? 'Section 15 Objections' : 'धारा १५ आपत्ति'}
-                    </div>
-                    <div className="text-[11px] text-slate-500 mt-0.5">
-                      {language === 'en' ? 'File hearing claims within 60 days' : '६० दिवस में आपत्ति दर्ज करें'}
-                    </div>
-                  </button>
+              <div className="bg-white p-4 rounded-xs border border-slate-300 shadow-2xs">
+                <span className="text-[10px] uppercase font-bold text-slate-400">Document Types Supported</span>
+                <div className="text-xl sm:text-2xl font-black text-[#002642] mt-1">8+ Formats</div>
+                <div className="text-[10px] text-purple-700 font-semibold mt-0.5 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+                  <span>7/12, RoR, Deeds, Khasra</span>
+                </div>
+              </div>
+            </div>
 
-                  <button
-                    onClick={() => setActiveTab('GIS_MAP')}
-                    className="p-4 bg-white text-left text-slate-800 rounded-xs shadow-sm hover:shadow-md transition-all border-t-3 border-[#0b3866] hover:-translate-y-0.5 group"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="w-9 h-9 rounded-xs bg-[#e8f1f8] text-[#0b3866] flex items-center justify-center font-bold">
-                        <Map className="w-5 h-5 text-[#0b3866]" />
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#0b3866] transition-colors" />
-                    </div>
-                    <div className="mt-3 font-bold text-sm text-[#002642]">
-                      {language === 'en' ? 'Cadastral GIS Map' : 'भू-नक्शा / GIS'}
-                    </div>
-                    <div className="text-[11px] text-slate-500 mt-0.5">
-                      {language === 'en' ? 'Inspect parcel spatial polygons' : 'भूखंड सीमाओं का डिजिटल सत्यापन'}
-                    </div>
-                  </button>
+            {/* 3. Core Product USP Section: ONE PROPERTY — ONE INTELLIGENCE VIEW (Section 23) */}
+            <div className="bg-gradient-to-r from-[#002642] via-[#0b3866] to-[#00172d] text-white p-6 rounded-xs border-l-4 border-l-[#f37021] text-left shadow-md space-y-4">
+              <div className="flex flex-wrap justify-between items-center gap-2">
+                <div>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#f37021] text-white">
+                    CENTRAL PLATFORM USP
+                  </span>
+                  <h3 className="text-lg sm:text-xl font-black tracking-tight text-white mt-1">
+                    “ONE PROPERTY — ONE INTELLIGENCE VIEW”
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setActiveTab('PROPERTY_INTEL')}
+                  className="px-4 py-2 bg-white text-[#002642] hover:bg-slate-100 font-extrabold text-xs rounded-xs flex items-center gap-1.5 shadow-xs transition-colors"
+                >
+                  <span>Open Intelligence Dashboard</span>
+                  <ChevronRight className="w-3.5 h-3.5 text-[#f37021]" />
+                </button>
+              </div>
+
+              <p className="text-xs text-slate-200 max-w-3xl leading-relaxed">
+                Instead of forcing a citizen to navigate multiple disconnected portals, BHUMISETU unifies:
+              </p>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 text-center text-xs">
+                {[
+                  { title: 'Land Record', sub: '7/12 & RoR' },
+                  { title: 'Cadastral Map', sub: 'BhuNaksha' },
+                  { title: '14-Digit ULPIN', sub: 'Bhu-Aadhaar' },
+                  { title: 'Registration', sub: 'Index-II Deeds' },
+                  { title: 'Mutation', sub: 'Ferfar Tracker' },
+                  { title: 'AI OCR Docs', sub: 'Vision Extract' },
+                  { title: 'Timeline', sub: '2018–2026' },
+                  { title: 'Risk Analysis', sub: '12 Checks' }
+                ].map((item, idx) => (
+                  <div key={idx} className="p-2 bg-white/10 hover:bg-white/20 rounded-xs border border-white/15 transition-colors">
+                    <div className="font-extrabold text-white text-[11px]">{item.title}</div>
+                    <div className="text-[9px] text-amber-300 mt-0.5">{item.sub}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 4. 4 Primary Citizen Action Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <button
+                onClick={() => setActiveTab('SEARCH')}
+                className="p-4 bg-white text-left text-slate-800 rounded-xs shadow-xs hover:shadow-md transition-all border-t-3 border-[#002642] hover:-translate-y-0.5 group"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="w-9 h-9 rounded-xs bg-[#e8f1f8] text-[#002642] flex items-center justify-center font-bold">
+                    <Search className="w-5 h-5 text-[#002642]" />
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#002642] transition-colors" />
+                </div>
+                <div className="mt-3 font-bold text-sm text-[#002642]">
+                  {language === 'en' ? 'Unified Land Search' : 'भू-अभिलेख खोजें'}
+                </div>
+                <div className="text-[11px] text-slate-500 mt-0.5">
+                  State → District → Village → Survey / ULPIN
+                </div>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('DOC_VERIFY')}
+                className="p-4 bg-white text-left text-slate-800 rounded-xs shadow-xs hover:shadow-md transition-all border-t-3 border-[#f37021] hover:-translate-y-0.5 group"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="w-9 h-9 rounded-xs bg-amber-50 text-[#f37021] flex items-center justify-center font-bold">
+                    <FileCheck className="w-5 h-5 text-[#f37021]" />
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#f37021] transition-colors" />
+                </div>
+                <div className="mt-3 font-bold text-sm text-[#002642]">
+                  {language === 'en' ? 'AI Document Verification' : 'दस्तावेज सत्यापन'}
+                </div>
+                <div className="text-[11px] text-slate-500 mt-0.5">
+                  OCR extraction &amp; cross-comparison
+                </div>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('MUTATION')}
+                className="p-4 bg-white text-left text-slate-800 rounded-xs shadow-xs hover:shadow-md transition-all border-t-3 border-[#138808] hover:-translate-y-0.5 group"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="w-9 h-9 rounded-xs bg-emerald-50 text-[#138808] flex items-center justify-center font-bold">
+                    <Clock className="w-5 h-5 text-[#138808]" />
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#138808] transition-colors" />
+                </div>
+                <div className="mt-3 font-bold text-sm text-[#002642]">
+                  {language === 'en' ? 'Track Mutation' : 'दाखिल-खारिज स्थिति'}
+                </div>
+                <div className="text-[11px] text-slate-500 mt-0.5">
+                  Real-time status for MUT-MH-2026-001245
+                </div>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('GIS_MAP')}
+                className="p-4 bg-white text-left text-slate-800 rounded-xs shadow-xs hover:shadow-md transition-all border-t-3 border-sky-600 hover:-translate-y-0.5 group"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="w-9 h-9 rounded-xs bg-sky-50 text-sky-600 flex items-center justify-center font-bold">
+                    <Map className="w-5 h-5 text-sky-600" />
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-sky-600 transition-colors" />
+                </div>
+                <div className="mt-3 font-bold text-sm text-[#002642]">
+                  {language === 'en' ? 'Cadastral GIS Map' : 'भू-नक्शा GIS'}
+                </div>
+                <div className="text-[11px] text-slate-500 mt-0.5">
+                  Inspect parcel boundaries &amp; infrastructure
+                </div>
+              </button>
+            </div>
+
+            {/* 5. Security & Privacy Principles Section (Section 17) */}
+            <div className="bg-white border border-slate-300 rounded-xs p-5 shadow-xs text-xs text-left space-y-3">
+              <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+                <ShieldCheck className="w-4 h-4 text-[#138808]" />
+                <h4 className="font-extrabold text-xs uppercase tracking-wide text-[#002642]">
+                  Security, Privacy &amp; Data Governance Principles (DPDP Act 2023)
+                </h4>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-slate-600 text-[11px]">
+                <div className="p-2.5 bg-slate-50 rounded-xs border border-slate-200">
+                  <strong className="text-slate-800 block mb-0.5">Masked Personal Identifiers:</strong>
+                  Real landowner names and Aadhaar numbers are never displayed publicly. Fictional sample records are utilized.
+                </div>
+                <div className="p-2.5 bg-slate-50 rounded-xs border border-slate-200">
+                  <strong className="text-slate-800 block mb-0.5">Zero Permanent Storage:</strong>
+                  Uploaded deeds and 7/12 extracts are processed in-memory for OCR extraction and are immediately discarded.
+                </div>
+                <div className="p-2.5 bg-slate-50 rounded-xs border border-slate-200">
+                  <strong className="text-slate-800 block mb-0.5">Non-Legal Preliminary Status:</strong>
+                  All findings are labeled as preliminary variances. They do not constitute official title certification or legal advice.
+                </div>
+                <div className="p-2.5 bg-slate-50 rounded-xs border border-slate-200">
+                  <strong className="text-slate-800 block mb-0.5">Authentic Gateways Only:</strong>
+                  We direct citizens exclusively to verified state revenue URLs (Mahabhulekh, AnyRoR, Bhoomi, UP Bhulekh).
                 </div>
               </div>
             </div>
@@ -372,7 +447,7 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
                 <div className="lg:col-span-7 p-5 sm:p-6 space-y-4 text-left">
                   <div className="flex items-center gap-2">
                     <img 
-                      src="/assets/pm_modi_thumb.jpg" 
+                      src="/assets/pm_modi_2023.jpg" 
                       alt="PM Modi Avatar" 
                       className="w-9 h-9 rounded-full object-cover object-top border-2 border-[#f37021] shadow-2xs"
                     />
@@ -807,680 +882,92 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
         )}
 
         {/* ============================================================ */}
-        {/* VIEW: GOVERNMENT FLAGSHIP SCHEMES & CITIZEN AD CAMPAIGNS */}
+        {/* VIEW 2: UNIFIED LAND SEARCH */}
         {/* ============================================================ */}
-        {activeTab === 'SCHEMES' && (
-          <div className="space-y-8">
-            {/* S3WaaS Official Schemes Master Header Banner */}
-            <div className="relative overflow-hidden rounded-xs border border-slate-300 shadow-sm bg-white">
-              <div className="h-1.5 w-full flex">
-                <div className="w-1/3 bg-[#FF9933]"></div>
-                <div className="w-1/3 bg-[#FFFFFF]"></div>
-                <div className="w-1/3 bg-[#138808]"></div>
-              </div>
-
-              <div className="p-6 sm:p-8 bg-gradient-to-r from-[#00172d] via-[#002642] to-[#0b3866] text-white">
-                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                  <div className="flex items-start gap-4">
-                    <div className="p-2 bg-white rounded-xs flex-shrink-0 shadow-sm">
-                      <NationalEmblem size={44} color="#002b49" showSlogan={true} />
-                    </div>
-                    <div className="space-y-1">
-                      <div className="inline-flex items-center gap-2 bg-amber-400/20 border border-amber-300/40 px-2.5 py-0.5 rounded-xs text-[10px] font-bold text-amber-300">
-                        <Sparkles className="w-3 h-3 text-amber-300" />
-                        <span>GOVERNMENT OF INDIA FLAGSHIP SCHEMES &amp; CITIZEN CAMPAIGNS</span>
-                      </div>
-                      <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                        {language === 'en'
-                          ? 'National Welfare Schemes, Direct Benefit Transfers & Land Rights'
-                          : 'प्रमुख राष्ट्रीय योजनाएं, प्रत्यक्ष लाभ अंतरण एवं नागरिक भू-अधिकार'}
-                      </h2>
-                      <p className="text-xs text-slate-200 max-w-3xl leading-relaxed">
-                        {language === 'en'
-                          ? 'Central Government flagship welfare initiatives empowering farmers, rural landowners, and project-affected families through zero-leakage PFMS DBT payouts, high-accuracy drone cadastral surveys, and statutory rights.'
-                          : 'किसानों, ग्रामीण भूस्वामियों एवं विस्थापित परिवारों को पारदर्शी प्रत्यक्ष बैंक अंतरण (DBT), आधुनिक ड्रोन सर्वेक्षण एवं १००% सांविधिक सोलेशियम प्रदान करने वाली भारत सरकार की केंद्रीय योजनाएं।'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Right Header Stats Strip */}
-                  <div className="flex items-center gap-3 bg-white/10 backdrop-blur-xs p-3 rounded-xs border border-white/15 flex-shrink-0">
-                    <div className="text-center px-3 border-r border-white/20">
-                      <div className="text-lg font-black font-mono text-amber-300">₹3.24L Cr</div>
-                      <div className="text-[10px] text-slate-300">PM-KISAN DBT</div>
-                    </div>
-                    <div className="text-center px-3 border-r border-white/20">
-                      <div className="text-lg font-black font-mono text-emerald-300">1.65+ Cr</div>
-                      <div className="text-[10px] text-slate-300">Property Cards</div>
-                    </div>
-                    <div className="text-center px-2">
-                      <div className="text-lg font-black font-mono text-sky-300">15.2+ Cr</div>
-                      <div className="text-[10px] text-slate-300">Har Ghar Jal</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* 2026 Official Government Schemes Showcase Billboard Banner */}
-            <GigwSchemeScrollBanner 
-              language={language}
-              onSelectScheme={(scheme) => setSelectedSchemeDetail(scheme)}
-            />
-
-            {/* Search & Filter Bar */}
-            <div className="swaas-card p-4 space-y-3 bg-white">
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-                {/* Category Tabs */}
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  {[
-                    { id: 'ALL' as SchemeCategory, label: 'All Schemes (8)', labelHi: 'सभी योजनाएं (८)' },
-                    { id: 'LAND_REVENUE' as SchemeCategory, label: 'Land & Revenue', labelHi: 'भू-राजस्व व स्वामित्व' },
-                    { id: 'AGRICULTURE_DBT' as SchemeCategory, label: 'Farmer DBT', labelHi: 'कृषि एवं किसान डीबीटी' },
-                    { id: 'HOUSING_WATER' as SchemeCategory, label: 'Housing & Water', labelHi: 'आवास एवं जल जीवन' },
-                    { id: 'INFRASTRUCTURE' as SchemeCategory, label: 'Infrastructure', labelHi: 'अवसंरचना महायोजना' },
-                    { id: 'DIGITAL_CITIZEN' as SchemeCategory, label: 'Digital Citizen', labelHi: 'डिजिटल नागरिक' },
-                  ].map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setSchemeCategoryFilter(tab.id)}
-                      className={`px-3 py-1.5 text-xs font-bold rounded-xs transition-colors cursor-pointer ${
-                        schemeCategoryFilter === tab.id
-                          ? 'bg-[#002642] text-white shadow-xs'
-                          : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-                      }`}
-                    >
-                      {language === 'en' ? tab.label : tab.labelHi}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Keyword Search Input */}
-                <div className="relative w-full md:w-72">
-                  <Search className="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5" />
-                  <input
-                    type="text"
-                    placeholder={language === 'en' ? 'Search by scheme name or ministry...' : 'योजना या मंत्रालय खोजें...'}
-                    value={schemeSearchQuery}
-                    onChange={(e) => setSchemeSearchQuery(e.target.value)}
-                    className="w-full pl-9 pr-3 py-1.5 border border-slate-300 rounded-xs text-xs focus:ring-1 focus:ring-[#002642] bg-white"
-                  />
-                  {schemeSearchQuery && (
-                    <button
-                      onClick={() => setSchemeSearchQuery('')}
-                      className="absolute right-2 top-2 text-slate-400 hover:text-slate-600 text-xs"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Scheme Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {GOV_SCHEMES
-                .filter(s => {
-                  if (schemeCategoryFilter !== 'ALL' && s.category !== schemeCategoryFilter) return false;
-                  if (schemeSearchQuery) {
-                    const q = schemeSearchQuery.toLowerCase();
-                    return s.name.toLowerCase().includes(q) ||
-                           s.nameHi.includes(q) ||
-                           s.shortName.toLowerCase().includes(q) ||
-                           s.ministry.toLowerCase().includes(q) ||
-                           s.slogan.toLowerCase().includes(q) ||
-                           s.sloganHi.includes(q);
-                  }
-                  return true;
-                })
-                .map((scheme) => {
-                  const theme = getThemeClasses(scheme.theme);
-
-                  return (
-                    <div 
-                      key={scheme.id}
-                      className={`swaas-card overflow-hidden border-2 border-slate-200 transition-all hover:shadow-lg flex flex-col justify-between ${theme.borderAccent}`}
-                    >
-                      {/* Tricolour Ribbon */}
-                      <div className="h-1 w-full flex">
-                        <div className="w-1/3 bg-[#FF9933]"></div>
-                        <div className="w-1/3 bg-[#FFFFFF]"></div>
-                        <div className="w-1/3 bg-[#138808]"></div>
-                      </div>
-
-                      {/* Card Header */}
-                      <div className={`${theme.bg} text-white p-4 space-y-2`}>
-                        <div className="flex items-center justify-between">
-                          <span className={`px-2 py-0.5 rounded-xs text-[9px] font-black uppercase tracking-wider border ${theme.badgeBg}`}>
-                            {scheme.badge}
-                          </span>
-                          <span className="text-[10px] text-amber-200 font-serif font-bold">
-                            Government of India • भारत सरकार
-                          </span>
-                        </div>
-
-                        <div>
-                          <h3 className="font-black text-base sm:text-lg text-white leading-tight">
-                            {language === 'en' ? scheme.name : scheme.nameHi}
-                          </h3>
-                          <p className="text-[11px] text-slate-200/90 mt-0.5">
-                            {language === 'en' ? scheme.ministry : scheme.ministryHi}
-                          </p>
-                        </div>
-
-                        <div className="p-2 bg-black/25 backdrop-blur-2xs rounded-xs border border-white/15 text-amber-300 font-bold italic text-xs">
-                          &ldquo;{language === 'en' ? scheme.slogan : scheme.sloganHi}&rdquo;
-                        </div>
-                      </div>
-
-                      {/* Card Content */}
-                      <div className="p-5 bg-white space-y-4 text-xs flex-1 flex flex-col justify-between">
-                        <div className="space-y-3">
-                          {/* Metrics Strip */}
-                          <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xs">
-                            <div>
-                              <div className="text-[10px] text-slate-500 uppercase font-semibold">National Milestone:</div>
-                              <div className="text-base font-black font-mono text-[#002642]">{scheme.impactMetric}</div>
-                              <div className="text-[10px] text-slate-600 leading-tight">{scheme.impactLabel}</div>
-                            </div>
-                            <div>
-                              <div className="text-[10px] text-slate-500 uppercase font-semibold">National Reach:</div>
-                              <div className="text-base font-black font-mono text-[#138808]">{scheme.secondaryMetric}</div>
-                              <div className="text-[10px] text-slate-600 leading-tight">{scheme.secondaryLabel}</div>
-                            </div>
-                          </div>
-
-                          {/* Description */}
-                          <p className="text-slate-700 leading-relaxed">
-                            {language === 'en' ? scheme.description : scheme.descriptionHi}
-                          </p>
-
-                          {/* Key Statutory Benefits */}
-                          <div className="space-y-1.5">
-                            <span className="font-bold text-[#002642] block text-[11px] uppercase tracking-wide">
-                              {language === 'en' ? 'Key Citizen & Statutory Benefits:' : 'प्रमुख नागरिक व वैधानिक लाभ:'}
-                            </span>
-                            <ul className="space-y-1 text-[11px] text-slate-600">
-                              {(language === 'en' ? scheme.keyBenefits.slice(0, 3) : scheme.keyBenefitsHi.slice(0, 3)).map((b, i) => (
-                                <li key={i} className="flex items-start gap-1.5">
-                                  <Check className="w-3.5 h-3.5 text-[#138808] flex-shrink-0 mt-0.5" />
-                                  <span>{b}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-
-                          {/* Eligibility Note */}
-                          <div className="p-2.5 bg-blue-50/70 border border-blue-200 rounded-xs text-[11px] text-slate-700">
-                            <strong>{language === 'en' ? 'Eligible Beneficiaries: ' : 'पात्र हितग्राही: '}</strong>
-                            {language === 'en' ? scheme.eligibility : scheme.eligibilityHi}
-                          </div>
-                        </div>
-
-                        {/* Card Action Buttons */}
-                        <div className="pt-3 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
-                          <button
-                            onClick={() => setSelectedSchemeDetail(scheme)}
-                            className="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-bold text-xs rounded-xs flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
-                          >
-                            <FileText className="w-3.5 h-3.5 text-[#0b3866]" />
-                            <span>{language === 'en' ? 'Full Guidelines' : 'संपूर्ण विवरण'}</span>
-                          </button>
-
-                          <div className="flex items-center gap-2">
-                            <span className="text-[10px] text-slate-500 font-mono hidden sm:inline">
-                              {scheme.helpline.split(' ')[0]}
-                            </span>
-                            <a
-                              href={scheme.portalUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className={`px-3.5 py-1.5 font-bold text-xs rounded-xs flex items-center gap-1.5 shadow-xs transition-colors ${theme.btn}`}
-                            >
-                              <span>{scheme.bannerCtaText || (language === 'en' ? 'Official Portal' : 'आधिकारिक पोर्टल')}</span>
-                              <ExternalLink className="w-3 h-3" />
-                            </a>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-            </div>
-
-            {/* Interactive Citizen Scheme Entitlement Advisor */}
-            <div className="swaas-card p-6 bg-gradient-to-br from-slate-50 via-white to-amber-50/40 border-2 border-slate-300 space-y-5">
-              <div className="border-b border-slate-200 pb-3 flex justify-between items-center flex-wrap gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="p-1.5 bg-[#f37021] text-white rounded-xs">
-                    <ShieldCheck className="w-5 h-5" />
-                  </span>
-                  <div>
-                    <h3 className="font-black text-base text-[#002642]">
-                      {language === 'en'
-                        ? 'Citizen Entitlement & Welfare Scheme Eligibility Advisor'
-                        : 'नागरिक पात्रता एवं शासकीय योजना लाभ परामर्शदाता'}
-                    </h3>
-                    <p className="text-xs text-slate-500">
-                      Select your citizen profile to calculate matched statutory benefits, DBT payouts, and legal protections
-                    </p>
-                  </div>
-                </div>
-                <span className="text-[11px] font-bold px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-xs border border-emerald-300">
-                  Instant Verification
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1">
-                    Select Your Citizen Profile:
-                  </label>
-                  <select
-                    value={advisorProfile}
-                    onChange={(e) => setAdvisorProfile(e.target.value as any)}
-                    className="w-full p-2 border border-slate-300 rounded-xs text-xs font-medium bg-white focus:ring-1 focus:ring-[#002642]"
-                  >
-                    <option value="FARMER">Small / Marginal Farmer (कृषक परिवार)</option>
-                    <option value="ABADI">Rural Village Abadi Resident (ग्रामीण आबादी)</option>
-                    <option value="ACQUIRED">Notified Land Acquisition Affected (भूसंपादित भूस्वामी)</option>
-                    <option value="HOUSELESS">Rural Houseless / Kutcha House (ग्रामीण आवासहीन)</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1">
-                    State / Jurisdiction:
-                  </label>
-                  <select
-                    value={advisorState}
-                    onChange={(e) => setAdvisorState(e.target.value)}
-                    className="w-full p-2 border border-slate-300 rounded-xs text-xs font-medium bg-white focus:ring-1 focus:ring-[#002642]"
-                  >
-                    <option value="Maharashtra">Maharashtra (महाराष्ट्र)</option>
-                    <option value="Gujarat">Gujarat (गुजरात)</option>
-                    <option value="Karnataka">Karnataka (कर्नाटक)</option>
-                    <option value="Madhya Pradesh">Madhya Pradesh (मध्य प्रदेश)</option>
-                  </select>
-                </div>
-
-                <div className="flex items-end">
-                  <button
-                    onClick={() => setAdvisorResultOpen(true)}
-                    className="w-full py-2 bg-[#002642] hover:bg-[#0b3866] text-white font-bold text-xs rounded-xs transition-colors flex items-center justify-center gap-2 shadow-xs cursor-pointer"
-                  >
-                    <Sparkles className="w-4 h-4 text-amber-300" />
-                    <span>Calculate Eligible Benefits</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Calculated Entitlements Card */}
-              {advisorResultOpen && (
-                <div className="p-4 bg-emerald-50/80 border border-emerald-300 rounded-xs space-y-3 animate-in fade-in">
-                  <div className="flex items-center justify-between">
-                    <div className="font-extrabold text-sm text-emerald-950 flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                      <span>
-                        {advisorProfile === 'FARMER' && 'Identified Benefits: PM-KISAN + Bhu-Aadhaar + Soil Health'}
-                        {advisorProfile === 'ABADI' && 'Identified Benefits: SVAMITVA Property Card + Bank Credit Entitlement'}
-                        {advisorProfile === 'ACQUIRED' && 'Identified Benefits: 100% Solatium + 12% Interest + First Schedule R&R + PMAY Priority'}
-                        {advisorProfile === 'HOUSELESS' && 'Identified Benefits: PMAY-G ₹1,20,000 + MGNREGA 90-Day Labor + Jal Jeevan'}
-                      </span>
-                    </div>
-                    <span className="text-[10px] font-mono text-emerald-800 font-bold bg-emerald-200/60 px-2 py-0.5 rounded-xs">
-                      PFMS Aadhaar Seeded
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-                    <div className="p-3 bg-white border border-emerald-200 rounded-xs space-y-1">
-                      <div className="text-[10px] text-slate-500 uppercase font-semibold">Direct Financial Benefit:</div>
-                      <div className="font-extrabold text-[#002642] text-sm">
-                        {advisorProfile === 'FARMER' && '₹6,000 / Year (3 Installments)'}
-                        {advisorProfile === 'ABADI' && 'Collateral-free credit up to ₹5 Lakhs'}
-                        {advisorProfile === 'ACQUIRED' && '100% Statutory Equivalent Solatium'}
-                        {advisorProfile === 'HOUSELESS' && '₹1,20,000 Direct Grant + ₹25,000 Labor'}
-                      </div>
-                      <p className="text-[11px] text-slate-600">Directly transferred via PFMS without middlemen.</p>
-                    </div>
-
-                    <div className="p-3 bg-white border border-emerald-200 rounded-xs space-y-1">
-                      <div className="text-[10px] text-slate-500 uppercase font-semibold">Statutory Documents Required:</div>
-                      <div className="font-semibold text-slate-800 text-[11px]">
-                        Aadhaar Card, 7/12 Land Record / Khatauni, Bank Passbook (NPCI linked), Mobile No.
-                      </div>
-                      <p className="text-[11px] text-slate-600">Verification completed via DigiLocker &amp; Revenue Records.</p>
-                    </div>
-
-                    <div className="p-3 bg-white border border-emerald-200 rounded-xs flex flex-col justify-between">
-                      <div className="text-[10px] text-slate-500 uppercase font-semibold">Next Official Step:</div>
-                      <p className="text-[11px] text-slate-700 font-medium">
-                        {advisorProfile === 'FARMER' && 'Verify e-KYC on pmkisan.gov.in portal.'}
-                        {advisorProfile === 'ABADI' && 'Collect Sampatti Card from Gram Panchayat or svamitva.nic.in.'}
-                        {advisorProfile === 'ACQUIRED' && 'Verify Section 11 notice in Gazette or file Section 15 objection.'}
-                        {advisorProfile === 'HOUSELESS' && 'Confirm your name in Gram Sabha Awaas+ priority list.'}
-                      </p>
-                      <div className="pt-2 flex gap-2">
-                        <button
-                          onClick={() => {
-                            addToast({
-                              type: 'success',
-                              message: 'Application checklist downloaded to your device.',
-                            });
-                          }}
-                          className="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-[11px] rounded-xs flex items-center gap-1 cursor-pointer"
-                        >
-                          <Download className="w-3 h-3" />
-                          <span>Checklist PDF</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Official Circulars & Gazette Orders Repository */}
-            <div className="swaas-card p-6 space-y-4">
-              <div className="border-b border-slate-200 pb-3 flex justify-between items-center flex-wrap gap-2">
-                <div>
-                  <h3 className="font-bold text-sm text-[#002642]">
-                    Official Guidelines, Notifications &amp; Statutory Circulars
-                  </h3>
-                  <p className="text-slate-500 text-xs mt-0.5">
-                    Central Government Gazette decrees and administrative guidelines issued for public schemes
-                  </p>
-                </div>
-                <span className="text-[11px] text-slate-500 font-mono">
-                  Updated: 28-Sept-2026
-                </span>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="gov-table">
-                  <thead>
-                    <tr>
-                      <th>Notification / Circular No</th>
-                      <th>Ministry / Department</th>
-                      <th>Subject / Scheme</th>
-                      <th>Publication Date</th>
-                      <th>Status</th>
-                      <th className="text-right">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[
-                      {
-                        ref: 'MoPR/SVAMITVA/2026/CIR-14',
-                        ministry: 'Ministry of Panchayati Raj',
-                        scheme: 'SVAMITVA Drone Survey & Property Card Demarcation Standards',
-                        date: '12-Sept-2026',
-                        size: '1.8 MB'
-                      },
-                      {
-                        ref: 'MoA&FW/PM-KISAN/2026/NOTIF-18',
-                        ministry: 'Ministry of Agriculture & Farmers Welfare',
-                        scheme: '17th Installment DBT Disbursement & Mandatory e-KYC Guidelines',
-                        date: '02-Sept-2026',
-                        size: '1.2 MB'
-                      },
-                      {
-                        ref: 'DoLR/DILRMP/ULPIN/2026-09',
-                        ministry: 'Department of Land Resources (DoLR)',
-                        scheme: 'Bhu-Aadhaar 14-Digit Geo-Coded Unique Land Parcel Identification',
-                        date: '18-Aug-2026',
-                        size: '2.4 MB'
-                      },
-                      {
-                        ref: 'MoRD/PMAY-G/2026/GUIDE-08',
-                        ministry: 'Ministry of Rural Development',
-                        scheme: 'PMAY-G Housing for All Revised Construction Standards & R&R Integration',
-                        date: '10-Aug-2026',
-                        size: '3.1 MB'
-                      },
-                      {
-                        ref: 'MoJS/JJM/WATER/2026/CIRC-22',
-                        ministry: 'Ministry of Jal Shakti',
-                        scheme: 'Har Ghar Jal Water Quality Standards (BIS 10500) & IoT Monitoring',
-                        date: '24-July-2026',
-                        size: '1.9 MB'
-                      }
-                    ].map((doc, idx) => (
-                      <tr key={idx}>
-                        <td className="font-mono font-bold text-[#0b3866]">{doc.ref}</td>
-                        <td className="font-medium text-slate-700">{doc.ministry}</td>
-                        <td className="font-semibold text-slate-900">{doc.scheme}</td>
-                        <td className="text-slate-600 whitespace-nowrap">{doc.date}</td>
-                        <td>
-                          <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 font-bold text-[10px] rounded-xs">
-                            Active Gazette
-                          </span>
-                        </td>
-                        <td className="text-right whitespace-nowrap">
-                          <button
-                            onClick={() => {
-                              addToast({
-                                type: 'info',
-                                message: `Downloading ${doc.ref} official gazette document (${doc.size})`,
-                              });
-                            }}
-                            className="px-3 py-1 bg-white border border-[#0b3866] text-[#0b3866] hover:bg-[#e8f1f8] font-bold text-xs rounded-xs inline-flex items-center gap-1.5 cursor-pointer"
-                          >
-                            <Download className="w-3.5 h-3.5" />
-                            <span>PDF ({doc.size})</span>
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* National Toll-Free Helplines Directory */}
-            <div className="swaas-card p-6 space-y-4">
-              <div className="border-b border-slate-200 pb-2">
-                <h3 className="font-bold text-sm text-[#002642] flex items-center gap-2">
-                  <Phone className="w-4 h-4 text-[#f37021]" />
-                  <span>National Citizen Scheme Helplines (Toll-Free)</span>
-                </h3>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xs space-y-1">
-                  <div className="font-bold text-[#002642] text-xs">SVAMITVA Helpdesk</div>
-                  <div className="text-lg font-black font-mono text-[#f37021]">1800-11-7788</div>
-                  <p className="text-[10px] text-slate-500">Panchayati Raj &amp; Survey of India</p>
-                </div>
-
-                <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xs space-y-1">
-                  <div className="font-bold text-[#002642] text-xs">PM-KISAN Helpline</div>
-                  <div className="text-lg font-black font-mono text-[#138808]">155261</div>
-                  <p className="text-[10px] text-slate-500">Ministry of Agriculture DBT</p>
-                </div>
-
-                <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xs space-y-1">
-                  <div className="font-bold text-[#002642] text-xs">PMAY-G Rural Housing</div>
-                  <div className="text-lg font-black font-mono text-[#0b3866]">1800-11-6446</div>
-                  <p className="text-[10px] text-slate-500">Ministry of Rural Development</p>
-                </div>
-
-                <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xs space-y-1">
-                  <div className="font-bold text-[#002642] text-xs">Har Ghar Jal Helpline</div>
-                  <div className="text-lg font-black font-mono text-[#0284c7]">1800-180-1551</div>
-                  <p className="text-[10px] text-slate-500">Department of Drinking Water</p>
-                </div>
-              </div>
-            </div>
-          </div>
+        {activeTab === 'SEARCH' && (
+          <UnifiedLandSearch 
+            onSelectProperty={(prop) => {
+              setSelectedProperty(prop);
+              setActiveTab('PROPERTY_INTEL');
+            }}
+            onNavigateTab={setActiveTab}
+          />
         )}
 
         {/* ============================================================ */}
-        {/* VIEW 2: SEARCH ACQUISITION RECORDS */}
+        {/* VIEW 3: PROPERTY INTELLIGENCE DASHBOARD (ONE PROPERTY - ONE VIEW) */}
         {/* ============================================================ */}
-        {activeTab === 'SEARCH' && (
-          <div className="space-y-6">
-            {/* Government Scheme Awareness Banner */}
-            <div className="bg-gradient-to-r from-[#7c2d12] via-[#9a3412] to-[#c2410c] text-white p-3.5 rounded-xs shadow-xs flex flex-wrap items-center justify-between gap-3 border border-amber-700">
-              <div className="flex items-center gap-3">
-                <div className="p-1 bg-white rounded-xs">
-                  <NationalEmblem size={20} color="#002b49" showSlogan={false} />
-                </div>
-                <div>
-                  <div className="text-[10px] uppercase font-bold tracking-wider text-amber-200">
-                    {language === 'en' ? 'BHU-AADHAAR (ULPIN) & SVAMITVA ADVISORY' : 'भू-आधार (ULPIN) एवं स्वामित्व योजना सूचना'}
-                  </div>
-                  <div className="font-bold text-xs text-white">
-                    {language === 'en' 
-                      ? 'Link your 14-digit Bhu-Aadhaar ULPIN with your 7/12 Land Record for Fast-Track PFMS DBT Compensation' 
-                      : 'त्वरित बैंक अंतरण (DBT) हेतु अपने ७/१२ भू-अभिलेख को १४-अंकीय भू-आधार से लिंक करें'}
-                  </div>
-                </div>
-              </div>
-              <a
-                href="https://dilrmp.gov.in"
-                target="_blank"
-                rel="noreferrer"
-                className="px-3 py-1 bg-white text-orange-950 font-bold text-xs rounded-xs hover:bg-amber-100 flex items-center gap-1 shadow-xs transition-colors"
-              >
-                <span>{language === 'en' ? 'Bhu-Aadhaar Portal' : 'भू-आधार पोर्टल'}</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
-            </div>
+        {activeTab === 'PROPERTY_INTEL' && (
+          <PropertyIntelligenceDashboard 
+            property={selectedProperty}
+            onNavigateTab={setActiveTab}
+          />
+        )}
 
-            <div className="swaas-card p-6 space-y-4">
-              <div className="border-b border-slate-200 pb-3">
-                <h2 className="text-lg font-bold text-[#002642]">
-                  {language === 'en' ? 'Search Land Acquisition & Compensation Records' : 'भूमि अधिग्रहण एवं मुआवजा अभिलेख खोजें'}
-                </h2>
-                <p className="text-slate-500 text-xs mt-0.5">
-                  Query gazette notifications, survey numbers (Gat No), Khatedars and PFMS direct payout status
-                </p>
-              </div>
+        {/* ============================================================ */}
+        {/* VIEW 4: AI DOCUMENT VERIFICATION */}
+        {/* ============================================================ */}
+        {activeTab === 'DOC_VERIFY' && (
+          <AiDocumentVerification onNavigateTab={setActiveTab} />
+        )}
 
-              {/* S3WaaS Structured Search Bar */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 p-4 border border-slate-200 rounded-xs">
-                <div>
-                  <label className="font-semibold text-slate-700 block mb-1">District / जिला:</label>
-                  <select
-                    value={searchDistrict}
-                    onChange={(e) => setSearchDistrict(e.target.value)}
-                    className="w-full p-2 border border-slate-300 bg-white font-medium text-xs rounded-xs"
-                  >
-                    <option value="ALL">-- All Districts --</option>
-                    <option value="Pune">Pune (पुणे)</option>
-                    <option value="Nashik">Nashik (नासिक)</option>
-                    <option value="Solapur">Solapur (सोलापूर)</option>
-                  </select>
-                </div>
+        {/* ============================================================ */}
+        {/* VIEW 5: PRELIMINARY LAND RECORD RISK ANALYSIS */}
+        {/* ============================================================ */}
+        {activeTab === 'RISK_ANALYSIS' && (
+          <LandRiskAnalysis onNavigateTab={setActiveTab} />
+        )}
 
-                <div>
-                  <label className="font-semibold text-slate-700 block mb-1">Tehsil / तहसील:</label>
-                  <select
-                    value={searchTehsil}
-                    onChange={(e) => setSearchTehsil(e.target.value)}
-                    className="w-full p-2 border border-slate-300 bg-white font-medium text-xs rounded-xs"
-                  >
-                    <option value="ALL">-- All Tehsils --</option>
-                    <option value="Haveli">Haveli (हवेली)</option>
-                    <option value="Niphad">Niphad (निफाड)</option>
-                    <option value="Daund">Daund (दौंड)</option>
-                  </select>
-                </div>
+        {/* ============================================================ */}
+        {/* VIEW 6: PROPERTY TIMELINE */}
+        {/* ============================================================ */}
+        {activeTab === 'TIMELINE' && (
+          <PropertyTimelineView onNavigateTab={setActiveTab} />
+        )}
 
-                <div>
-                  <label className="font-semibold text-slate-700 block mb-1">Survey / Gat No:</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. 142/A"
-                    value={searchGatNumber}
-                    onChange={(e) => setSearchGatNumber(e.target.value)}
-                    className="w-full p-2 border border-slate-300 bg-white font-medium text-xs rounded-xs"
-                  />
-                </div>
+        {/* ============================================================ */}
+        {/* VIEW 7: MUTATION TRACKER */}
+        {/* ============================================================ */}
+        {activeTab === 'MUTATION' && (
+          <MutationTrackerView onNavigateTab={setActiveTab} />
+        )}
 
-                <div>
-                  <label className="font-semibold text-slate-700 block mb-1">Case Reference ID:</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. MH-PUN-2026-LA-001"
-                    value={searchCaseRef}
-                    onChange={(e) => setSearchCaseRef(e.target.value)}
-                    className="w-full p-2 border border-slate-300 bg-white font-medium text-xs rounded-xs"
-                  />
-                </div>
-              </div>
+        {/* ============================================================ */}
+        {/* VIEW 8: GOVERNMENT SCHEMES & WELFARE DIRECTORY */}
+        {/* ============================================================ */}
+        {activeTab === 'SCHEMES' && (
+          <GovSchemesView />
+        )}
 
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-500 font-medium">
-                  Showing <strong>{filteredCases.length}</strong> matching statutory records
-                </span>
-                <button
-                  type="button"
-                  onClick={handleResetSearch}
-                  className="px-3 py-1.5 text-slate-700 hover:text-black border border-slate-300 bg-white hover:bg-slate-50 font-semibold text-xs rounded-xs flex items-center gap-1.5"
-                >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  <span>Reset Filters</span>
-                </button>
-              </div>
+        {/* ============================================================ */}
+        {/* VIEW 9: STATE LAND INFORMATION DIRECTORY */}
+        {/* ============================================================ */}
+        {activeTab === 'STATE_PORTALS' && (
+          <StatePortalDirectory />
+        )}
 
-              {/* Data Table */}
-              <div className="overflow-x-auto">
-                <table className="gov-table">
-                  <thead>
-                    <tr>
-                      <th>Case Reference</th>
-                      <th>Project Name</th>
-                      <th>Village / Tehsil</th>
-                      <th>Parcels &amp; Extent</th>
-                      <th>Statutory Stage</th>
-                      <th>Deadline</th>
-                      <th>Award Total</th>
-                      <th>PFMS Disbursed</th>
-                      <th className="text-right">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredCases.map(c => (
-                      <tr key={c.id}>
-                        <td className="font-mono font-bold text-[#0b3866]">{c.caseReference}</td>
-                        <td className="font-semibold text-slate-900">{c.projectName}</td>
-                        <td>{c.village}, {c.tehsil}</td>
-                        <td className="font-mono">{c.totalParcelsCount} parcels ({c.totalExtentHa} Ha)</td>
-                        <td>
-                          <span className="px-2 py-0.5 bg-[#e8f1f8] text-[#0b3866] font-semibold text-[10px] rounded-xs">
-                            {c.stage.replace('STAGE_', '').replace(/_/g, ' ')}
-                          </span>
-                        </td>
-                        <td>{formatDate(c.stageDeadline)}</td>
-                        <td className="font-mono">{formatCurrencyINR(c.totalAwardedAmount)}</td>
-                        <td className="font-mono font-bold text-[#138808]">{formatCurrencyINR(c.totalDisbursedAmount)}</td>
-                        <td className="text-right whitespace-nowrap">
-                          <button
-                            onClick={() => setSelectedCaseDetailId(c.id)}
-                            className="px-3 py-1 bg-[#0b3866] text-white hover:bg-[#082c52] font-semibold text-xs rounded-xs mr-1.5"
-                          >
-                            View Record
-                          </button>
-                          <button
-                            onClick={() => {
-                              setSelectedCaseForObjection(c.id);
-                              setActiveTab('GRIEVANCE');
-                            }}
-                            className="px-3 py-1 bg-[#f37021] text-white hover:bg-[#e05e10] font-semibold text-xs rounded-xs"
-                          >
-                            File Objection
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+        {/* ============================================================ */}
+        {/* VIEW 10: PRELIMINARY PROPERTY REPORT */}
+        {/* ============================================================ */}
+        {activeTab === 'REPORTS' && (
+          <ReportGeneratorView onNavigateTab={setActiveTab} />
+        )}
+
+        {/* ============================================================ */}
+        {/* VIEW 11: HELP & HOW IT WORKS */}
+        {/* ============================================================ */}
+        {activeTab === 'HELP' && (
+          <HelpHowItWorksView 
+            onNavigateTab={setActiveTab} 
+            onOpenAiChat={() => onOpenAiChat?.()} 
+          />
+        )}
+
+        {/* ============================================================ */}
+        {/* VIEW 12: ABOUT BHUMISETU */}
+        {/* ============================================================ */}
+        {activeTab === 'ABOUT' && (
+          <AboutPlatformView onNavigateTab={setActiveTab} />
         )}
 
         {/* ============================================================ */}
@@ -1807,27 +1294,10 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
         )}
 
         {/* ============================================================ */}
-        {/* VIEW 5: CADASTRAL GIS MAP */}
+        {/* VIEW: PROPERTY MAP INTELLIGENCE */}
         {/* ============================================================ */}
         {activeTab === 'GIS_MAP' && (
-          <div className="swaas-card p-6 space-y-4">
-            <div className="border-b border-slate-200 pb-3 flex justify-between items-center">
-              <div>
-                <h2 className="text-lg font-bold text-[#002642]">
-                  PostGIS Cadastral Parcel Viewer &amp; BhuNaksha GIS
-                </h2>
-                <p className="text-slate-500 text-xs mt-0.5">
-                  Verify geodetic boundaries, parcel coordinates, road alignments and overlap warnings
-                </p>
-              </div>
-            </div>
-
-            <GisMapViewer
-              onSelectCase={(caseId) => {
-                setSelectedCaseDetailId(caseId);
-              }}
-            />
-          </div>
+          <PropertyMapIntelligence onNavigateTab={setActiveTab} />
         )}
 
         {/* ============================================================ */}

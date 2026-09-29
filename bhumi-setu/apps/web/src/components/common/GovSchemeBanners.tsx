@@ -238,7 +238,7 @@ export const GovSchemeHeroCarousel: React.FC<GovSchemeBannersProps> = ({
               {/* PM Modi Dignitary Badge on Flagship Schemes */}
               <div className="hidden md:flex items-center gap-2.5 bg-black/25 backdrop-blur-xs border border-white/20 p-2 rounded-xs flex-shrink-0 self-start sm:self-center">
                 <img 
-                  src="/assets/pm_modi_thumb.jpg" 
+                  src="/assets/pm_modi_2023.jpg" 
                   alt="Shri Narendra Modi" 
                   className="w-11 h-11 rounded-full object-cover object-top border-2 border-[#f37021] shadow-xs"
                 />
