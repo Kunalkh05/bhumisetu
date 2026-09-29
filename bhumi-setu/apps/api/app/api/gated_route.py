@@ -96,12 +96,12 @@ def _gated_item_model(response_model: Any) -> type[GatedModel] | None:
     return None
 
 
-def _reserialise(original: JSONResponse, body: Any) -> JSONResponse:
-    """Rebuild a :class:`JSONResponse` around the gated ``body``.
+def _reserialise(original: Response, body: Any) -> Response:
+    """Rebuild a response around the gated ``body``.
 
     Preserves the status code, background task, and every header the handler set
     except the two that the new body invalidates: ``content-length`` (the body is
-    smaller after redaction) and ``content-type`` (owned by :class:`JSONResponse`).
+    smaller after redaction) and ``content-type`` (owned by JSONResponse).
     ``append`` rather than ``setdefault`` so a handler that set several values of one
     header — multiple ``Set-Cookie`` lines, say — keeps all of them.
     """
@@ -139,9 +139,13 @@ class GatedRoute(APIRoute):
             # Only a JSON body backed by a gated model is ours to redact. HTML (gated
             # before rendering), a bodyless response, or a route with no gated model is
             # passed through: gating it here would be too late or meaningless.
-            if item_model is None or not isinstance(response, JSONResponse):
+            if item_model is None or not isinstance(response, Response):
                 return response
-            if not response.body:
+            content_type = response.headers.get("content-type", "")
+            media_type = getattr(response, "media_type", "") or ""
+            if "html" in content_type or "html" in media_type:
+                return response
+            if not getattr(response, "body", None):
                 return response
 
             principal = getattr(request.state, "principal", None)

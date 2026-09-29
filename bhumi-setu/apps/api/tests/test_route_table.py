@@ -76,6 +76,11 @@ EXEMPT_PATHS: frozenset[str] = frozenset(
         "/c/objections",
         "/c/language",
         "/healthz",
+        "/api/healthz",
+        "/api/auth/persona",
+        "/api/auth/me",
+        "/api/auth/logout",
+        "/dev-login",
         "/openapi.json",
         "/docs",
         "/docs/oauth2-redirect",
@@ -88,6 +93,16 @@ def _core() -> CoreSettings:
     """Development settings, so the app carries its docs routes and the exemption
     allowlist is actually exercised rather than being dead entries."""
     return CoreSettings.model_validate({"APP_ENV": "development", "LOG_LEVEL": "WARNING"})
+
+
+def _iter_all_routes(routes: Any) -> list[Any]:
+    flattened: list[Any] = []
+    for route in routes:
+        if type(route).__name__ == "_IncludedRouter":
+            flattened.extend(getattr(route.original_router, "routes", []))
+        else:
+            flattened.append(route)
+    return flattened
 
 
 def _gating_offences(app: FastAPI) -> list[str]:
@@ -104,7 +119,7 @@ def _gating_offences(app: FastAPI) -> list[str]:
     route is either gated or a declared exemption.
     """
     offences: list[str] = []
-    for route in app.routes:
+    for route in _iter_all_routes(app.routes):
         path = getattr(route, "path", None)
         if path in EXEMPT_PATHS:
             continue
@@ -150,7 +165,7 @@ def test_the_exempt_routes_are_actually_present() -> None:
     exemptions name real routes keeps the allowlist honest: it may only excuse routes that
     exist, not quietly cover a future data endpoint that happens to share a path."""
     app = create_app(_core())
-    paths = {getattr(route, "path", None) for route in app.routes}
+    paths = {getattr(route, "path", None) for route in _iter_all_routes(app.routes)}
     assert "/healthz" in paths
     assert "/openapi.json" in paths
     assert "/docs" in paths
