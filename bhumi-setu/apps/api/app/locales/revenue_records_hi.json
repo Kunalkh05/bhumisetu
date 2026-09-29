@@ -1,0 +1,82 @@
+{
+  "survey_numbers": {
+    "label": "सर्वे संख्या",
+    "placeholder": "सर्वे संख्या दर्ज करें",
+    "format_hint": "उदा: 123, 123/1, CTS 123"
+  },
+  "land_records": {
+    "seven_twelve": "७/१२ उतारा (सातबारा)",
+    "eight_a": "८-अ खाता उतारा",
+    "ferfar": "फेरफार पत्रक",
+    "mutation": "दाखिल खारिज",
+    "property_card": "संपत्ति पत्रक",
+    "city_survey": "नगर सर्वेक्षण",
+    "village_form": "गांव प्रपत्र",
+    "khasra": "खसरा",
+    "khatauni": "खतौनी",
+    "jamabandi": "जमाबंदी"
+  },
+  "revenue_hierarchy": {
+    "state": "राज्य",
+    "division": "मण्डल",
+    "district": "जिला",
+    "taluka": "तहसील",
+    "village": "गांव",
+    "survey_number": "सर्वे संख्या",
+    "sub_division": "उपखण्ड",
+    "hissa": "हिस्सा"
+  },
+  "land_types": {
+    "agricultural": "कृषि भूमि",
+    "non_agricultural": "गैर-कृषि भूमि",
+    "residential": "आवासीय",
+    "commercial": "वाणिज्यिक",
+    "industrial": "औद्योगिक",
+    "government": "सरकारी भूमि",
+    "forest": "वन भूमि",
+    "wasteland": "बंजर भूमि",
+    "gairan": "गायरान",
+    "inam": "इनाम"
+  },
+  "measurement_units": {
+    "hectare": "हेक्टेयर",
+    "are": "आर",
+    "sqm": "वर्ग मीटर",
+    "guntha": "गुंठा",
+    "acre": "एकड़",
+    "bigha": "बीघा",
+    "marla": "मरला",
+    "kanal": "कनाल"
+  },
+  "ownership_types": {
+    "private": "निजी",
+    "joint": "सह-स्वामित्व",
+    "government": "सरकारी",
+    "trust": "ट्रस्ट",
+    "temple": "मंदिर",
+    "cooperative": "सहकारी समिति",
+    "waqf": "वक्फ"
+  },
+  "encumbrance": {
+    "mortgage": "बंधक",
+    "lien": "धारणाधिकार",
+    "lease": "पट्टा",
+    "court_order": "न्यायालय आदेश",
+    "attachment": "कुर्की",
+    "no_encumbrance": "भार मुक्त"
+  },
+  "acquisition_terms": {
+    "notification": "अधिसूचना",
+    "preliminary_notification": "प्रारंभिक अधिसूचना",
+    "declaration": "घोषणा",
+    "award": "पंचाट",
+    "possession": "कब्जा",
+    "compensation": "मुआवजा",
+    "solatium": "अनुग्रह राशि",
+    "rehabilitation": "पुनर्वास",
+    "resettlement": "पुनर्स्थापन",
+    "social_impact_assessment": "सामाजिक प्रभाव आकलन",
+    "objection": "आपत्ति",
+    "hearing": "सुनवाई"
+  }
+}
