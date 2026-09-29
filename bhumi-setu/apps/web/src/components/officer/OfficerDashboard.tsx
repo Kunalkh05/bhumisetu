@@ -119,6 +119,36 @@ export const OfficerDashboard: React.FC<{ onNavigateToCase: (caseId: string) => 
           </div>
         </div>
 
+      {/* Hon'ble Prime Minister's Directive on Good Governance */}
+      <div className="bg-gradient-to-r from-[#002642] via-[#0b3866] to-[#002b49] text-white p-3.5 border-l-4 border-l-[#f37021] flex items-center justify-between gap-4 flex-wrap shadow-xs">
+        <div className="flex items-center gap-3.5">
+          <img 
+            src="/assets/pm_modi_thumb.jpg" 
+            alt="Shri Narendra Modi, Prime Minister of India" 
+            className="w-12 h-12 rounded-full object-cover object-top border-2 border-[#f37021] shadow-xs flex-shrink-0"
+          />
+          <div className="text-left">
+            <p className="text-xs italic text-amber-200 font-serif leading-snug">
+              {language === 'en'
+                ? '"Citizen trust is paramount in land acquisition. Every objection must receive a fair hearing, every compensation award must be statutory, and every payment must reach the farmer directly."'
+                : '“भूमि अधिग्रहण में नागरिक विश्वास सर्वोपरि है। हर आपत्ति की निष्पक्ष सुनवाई, वैधानिक मुआवजा और किसानों तक सीधी राशि पहुंचना हमारी प्रतिबद्धता है।”'}
+            </p>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-[11px] font-bold text-white">
+                {language === 'en' ? 'Shri Narendra Modi' : 'श्री नरेन्द्र मोदी'}
+              </span>
+              <span className="text-[10px] text-amber-300">
+                • {language === 'en' ? "Hon'ble Prime Minister of India" : 'माननीय प्रधानमंत्री, भारत'}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className="hidden md:flex items-center gap-2 bg-white/10 px-2.5 py-1 rounded-xs border border-white/20 text-[10px] font-semibold text-slate-200">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#138808] animate-pulse"></span>
+          <span>{language === 'en' ? 'Digital India Land Governance' : 'डिजिटल इंडिया भू-प्रशासन'}</span>
+        </div>
+      </div>
+
       {/* GIGW 3.0 Accessible Horizontally Scrolling Government Schemes Banner */}
       <GigwSchemeScrollBanner 
         language={language}

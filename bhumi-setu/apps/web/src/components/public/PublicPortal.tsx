@@ -207,25 +207,58 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
         {/* ============================================================ */}
         {activeTab === 'HOME' && (
           <div className="space-y-8">
-            {/* S3WaaS Standard Hero Section */}
+            {/* S3WaaS Standard Hero Section with Prime Minister's Vision */}
             <div className="relative overflow-hidden rounded-xs border border-slate-200 bg-gradient-to-r from-[#002642] via-[#0b3866] to-[#134679] text-white shadow-sm">
-              <div className="p-6 sm:p-10 relative z-10 space-y-4">
-                <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-xs border border-white/20 px-3 py-1 rounded-xs text-[11px] font-semibold text-amber-300">
-                  <ShieldCheck className="w-3.5 h-3.5 text-amber-300" />
-                  <span>RFCTLARR ACT, 2013 • STATUTORY E-GOVERNANCE SYSTEM</span>
-                </div>
+              <div className="p-6 sm:p-10 relative z-10 space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                  <div className="lg:col-span-8 space-y-4">
+                    <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-xs border border-white/20 px-3 py-1 rounded-xs text-[11px] font-semibold text-amber-300">
+                      <ShieldCheck className="w-3.5 h-3.5 text-amber-300" />
+                      <span>RFCTLARR ACT, 2013 • STATUTORY E-GOVERNANCE SYSTEM</span>
+                    </div>
 
-                <div className="max-w-3xl space-y-2">
-                  <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-tight">
-                    {language === 'en'
-                      ? 'National Land Acquisition Management & Compensation Tracking Portal'
-                      : 'राष्ट्रीय भूमि अधिग्रहण, मुआवजा निर्धारण एवं पुनर्वास प्रबंधन पोर्टल'}
-                  </h2>
-                  <p className="text-slate-200 text-xs sm:text-sm leading-relaxed max-w-2xl">
-                    {language === 'en'
-                      ? 'The single-window digital platform of the Government of India for transparent, time-bound land acquisition under the Right to Fair Compensation and Transparency in Land Acquisition, Rehabilitation and Resettlement Act, 2013.'
-                      : 'भूमि अधिग्रहण में उचित मुआवजा एवं पारदर्शिता का अधिकार अधिनियम, २०१३ के अंतर्गत भूमि अधिग्रहण अधिसूचनाओं, धारा १५ आपत्तियों एवं प्रत्यक्ष बैंक अंतरण का आधिकारिक राष्ट्रीय पोर्टल।'}
-                  </p>
+                    <div className="space-y-2">
+                      <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-tight">
+                        {language === 'en'
+                          ? 'National Land Acquisition Management & Compensation Tracking Portal'
+                          : 'राष्ट्रीय भूमि अधिग्रहण, मुआवजा निर्धारण एवं पुनर्वास प्रबंधन पोर्टल'}
+                      </h2>
+                      <p className="text-slate-200 text-xs sm:text-sm leading-relaxed max-w-2xl">
+                        {language === 'en'
+                          ? 'The single-window digital platform of the Government of India for transparent, time-bound land acquisition under the Right to Fair Compensation and Transparency in Land Acquisition, Rehabilitation and Resettlement Act, 2013.'
+                          : 'भूमि अधिग्रहण में उचित मुआवजा एवं पारदर्शिता का अधिकार अधिनियम, २०१३ के अंतर्गत भूमि अधिग्रहण अधिसूचनाओं, धारा १५ आपत्तियों एवं प्रत्यक्ष बैंक अंतरण का आधिकारिक राष्ट्रीय पोर्टल।'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Prime Minister Dignitary & Vision Card */}
+                  <div className="lg:col-span-4 bg-white/10 backdrop-blur-md border border-white/25 rounded-xs p-3.5 flex items-center gap-3.5 shadow-md">
+                    <div className="relative flex-shrink-0">
+                      <img 
+                        src="/assets/pm_modi_thumb.jpg" 
+                        alt={language === 'en' ? 'Shri Narendra Modi, Prime Minister of India' : 'श्री नरेन्द्र मोदी, माननीय प्रधानमंत्री'} 
+                        className="w-20 h-24 sm:w-24 sm:h-28 object-cover object-top rounded-xs border-2 border-[#f37021] shadow-md"
+                      />
+                      <div className="absolute -top-1.5 -left-1.5 px-1.5 py-0.5 bg-[#f37021] text-white font-bold text-[9px] rounded-xs shadow-xs uppercase tracking-wider">
+                        {language === 'en' ? 'Leadership' : 'नेतृत्व'}
+                      </div>
+                    </div>
+                    <div className="space-y-1.5 text-left">
+                      <div className="text-[11px] italic text-amber-200 leading-snug line-clamp-3 font-serif">
+                        {language === 'en'
+                          ? '"Transparent land records and time-bound compensation empower our farmers and establish the foundation of Viksit Bharat."'
+                          : '“पारदर्शी भू-अभिलेख और समयबद्ध मुआवजा हमारे किसानों को सशक्त बनाकर विकसित भारत का आधार स्थापित करते हैं।”'}
+                      </div>
+                      <div className="border-t border-white/20 pt-1">
+                        <div className="text-xs font-extrabold text-white leading-tight">
+                          {language === 'en' ? 'Shri Narendra Modi' : 'श्री नरेन्द्र मोदी'}
+                        </div>
+                        <div className="text-[10px] text-[#f37021] font-bold">
+                          {language === 'en' ? "Hon'ble Prime Minister of India" : 'माननीय प्रधानमंत्री, भारत'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 {/* S3WaaS 4 Primary Action Cards */}
@@ -310,6 +343,93 @@ export const PublicPortal: React.FC<PublicPortalProps> = ({
               language={language}
               onSelectScheme={(scheme) => setSelectedSchemeDetail(scheme)}
             />
+
+            {/* PM National Land Reforms & Infrastructure Mission Showcase */}
+            <div className="bg-white border border-slate-300 rounded-xs shadow-xs overflow-hidden">
+              <div className="tiranga-strip"></div>
+              <div className="grid grid-cols-1 lg:grid-cols-12 items-center">
+                {/* Left: Official Photograph of PM Narendra Modi at Development Dedication */}
+                <div className="lg:col-span-5 relative overflow-hidden bg-slate-900 h-64 lg:h-full min-h-[240px]">
+                  <img 
+                    src="/assets/pm_modi_event.jpg" 
+                    alt={language === 'en' ? 'Prime Minister Narendra Modi dedicating national infrastructure projects' : 'प्रधानमंत्री नरेन्द्र मोदी राष्ट्र को विकास परियोजनाएं समर्पित करते हुए'} 
+                    className="w-full h-full object-cover object-center"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-4">
+                    <span className="px-2 py-0.5 bg-[#f37021] text-white font-extrabold text-[9px] uppercase rounded-xs w-max mb-1">
+                      {language === 'en' ? 'National Mission' : 'राष्ट्रीय मिशन'}
+                    </span>
+                    <h4 className="text-white font-bold text-sm leading-tight">
+                      {language === 'en' ? 'Empowering Citizens Through Digitized Land Governance' : 'डिजिटल भू-प्रशासन से नागरिकों का सशक्तिकरण'}
+                    </h4>
+                    <p className="text-slate-300 text-[10px] mt-0.5">
+                      {language === 'en' ? 'PM Narendra Modi dedicating key national corridors & SVAMITVA cards' : 'माननीय प्रधानमंत्री द्वारा राष्ट्रीय गलियारों एवं स्वामित्व संपत्ति पत्रकों का लोकार्पण'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Right: Key Statutory Pillars & Directives */}
+                <div className="lg:col-span-7 p-5 sm:p-6 space-y-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <img 
+                      src="/assets/pm_modi_thumb.jpg" 
+                      alt="PM Modi Avatar" 
+                      className="w-9 h-9 rounded-full object-cover object-top border-2 border-[#f37021] shadow-2xs"
+                    />
+                    <div>
+                      <div className="text-xs font-bold text-[#002642]">
+                        {language === 'en' ? 'Prime Minister’s 4-Point Citizen Guarantee' : 'प्रधानमंत्री जी की ४-सूत्रीय नागरिक गारंटी'}
+                      </div>
+                      <div className="text-[10px] text-slate-500 font-medium">
+                        {language === 'en' ? 'RFCTLARR Act 2013 & Digital India Land Reforms' : 'आरएफ़सीटीएलएआरआर अधिनियम २०१३ एवं डिजिटल भारत भू-सुधार'}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div className="p-3 bg-amber-50/70 border-l-3 border-[#f37021] rounded-xs">
+                      <div className="font-bold text-[#c2410c] text-[11px] flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#f37021]" />
+                        <span>{language === 'en' ? '100% DBT Compensation' : '१००% प्रत्यक्ष बैंक अंतरण'}</span>
+                      </div>
+                      <p className="text-[10px] text-slate-600 mt-1">
+                        {language === 'en' ? 'Direct crediting to Aadhaar-linked accounts via PFMS, zero intermediaries.' : 'पीएफएमएस के माध्यम से सीधे आधार-संबद्ध बैंक खातों में भुगतान, पूर्ण पारदर्शिता।'}
+                      </p>
+                    </div>
+
+                    <div className="p-3 bg-blue-50/70 border-l-3 border-[#0b3866] rounded-xs">
+                      <div className="font-bold text-[#0b3866] text-[11px] flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#0b3866]" />
+                        <span>{language === 'en' ? 'Statutory Solatium & Interest' : 'सांविधिक तोषण एवं ब्याज'}</span>
+                      </div>
+                      <p className="text-[10px] text-slate-600 mt-1">
+                        {language === 'en' ? 'Mandatory 100% solatium and 12% annual interest on market value guaranteed.' : 'बाजार मूल्य पर अनिवार्य १००% तोषण एवं १२% वार्षिक ब्याज की कानूनी गारंटी।'}
+                      </p>
+                    </div>
+
+                    <div className="p-3 bg-emerald-50/70 border-l-3 border-[#138808] rounded-xs">
+                      <div className="font-bold text-[#138808] text-[11px] flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#138808]" />
+                        <span>{language === 'en' ? 'Drone Cadastral Mapping' : 'ड्रोन आधारित डिजिटल नक्शा'}</span>
+                      </div>
+                      <p className="text-[10px] text-slate-600 mt-1">
+                        {language === 'en' ? 'Sub-centimeter GIS boundary precision under SVAMITVA for boundary dispute elimination.' : 'स्वामित्व योजना अंतर्गत उप-सेंटीमीटर जीआईएस सटीकता से सीमा विवादों का उन्मूलन।'}
+                      </p>
+                    </div>
+
+                    <div className="p-3 bg-purple-50/70 border-l-3 border-[#6b21a8] rounded-xs">
+                      <div className="font-bold text-[#6b21a8] text-[11px] flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#6b21a8]" />
+                        <span>{language === 'en' ? 'Time-Bound Sec 15 Disposal' : 'समयबद्ध आपत्ति निस्तारण'}</span>
+                      </div>
+                      <p className="text-[10px] text-slate-600 mt-1">
+                        {language === 'en' ? '60-day statutory window with mandatory personal hearing by Collector.' : 'कलेक्टर द्वारा व्यक्तिगत सुनवाई के साथ ६० दिनों की वैधानिक समय-सीमा।'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             {/* S3WaaS National Statistics Strip */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
