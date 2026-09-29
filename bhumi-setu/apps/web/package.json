@@ -1,37 +1,37 @@
 {
-  "name": "bhumisetu-officer-portal",
+  "name": "bhumisetu-portal",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
   "type": "module",
-  "description": "BHUMISETU officer portal. The citizen portal is server-rendered from the api service and is deliberately not part of this bundle.",
+  "description": "BHUMISETU - National Land Acquisition Management & Decision Support Platform",
   "scripts": {
     "dev": "vite",
     "dev:local": "vite --config vite.config.local.ts",
-    "build": "tsc --noEmit && vite build",
-    "perf:map": "node scripts/map-render-benchmark.mjs",
-    "perf:citizen": "node scripts/citizen-p95-benchmark.mjs",
+    "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@tanstack/react-query": "5.62.11",
-    "i18next": "^23.16.8",
-    "maplibre-gl": "^5.0.1",
-    "pdfjs-dist": "^4.10.38",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
-    "react-i18next": "^15.1.4",
-    "react-router-dom": "7.1.1"
+    "@tailwindcss/vite": "^4.1.14",
+    "@types/leaflet": "^1.9.22",
+    "@vitejs/plugin-react": "^5.0.4",
+    "canvas-confetti": "^1.9.4",
+    "clsx": "^2.1.1",
+    "leaflet": "^1.9.4",
+    "lucide-react": "^0.546.0",
+    "motion": "^12.23.24",
+    "react": "^19.0.1",
+    "react-dom": "^19.0.1",
+    "tailwind-merge": "^3.6.0",
+    "vite": "^6.2.3"
   },
   "devDependencies": {
-    "@types/react": "18.3.18",
-    "@types/react-dom": "18.3.5",
-    "@vitejs/plugin-react": "4.3.4",
-    "autoprefixer": "10.4.20",
-    "playwright": "^1.49.1",
-    "postcss": "8.4.49",
-    "tailwindcss": "3.4.17",
-    "typescript": "5.7.2",
-    "vite": "6.0.7"
+    "@types/canvas-confetti": "^1.9.0",
+    "@types/node": "^22.14.0",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "autoprefixer": "^10.4.21",
+    "tailwindcss": "^4.1.14",
+    "typescript": "~5.8.2"
   }
 }

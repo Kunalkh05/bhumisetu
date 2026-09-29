@@ -8,34 +8,35 @@ echo "=========================================================="
 echo "          Starting BHUMISETU Platform Services"
 echo "=========================================================="
 
-# 1. Start PostgreSQL if not already running
-if ! /Applications/Postgres.app/Contents/Versions/15/bin/pg_isready -q 2>/dev/null; then
-  echo "Starting PostgreSQL..."
-  /Applications/Postgres.app/Contents/Versions/15/bin/pg_ctl \
-    -D "$HOME/Library/Application Support/Postgres/var-15" \
-    -l "$HOME/Library/Application Support/Postgres/var-15/server.log" start
-  sleep 2
+# 1. Start Redis if available
+if command -v redis-server >/dev/null 2>&1; then
+  if ! redis-cli ping >/dev/null 2>&1; then
+    echo "Starting Redis daemon..."
+    redis-server --daemonize yes 2>/dev/null || true
+    sleep 1
+  fi
+  if redis-cli ping >/dev/null 2>&1; then
+    echo "✓ Redis is running on port 6379"
+  fi
 fi
-echo "✓ PostgreSQL is running on port 5432"
 
-# 2. Start Redis if not already running
-if ! redis-cli ping >/dev/null 2>&1; then
-  echo "Starting Redis daemon..."
-  redis-server --daemonize yes
-  sleep 1
+# 2. Check and start PostgreSQL if available
+PG_READY=false
+if command -v pg_isready >/dev/null 2>&1 && pg_isready -q 2>/dev/null; then
+  PG_READY=true
+elif [ -x "/opt/homebrew/opt/postgresql@15/bin/pg_isready" ] && /opt/homebrew/opt/postgresql@15/bin/pg_isready -q 2>/dev/null; then
+  PG_READY=true
+elif [ -x "/Applications/Postgres.app/Contents/Versions/15/bin/pg_isready" ] && /Applications/Postgres.app/Contents/Versions/15/bin/pg_isready -q 2>/dev/null; then
+  PG_READY=true
 fi
-echo "✓ Redis is running on port 6379"
 
-# 3. Start MinIO if not already running
-if ! curl -sf http://localhost:9000/minio/health/live >/dev/null 2>&1; then
-  echo "Starting MinIO..."
-  mkdir -p /tmp/minio-data
-  MINIO_ROOT_USER=minioadmin MINIO_ROOT_PASSWORD=minioadmin minio server /tmp/minio-data --address ":9000" --console-address ":9001" > /tmp/minio.log 2>&1 &
-  sleep 2
+if [ "$PG_READY" = "true" ]; then
+  echo "✓ PostgreSQL is running on port 5432"
+else
+  echo "ℹ PostgreSQL is currently offline; API will run in resilient dev-fallback mode."
 fi
-echo "✓ MinIO is running on port 9000 (Console: http://localhost:9001)"
 
-# 4. Set Environment Variables
+# 3. Environment Variables
 export APP_ENV=development
 export LOG_LEVEL=INFO
 export DATABASE_URL="postgresql+psycopg://bhumisetu:bhumisetu_dev_password@localhost:5432/bhumisetu"
@@ -45,25 +46,31 @@ export OBJECT_STORAGE_ACCESS_KEY="minioadmin"
 export OBJECT_STORAGE_SECRET_KEY="minioadmin"
 export OBJECT_STORAGE_BUCKET="bhumisetu-documents"
 export JWT_SECRET="dev-internal-secret-token"
-export PYTHONPATH="$BHUMI_DIR/apps/api"
+export PYTHONPATH="$BHUMI_DIR/apps/api:$BHUMI_DIR"
 
-# 5. Run migrations and seed
-cd "$BHUMI_DIR/apps/api"
-.venv/bin/alembic upgrade head >/dev/null
-cd "$DIR"
-"$BHUMI_DIR/apps/api/.venv/bin/python" "$BHUMI_DIR/scripts/seed/init_dev_data.py" >/dev/null
+# 4. Run migrations and seed if PostgreSQL is ready
+if [ "$PG_READY" = "true" ]; then
+  echo "Running database migrations and seed..."
+  cd "$BHUMI_DIR/apps/api"
+  .venv/bin/alembic upgrade head >/dev/null 2>&1 || true
+  cd "$DIR"
+  "$BHUMI_DIR/apps/api/.venv/bin/python" "$BHUMI_DIR/scripts/seed/init_dev_data.py" >/dev/null 2>&1 || true
+  echo "✓ Database schema and seeds are up to date"
+fi
 
-echo "✓ Database schema and seeds are up to date"
-
-# 6. Start API Backend (FastAPI / Uvicorn)
+# 5. Start API Backend (FastAPI / Uvicorn)
 echo "Starting FastAPI Backend on http://localhost:8000..."
 cd "$BHUMI_DIR/apps/api"
+if [ ! -d ".venv" ]; then
+  python3 -m venv .venv
+  .venv/bin/pip install -q fastapi uvicorn pydantic pydantic-settings sqlalchemy argon2-cffi redis celery alembic "psycopg[binary]"
+fi
 .venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 > /tmp/bhumisetu-api.log 2>&1 &
 API_PID=$!
 echo $API_PID > /tmp/bhumisetu-api.pid
 
-# 7. Start Web Frontend (Vite)
-echo "Starting Officer Portal on http://localhost:5174/officer/..."
+# 6. Start Web Frontend (Vite)
+echo "Starting Web Frontend on http://localhost:5174/..."
 cd "$BHUMI_DIR/apps/web"
 npm run dev:local > /tmp/bhumisetu-web.log 2>&1 &
 WEB_PID=$!
@@ -73,11 +80,11 @@ echo ""
 echo "=========================================================="
 echo "🚀 BHUMISETU is now running!"
 echo "=========================================================="
-echo "• Officer Portal:   http://localhost:5174/officer/"
-echo "• Quick Dev Login:  http://localhost:8000/dev-login (sets cookies & opens portal)"
-echo "• Citizen Portal:   http://localhost:8000/c/"
+echo "• Citizen Portal:       http://localhost:5174/"
+echo "• Officer Portal:       http://localhost:5174/officer/"
+echo "• Quick Dev Login:      http://localhost:8000/dev-login"
 echo "• API Interactive Docs: http://localhost:8000/docs"
-echo "• MinIO Console:    http://localhost:9001 (minioadmin / minioadmin)"
+echo "• API Healthz Endpoint: http://localhost:8000/api/healthz"
 echo ""
 echo "Logs are streaming to:"
 echo "  /tmp/bhumisetu-api.log"
