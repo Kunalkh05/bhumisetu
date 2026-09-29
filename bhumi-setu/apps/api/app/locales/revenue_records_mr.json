@@ -1,0 +1,62 @@
+{
+  "survey_numbers": {
+    "label": "सर्वे क्रमांक",
+    "placeholder": "सर्वे क्रमांक प्रविष्ट करा",
+    "format_hint": "उदा: 123, 123/1, CTS 123"
+  },
+  "land_records": {
+    "seven_twelve": "७/१२ उतारा (सातबारा)",
+    "eight_a": "८-अ खाते उतारा",
+    "ferfar": "फेरफार पत्रक",
+    "mutation": "फेरफार नोंद",
+    "property_card": "मालमत्ता पत्रक",
+    "city_survey": "शहर सर्वेक्षण",
+    "village_form": "गाव नमुना"
+  },
+  "revenue_hierarchy": {
+    "state": "राज्य",
+    "division": "विभाग",
+    "district": "जिल्हा",
+    "taluka": "तालुका",
+    "village": "गाव",
+    "survey_number": "सर्वे क्रमांक",
+    "sub_division": "उपविभाग",
+    "hissa": "हिस्सा"
+  },
+  "land_types": {
+    "agricultural": "शेतजमीन",
+    "non_agricultural": "अकृषिक जमीन",
+    "residential": "निवासी",
+    "commercial": "व्यावसायिक",
+    "industrial": "औद्योगिक",
+    "government": "सरकारी जमीन",
+    "forest": "वनजमीन",
+    "wasteland": "पडीत जमीन",
+    "gairan": "गायरान",
+    "inam": "इनाम"
+  },
+  "measurement_units": {
+    "hectare": "हेक्टर",
+    "are": "आर",
+    "sqm": "चौरस मीटर",
+    "guntha": "गुंठा",
+    "acre": "एकर",
+    "bigha": "बिघा"
+  },
+  "ownership_types": {
+    "private": "खाजगी",
+    "joint": "सह-मालकी",
+    "government": "सरकारी",
+    "trust": "ट्रस्ट",
+    "temple": "देवस्थान",
+    "cooperative": "सहकारी संस्था"
+  },
+  "encumbrance": {
+    "mortgage": "गहाण",
+    "lien": "धारणाधिकार",
+    "lease": "भाडेपट्टा",
+    "court_order": "न्यायालय आदेश",
+    "attachment": "जप्ती",
+    "no_encumbrance": "भारमुक्त"
+  }
+}
