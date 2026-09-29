@@ -49,10 +49,20 @@ from features.survival_features import (
     export_survival_training_features_to_csv,
     export_survival_training_targets_to_csv,
 )
+from features.survival_split import (
+    DEFAULT_TEMPORAL_CUTOFF_DATE,
+    SurvivalTemporalSplit,
+    case_aware_temporal_split,
+    compute_case_entry_dates,
+    export_survival_split_artifacts,
+    generate_survival_split_report,
+    load_survival_split_artifacts,
+)
 
 __all__ = [
     "BOOLEAN_FEATURE_COLUMNS",
     "CATEGORICAL_FEATURE_COLUMNS",
+    "DEFAULT_TEMPORAL_CUTOFF_DATE",
     "FEATURE_COLUMNS",
     "IDENTIFIER_COLUMNS",
     "MISSING_ATTRIBUTE_COLUMNS",
@@ -61,21 +71,27 @@ __all__ = [
     "PURGED_FEATURE_COLUMNS",
     "SAFE_PREDICTOR_COLUMNS",
     "SurvivalSnapshot",
+    "SurvivalTemporalSplit",
     "TARGET_COLUMNS",
     "TARGET_METADATA_COLUMNS",
     "TRAINING_TARGET_COLUMNS",
     "assert_target_feature_disjointness",
+    "case_aware_temporal_split",
+    "compute_case_entry_dates",
     "compute_point_in_time_features",
     "export_feature_manifest_to_csv",
     "export_survival_feature_matrix_to_csv",
     "export_survival_features_to_csv",
     "export_survival_snapshots_to_csv",
+    "export_survival_split_artifacts",
     "export_survival_targets_to_csv",
     "export_survival_training_features_to_csv",
     "export_survival_training_targets_to_csv",
     "generate_all_survival_snapshots",
     "generate_snapshots_for_case",
     "generate_snapshot_data_quality_report",
+    "generate_survival_split_report",
+    "load_survival_split_artifacts",
 ]
 
 DEFAULT_CHECKPOINTS_SEC11_19 = (90, 180, 270)
