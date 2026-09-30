@@ -76,4 +76,5 @@ from app.api import parcels  # noqa: E402,F401
 from app.api import predictions  # noqa: E402,F401
 from app.api import retention  # noqa: E402,F401
 from app.api import citizen_api  # noqa: E402,F401
+from app.api import survival_risk  # noqa: E402,F401
 from app.citizen import routes  # noqa: E402,F401
