@@ -1,0 +1,9 @@
+covariate,test_statistic,p_value,ph_satisfied
+current_stage_SECTION_19,0.0004,0.98469,True
+current_stage_SECTION_21,0.0011,0.97356,True
+derived_days_in_current_stage,0.2833,0.594561,True
+derived_days_since_case_initiation,0.1985,0.655932,True
+derived_notice_count,0.0007,0.978331,True
+derived_project_type_Rural Infrastructure,0.0512,0.820944,True
+extension_count,0.0089,0.924758,True
+has_statutory_extension,0.2469,0.619292,True

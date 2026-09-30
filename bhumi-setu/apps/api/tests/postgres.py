@@ -73,7 +73,7 @@ def admin_url() -> str:
 
 
 def postgres_available() -> bool:
-    """True when a server answers. Cached per process; connection attempt is cheap."""
+    """True when a server answers and has required extensions. Cached per process."""
     global _available
     if _available is None:
         from sqlalchemy import create_engine, text
@@ -82,8 +82,12 @@ def postgres_available() -> bool:
             engine = create_engine(admin_url(), connect_args={"connect_timeout": 3})
             with engine.connect() as conn:
                 conn.execute(text("SELECT 1"))
+                # Check for postgis extension availability on server
+                ext_count = conn.execute(
+                    text("SELECT count(*) FROM pg_available_extensions WHERE name = 'postgis'")
+                ).scalar()
             engine.dispose()
-            _available = True
+            _available = bool(ext_count and ext_count > 0)
         except Exception:
             _available = False
     return _available
@@ -97,7 +101,7 @@ def skip_without_postgres() -> None:
     if postgres_available():
         return
     message = (
-        "no PostgreSQL server reachable. Start Postgres.app, or set "
+        "no PostgreSQL server with PostGIS reachable. Start Postgres.app with PostGIS, or set "
         "BHUMISETU_TEST_DATABASE_URL. See docs/postgres-app-setup.md."
     )
     if POSTGRES_REQUIRED:

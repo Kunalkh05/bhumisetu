@@ -1,0 +1,505 @@
+{
+  "overall_status": "PARTIAL \u2014 SOME METRICS NOT COMPUTABLE DUE TO EVENT SPARSITY",
+  "scientific_rationale": "Evaluation pipeline completed successfully without model refitting or data leakage. However, out of 167 evaluation snapshots across 89 cases, only 4 observed events occurred (2 in SECTION_11_TO_SECTION_19, 0 in SECTION_19_TO_AWARD, 2 in CASE_INITIATION_TO_MILESTONE). Consequently, event-based discrimination cannot be established for SECTION_19_TO_AWARD, and time-dependent discrimination metrics across all horizons lack statistical reliability.",
+  "cohort_totals": {
+    "num_observations": 167,
+    "num_cases": 89,
+    "num_events": 4,
+    "num_censored": 163,
+    "censoring_rate_pct": 97.6
+  },
+  "transitions": {
+    "SECTION_11_TO_SECTION_19": {
+      "cohort_summary": {
+        "transition": "SECTION_11_TO_SECTION_19",
+        "num_observations": 59,
+        "num_cases": 57,
+        "num_events": 2,
+        "num_censored": 57,
+        "censoring_rate_pct": 96.61,
+        "min_duration_days": 2.0,
+        "max_duration_days": 148.0,
+        "event_durations_days": [
+          92.0,
+          2.0
+        ]
+      },
+      "model_num_parameters": 3,
+      "model_train_concordance": 0.8067,
+      "concordance": {
+        "transition": "SECTION_11_TO_SECTION_19",
+        "status": "COMPUTED",
+        "num_observations": 59,
+        "num_events": 2,
+        "num_censored": 57,
+        "concordance_index": 0.0,
+        "interpretation_limitations": "Concordance index is 0.0000. However, with only 2 observed events across 59 observations, the estimate is statistically unstable and must not be interpreted as evidence of generalized predictive performance."
+      },
+      "time_dependent_discrimination": {
+        "horizon_30d": {
+          "status": "NOT RELIABLE \u2014 INSUFFICIENT EVENTS",
+          "events_before_horizon": 1,
+          "at_risk": 48,
+          "reason": "Only 1 event(s) observed prior to 30 days. Standard time-dependent AUC requires >= 5 observed events for stable rank estimation."
+        },
+        "horizon_90d": {
+          "status": "NOT RELIABLE \u2014 INSUFFICIENT EVENTS",
+          "events_before_horizon": 1,
+          "at_risk": 2,
+          "reason": "Only 1 event(s) observed prior to 90 days. Standard time-dependent AUC requires >= 5 observed events for stable rank estimation."
+        },
+        "horizon_180d": {
+          "status": "NOT RELIABLE \u2014 INSUFFICIENT EVENTS",
+          "events_before_horizon": 2,
+          "at_risk": 0,
+          "reason": "Only 2 event(s) observed prior to 180 days. Standard time-dependent AUC requires >= 5 observed events for stable rank estimation."
+        },
+        "horizon_365d": {
+          "status": "NOT RELIABLE \u2014 INSUFFICIENT EVENTS",
+          "events_before_horizon": 2,
+          "at_risk": 0,
+          "reason": "Only 2 event(s) observed prior to 365 days. Standard time-dependent AUC requires >= 5 observed events for stable rank estimation."
+        },
+        "horizon_730d": {
+          "status": "NOT RELIABLE \u2014 INSUFFICIENT EVENTS",
+          "events_before_horizon": 2,
+          "at_risk": 0,
+          "reason": "Only 2 event(s) observed prior to 730 days. Standard time-dependent AUC requires >= 5 observed events for stable rank estimation."
+        }
+      },
+      "brier_scores": [
+        {
+          "horizon_days": 30,
+          "status": "COMPUTED",
+          "brier_score": 0.016932,
+          "num_at_risk": 48,
+          "num_events_before": 1,
+          "valid_observations": 49,
+          "limitations": "Brier score at 30d based on 1 observed event(s) and 48 at risk."
+        },
+        {
+          "horizon_days": 90,
+          "status": "COMPUTED",
+          "brier_score": 0.025135,
+          "num_at_risk": 2,
+          "num_events_before": 1,
+          "valid_observations": 3,
+          "limitations": "Brier score at 90d based on 1 observed event(s) and 2 at risk."
+        },
+        {
+          "horizon_days": 180,
+          "status": "NOT COMPUTABLE \u2014 INSUFFICIENT SUPPORT (censoring survivor probability G(t) = 0)",
+          "brier_score": null,
+          "num_at_risk": 0,
+          "num_events_before": 2,
+          "valid_observations": 0,
+          "limitations": "Cannot compute IPCW Brier score at horizon 180d: all observations censored or exited before horizon (maximum follow-up = 148.0 days)."
+        },
+        {
+          "horizon_days": 365,
+          "status": "NOT COMPUTABLE \u2014 INSUFFICIENT SUPPORT (censoring survivor probability G(t) = 0)",
+          "brier_score": null,
+          "num_at_risk": 0,
+          "num_events_before": 2,
+          "valid_observations": 0,
+          "limitations": "Cannot compute IPCW Brier score at horizon 365d: all observations censored or exited before horizon (maximum follow-up = 148.0 days)."
+        },
+        {
+          "horizon_days": 730,
+          "status": "NOT COMPUTABLE \u2014 INSUFFICIENT SUPPORT (censoring survivor probability G(t) = 0)",
+          "brier_score": null,
+          "num_at_risk": 0,
+          "num_events_before": 2,
+          "valid_observations": 0,
+          "limitations": "Cannot compute IPCW Brier score at horizon 730d: all observations censored or exited before horizon (maximum follow-up = 148.0 days)."
+        }
+      ],
+      "calibration": [
+        {
+          "horizon_days": 30,
+          "status": "COMPUTED",
+          "mean_predicted_survival": 0.998,
+          "observed_km_survival": 0.9831,
+          "calibration_difference": 0.015,
+          "num_at_risk": 48,
+          "limitations": "Calibration based on 1 event(s). No calibration model or adjustment was fitted."
+        },
+        {
+          "horizon_days": 90,
+          "status": "COMPUTED",
+          "mean_predicted_survival": 0.9694,
+          "observed_km_survival": 0.9831,
+          "calibration_difference": -0.0137,
+          "num_at_risk": 2,
+          "limitations": "Calibration based on 1 event(s). No calibration model or adjustment was fitted."
+        },
+        {
+          "horizon_days": 180,
+          "status": "NOT RELIABLE \u2014 INSUFFICIENT SUPPORT",
+          "mean_predicted_survival": 0.9664,
+          "observed_km_survival": null,
+          "calibration_difference": null,
+          "num_at_risk": 0,
+          "limitations": "Zero cases remain at risk past maximum evaluation duration."
+        },
+        {
+          "horizon_days": 365,
+          "status": "NOT RELIABLE \u2014 INSUFFICIENT SUPPORT",
+          "mean_predicted_survival": 0.9632,
+          "observed_km_survival": null,
+          "calibration_difference": null,
+          "num_at_risk": 0,
+          "limitations": "Zero cases remain at risk past maximum evaluation duration."
+        },
+        {
+          "horizon_days": 730,
+          "status": "NOT RELIABLE \u2014 INSUFFICIENT SUPPORT",
+          "mean_predicted_survival": 0.9632,
+          "observed_km_survival": null,
+          "calibration_difference": null,
+          "num_at_risk": 0,
+          "limitations": "Zero cases remain at risk past maximum evaluation duration."
+        }
+      ],
+      "km_comparison": {
+        "train_baseline_concordance": 0.8067,
+        "train_num_events": 16,
+        "train_censoring_rate_pct": 80.95,
+        "eval_num_events": 2,
+        "eval_censoring_rate_pct": 96.61,
+        "eval_median_survival_days": 92.0,
+        "strata_comparison_note": "Subgroup risk stratification (e.g. high-risk vs low-risk strata) was omitted because the evaluation cohort contains <= 2 observed events, which prevents statistically meaningful strata separation."
+      },
+      "limitations": [
+        "Severe small-event sparsity (2 events): C-index has high variance."
+      ]
+    },
+    "SECTION_19_TO_AWARD": {
+      "cohort_summary": {
+        "transition": "SECTION_19_TO_AWARD",
+        "num_observations": 4,
+        "num_cases": 4,
+        "num_events": 0,
+        "num_censored": 4,
+        "censoring_rate_pct": 100.0,
+        "min_duration_days": 39.0,
+        "max_duration_days": 53.0,
+        "event_durations_days": []
+      },
+      "model_num_parameters": 8,
+      "model_train_concordance": 1.0,
+      "concordance": {
+        "transition": "SECTION_19_TO_AWARD",
+        "status": "NOT COMPUTABLE \u2014 INSUFFICIENT EVENTS",
+        "num_observations": 4,
+        "num_events": 0,
+        "num_censored": 4,
+        "concordance_index": null,
+        "interpretation_limitations": "Evaluation discrimination cannot be established because the EVAL cohort contains zero observed target events."
+      },
+      "time_dependent_discrimination": {
+        "horizon_30d": {
+          "status": "NOT RELIABLE \u2014 INSUFFICIENT EVENTS",
+          "events_before_horizon": 0,
+          "at_risk": 4,
+          "reason": "Only 0 event(s) observed prior to 30 days. Standard time-dependent AUC requires >= 5 observed events for stable rank estimation."
+        },
+        "horizon_90d": {
+          "status": "NOT RELIABLE \u2014 INSUFFICIENT EVENTS",
+          "events_before_horizon": 0,
+          "at_risk": 0,
+          "reason": "Only 0 event(s) observed prior to 90 days. Standard time-dependent AUC requires >= 5 observed events for stable rank estimation."
+        },
+        "horizon_180d": {
+          "status": "NOT RELIABLE \u2014 INSUFFICIENT EVENTS",
+          "events_before_horizon": 0,
+          "at_risk": 0,
+          "reason": "Only 0 event(s) observed prior to 180 days. Standard time-dependent AUC requires >= 5 observed events for stable rank estimation."
+        },
+        "horizon_365d": {
+          "status": "NOT RELIABLE \u2014 INSUFFICIENT EVENTS",
+          "events_before_horizon": 0,
+          "at_risk": 0,
+          "reason": "Only 0 event(s) observed prior to 365 days. Standard time-dependent AUC requires >= 5 observed events for stable rank estimation."
+        },
+        "horizon_730d": {
+          "status": "NOT RELIABLE \u2014 INSUFFICIENT EVENTS",
+          "events_before_horizon": 0,
+          "at_risk": 0,
+          "reason": "Only 0 event(s) observed prior to 730 days. Standard time-dependent AUC requires >= 5 observed events for stable rank estimation."
+        }
+      },
+      "brier_scores": [
+        {
+          "horizon_days": 30,
+          "status": "COMPUTED",
+          "brier_score": 0.0,
+          "num_at_risk": 4,
+          "num_events_before": 0,
+          "valid_observations": 4,
+          "limitations": "Brier score at 30d reflects non-event censoring only (0 events observed before 30d)."
+        },
+        {
+          "horizon_days": 90,
+          "status": "NOT COMPUTABLE \u2014 INSUFFICIENT SUPPORT (censoring survivor probability G(t) = 0)",
+          "brier_score": null,
+          "num_at_risk": 0,
+          "num_events_before": 0,
+          "valid_observations": 0,
+          "limitations": "Cannot compute IPCW Brier score at horizon 90d: all observations censored or exited before horizon (maximum follow-up = 53.0 days)."
+        },
+        {
+          "horizon_days": 180,
+          "status": "NOT COMPUTABLE \u2014 INSUFFICIENT SUPPORT (censoring survivor probability G(t) = 0)",
+          "brier_score": null,
+          "num_at_risk": 0,
+          "num_events_before": 0,
+          "valid_observations": 0,
+          "limitations": "Cannot compute IPCW Brier score at horizon 180d: all observations censored or exited before horizon (maximum follow-up = 53.0 days)."
+        },
+        {
+          "horizon_days": 365,
+          "status": "NOT COMPUTABLE \u2014 INSUFFICIENT SUPPORT (censoring survivor probability G(t) = 0)",
+          "brier_score": null,
+          "num_at_risk": 0,
+          "num_events_before": 0,
+          "valid_observations": 0,
+          "limitations": "Cannot compute IPCW Brier score at horizon 365d: all observations censored or exited before horizon (maximum follow-up = 53.0 days)."
+        },
+        {
+          "horizon_days": 730,
+          "status": "NOT COMPUTABLE \u2014 INSUFFICIENT SUPPORT (censoring survivor probability G(t) = 0)",
+          "brier_score": null,
+          "num_at_risk": 0,
+          "num_events_before": 0,
+          "valid_observations": 0,
+          "limitations": "Cannot compute IPCW Brier score at horizon 730d: all observations censored or exited before horizon (maximum follow-up = 53.0 days)."
+        }
+      ],
+      "calibration": [
+        {
+          "horizon_days": 30,
+          "status": "COMPUTED",
+          "mean_predicted_survival": 0.9998,
+          "observed_km_survival": 1.0,
+          "calibration_difference": -0.0002,
+          "num_at_risk": 4,
+          "limitations": "Calibration based on 0 event(s). No calibration model or adjustment was fitted."
+        },
+        {
+          "horizon_days": 90,
+          "status": "NOT RELIABLE \u2014 INSUFFICIENT SUPPORT",
+          "mean_predicted_survival": 0.9998,
+          "observed_km_survival": null,
+          "calibration_difference": null,
+          "num_at_risk": 0,
+          "limitations": "Zero cases remain at risk past maximum evaluation duration."
+        },
+        {
+          "horizon_days": 180,
+          "status": "NOT RELIABLE \u2014 INSUFFICIENT SUPPORT",
+          "mean_predicted_survival": 0.9994,
+          "observed_km_survival": null,
+          "calibration_difference": null,
+          "num_at_risk": 0,
+          "limitations": "Zero cases remain at risk past maximum evaluation duration."
+        },
+        {
+          "horizon_days": 365,
+          "status": "NOT RELIABLE \u2014 INSUFFICIENT SUPPORT",
+          "mean_predicted_survival": 0.9961,
+          "observed_km_survival": null,
+          "calibration_difference": null,
+          "num_at_risk": 0,
+          "limitations": "Zero cases remain at risk past maximum evaluation duration."
+        },
+        {
+          "horizon_days": 730,
+          "status": "NOT RELIABLE \u2014 INSUFFICIENT SUPPORT",
+          "mean_predicted_survival": 0.9924,
+          "observed_km_survival": null,
+          "calibration_difference": null,
+          "num_at_risk": 0,
+          "limitations": "Zero cases remain at risk past maximum evaluation duration."
+        }
+      ],
+      "km_comparison": {
+        "train_baseline_concordance": 1.0,
+        "train_num_events": 6,
+        "train_censoring_rate_pct": 97.04,
+        "eval_num_events": 0,
+        "eval_censoring_rate_pct": 100.0,
+        "eval_median_survival_days": null,
+        "strata_comparison_note": "Subgroup risk stratification (e.g. high-risk vs low-risk strata) was omitted because the evaluation cohort contains <= 2 observed events, which prevents statistically meaningful strata separation."
+      },
+      "limitations": [
+        "Concordance uncomputable: 0 observed events in evaluation cohort."
+      ]
+    },
+    "CASE_INITIATION_TO_MILESTONE": {
+      "cohort_summary": {
+        "transition": "CASE_INITIATION_TO_MILESTONE",
+        "num_observations": 104,
+        "num_cases": 86,
+        "num_events": 2,
+        "num_censored": 102,
+        "censoring_rate_pct": 98.08,
+        "min_duration_days": 2.0,
+        "max_duration_days": 148.0,
+        "event_durations_days": [
+          92.0,
+          2.0
+        ]
+      },
+      "model_num_parameters": 14,
+      "model_train_concordance": 0.9667,
+      "concordance": {
+        "transition": "CASE_INITIATION_TO_MILESTONE",
+        "status": "COMPUTED",
+        "num_observations": 104,
+        "num_events": 2,
+        "num_censored": 102,
+        "concordance_index": 0.5083,
+        "interpretation_limitations": "Concordance index is 0.5083. However, with only 2 observed events across 104 observations, the estimate is statistically unstable and must not be interpreted as evidence of generalized predictive performance."
+      },
+      "time_dependent_discrimination": {
+        "horizon_30d": {
+          "status": "NOT RELIABLE \u2014 INSUFFICIENT EVENTS",
+          "events_before_horizon": 1,
+          "at_risk": 82,
+          "reason": "Only 1 event(s) observed prior to 30 days. Standard time-dependent AUC requires >= 5 observed events for stable rank estimation."
+        },
+        "horizon_90d": {
+          "status": "NOT RELIABLE \u2014 INSUFFICIENT EVENTS",
+          "events_before_horizon": 1,
+          "at_risk": 18,
+          "reason": "Only 1 event(s) observed prior to 90 days. Standard time-dependent AUC requires >= 5 observed events for stable rank estimation."
+        },
+        "horizon_180d": {
+          "status": "NOT RELIABLE \u2014 INSUFFICIENT EVENTS",
+          "events_before_horizon": 2,
+          "at_risk": 0,
+          "reason": "Only 2 event(s) observed prior to 180 days. Standard time-dependent AUC requires >= 5 observed events for stable rank estimation."
+        },
+        "horizon_365d": {
+          "status": "NOT RELIABLE \u2014 INSUFFICIENT EVENTS",
+          "events_before_horizon": 2,
+          "at_risk": 0,
+          "reason": "Only 2 event(s) observed prior to 365 days. Standard time-dependent AUC requires >= 5 observed events for stable rank estimation."
+        },
+        "horizon_730d": {
+          "status": "NOT RELIABLE \u2014 INSUFFICIENT EVENTS",
+          "events_before_horizon": 2,
+          "at_risk": 0,
+          "reason": "Only 2 event(s) observed prior to 730 days. Standard time-dependent AUC requires >= 5 observed events for stable rank estimation."
+        }
+      },
+      "brier_scores": [
+        {
+          "horizon_days": 30,
+          "status": "COMPUTED",
+          "brier_score": 0.009679,
+          "num_at_risk": 82,
+          "num_events_before": 1,
+          "valid_observations": 83,
+          "limitations": "Brier score at 30d based on 1 observed event(s) and 82 at risk."
+        },
+        {
+          "horizon_days": 90,
+          "status": "COMPUTED",
+          "brier_score": 0.009704,
+          "num_at_risk": 18,
+          "num_events_before": 1,
+          "valid_observations": 19,
+          "limitations": "Brier score at 90d based on 1 observed event(s) and 18 at risk."
+        },
+        {
+          "horizon_days": 180,
+          "status": "NOT COMPUTABLE \u2014 INSUFFICIENT SUPPORT (censoring survivor probability G(t) = 0)",
+          "brier_score": null,
+          "num_at_risk": 0,
+          "num_events_before": 2,
+          "valid_observations": 0,
+          "limitations": "Cannot compute IPCW Brier score at horizon 180d: all observations censored or exited before horizon (maximum follow-up = 148.0 days)."
+        },
+        {
+          "horizon_days": 365,
+          "status": "NOT COMPUTABLE \u2014 INSUFFICIENT SUPPORT (censoring survivor probability G(t) = 0)",
+          "brier_score": null,
+          "num_at_risk": 0,
+          "num_events_before": 2,
+          "valid_observations": 0,
+          "limitations": "Cannot compute IPCW Brier score at horizon 365d: all observations censored or exited before horizon (maximum follow-up = 148.0 days)."
+        },
+        {
+          "horizon_days": 730,
+          "status": "NOT COMPUTABLE \u2014 INSUFFICIENT SUPPORT (censoring survivor probability G(t) = 0)",
+          "brier_score": null,
+          "num_at_risk": 0,
+          "num_events_before": 2,
+          "valid_observations": 0,
+          "limitations": "Cannot compute IPCW Brier score at horizon 730d: all observations censored or exited before horizon (maximum follow-up = 148.0 days)."
+        }
+      ],
+      "calibration": [
+        {
+          "horizon_days": 30,
+          "status": "COMPUTED",
+          "mean_predicted_survival": 0.9986,
+          "observed_km_survival": 0.9904,
+          "calibration_difference": 0.0082,
+          "num_at_risk": 82,
+          "limitations": "Calibration based on 1 event(s). No calibration model or adjustment was fitted."
+        },
+        {
+          "horizon_days": 90,
+          "status": "COMPUTED",
+          "mean_predicted_survival": 0.9783,
+          "observed_km_survival": 0.9904,
+          "calibration_difference": -0.0121,
+          "num_at_risk": 18,
+          "limitations": "Calibration based on 1 event(s). No calibration model or adjustment was fitted."
+        },
+        {
+          "horizon_days": 180,
+          "status": "NOT RELIABLE \u2014 INSUFFICIENT SUPPORT",
+          "mean_predicted_survival": 0.9751,
+          "observed_km_survival": null,
+          "calibration_difference": null,
+          "num_at_risk": 0,
+          "limitations": "Zero cases remain at risk past maximum evaluation duration."
+        },
+        {
+          "horizon_days": 365,
+          "status": "NOT RELIABLE \u2014 INSUFFICIENT SUPPORT",
+          "mean_predicted_survival": 0.9734,
+          "observed_km_survival": null,
+          "calibration_difference": null,
+          "num_at_risk": 0,
+          "limitations": "Zero cases remain at risk past maximum evaluation duration."
+        },
+        {
+          "horizon_days": 730,
+          "status": "NOT RELIABLE \u2014 INSUFFICIENT SUPPORT",
+          "mean_predicted_survival": 0.9734,
+          "observed_km_survival": null,
+          "calibration_difference": null,
+          "num_at_risk": 0,
+          "limitations": "Zero cases remain at risk past maximum evaluation duration."
+        }
+      ],
+      "km_comparison": {
+        "train_baseline_concordance": 0.9667,
+        "train_num_events": 18,
+        "train_censoring_rate_pct": 97.04,
+        "eval_num_events": 2,
+        "eval_censoring_rate_pct": 98.08,
+        "eval_median_survival_days": null,
+        "strata_comparison_note": "Subgroup risk stratification (e.g. high-risk vs low-risk strata) was omitted because the evaluation cohort contains <= 2 observed events, which prevents statistically meaningful strata separation."
+      },
+      "limitations": [
+        "Severe small-event sparsity (2 events): C-index has high variance."
+      ]
+    }
+  }
+}

@@ -1,0 +1,189 @@
+{
+  "model_version": "1.0.0-cox-production-baseline",
+  "overall_status": "PARTIAL \u2014 CALIBRATION NOT RELIABLE DUE TO EVENT SPARSITY",
+  "governance_disclaimer": "NON_AUTONOMOUS_DECISION_SUPPORT: Model estimates are advisory statistical indicators intended exclusively for administrative workload prioritization by authorized revenue officers. In accordance with RFCTLARR 2013 and administrative due process, this system does not make automated decisions to acquire land, approve or reject proceedings, determine compensation awards, or make legally binding determinations.",
+  "transitions": {
+    "SECTION_11_TO_SECTION_19": {
+      "transition": "SECTION_11_TO_SECTION_19",
+      "num_train_observations": 84,
+      "num_train_cases": 32,
+      "num_train_events": 16,
+      "censoring_rate_pct": 80.95,
+      "num_cases_with_events": 14,
+      "case_grouped_cv_folds": 5,
+      "cv_fold_event_counts": [
+        3,
+        2,
+        3,
+        4,
+        4
+      ],
+      "cv_fold_slopes": [
+        2.6788649483505234,
+        2.447884015597775,
+        1.0344796186434022,
+        0.8363788470257734,
+        3.22444768073697
+      ],
+      "mean_cv_slope": 2.0444,
+      "cv_slope_std": 0.942,
+      "overall_calibration_slope": 1.4431,
+      "calibration_slope_se": 0.3143,
+      "calibration_slope_pvalue": 4e-06,
+      "horizon_calibration": {
+        "30d": {
+          "mean_predicted_survival": 0.999106,
+          "observed_km_survival": 0.988095,
+          "calibration_difference": 0.01101
+        },
+        "90d": {
+          "mean_predicted_survival": 0.985926,
+          "observed_km_survival": 0.830088,
+          "calibration_difference": 0.155837
+        },
+        "180d": {
+          "mean_predicted_survival": 0.984561,
+          "observed_km_survival": 0.817699,
+          "calibration_difference": 0.166862
+        },
+        "365d": {
+          "mean_predicted_survival": 0.98304,
+          "observed_km_survival": 0.803353,
+          "calibration_difference": 0.179687
+        },
+        "730d": {
+          "mean_predicted_survival": 0.98304,
+          "observed_km_survival": 0.803353,
+          "calibration_difference": 0.179687
+        }
+      },
+      "calibration_status": "PARTIAL \u2014 CALIBRATION NOT RELIABLE DUE TO EVENT SPARSITY",
+      "rationale": "Case-grouped cross-validation reveals high slope variability (std=0.94) across folds due to event sparsity (16 events). Fitting an additional recalibration parameter increases variance. Uncalibrated Cox survival baseline is retained.",
+      "limitations": [
+        "TRAIN cohort contains only 16 observed events across 32 cases (80.95% censoring).",
+        "Cross-validation slope instability precludes secondary shrinkage without over-fitting."
+      ]
+    },
+    "SECTION_19_TO_AWARD": {
+      "transition": "SECTION_19_TO_AWARD",
+      "num_train_observations": 203,
+      "num_train_cases": 43,
+      "num_train_events": 6,
+      "censoring_rate_pct": 97.04,
+      "num_cases_with_events": 1,
+      "case_grouped_cv_folds": 5,
+      "cv_fold_event_counts": [
+        0,
+        6,
+        0,
+        0,
+        0
+      ],
+      "cv_fold_slopes": [
+        null,
+        1.1797884442432598,
+        null,
+        null,
+        null
+      ],
+      "mean_cv_slope": 1.1798,
+      "cv_slope_std": null,
+      "overall_calibration_slope": 1.3531,
+      "calibration_slope_se": 0.3195,
+      "calibration_slope_pvalue": 2.3e-05,
+      "horizon_calibration": {
+        "30d": {
+          "mean_predicted_survival": 0.996628,
+          "observed_km_survival": 0.994792,
+          "calibration_difference": 0.001836
+        },
+        "90d": {
+          "mean_predicted_survival": 0.996628,
+          "observed_km_survival": 0.994792,
+          "calibration_difference": 0.001836
+        },
+        "180d": {
+          "mean_predicted_survival": 0.992641,
+          "observed_km_survival": 0.988799,
+          "calibration_difference": 0.003842
+        },
+        "365d": {
+          "mean_predicted_survival": 0.973228,
+          "observed_km_survival": 0.963472,
+          "calibration_difference": 0.009756
+        },
+        "730d": {
+          "mean_predicted_survival": 0.964588,
+          "observed_km_survival": 0.949902,
+          "calibration_difference": 0.014686
+        }
+      },
+      "calibration_status": "CALIBRATION NOT RELIABLE \u2014 INSUFFICIENT EVENTS",
+      "rationale": "All 6 observed events in TRAIN belong to a single case (CAS_CLEAN_070). 4 of 5 case-grouped validation folds contain 0 events. Cross-validated calibration is degenerate. Retaining uncalibrated Cox baseline.",
+      "limitations": [
+        "TRAIN cohort contains only 6 observed events across 43 cases (97.04% censoring).",
+        "Severe single-cluster event concentration: recalibration parameters cannot be identified."
+      ]
+    },
+    "CASE_INITIATION_TO_MILESTONE": {
+      "transition": "CASE_INITIATION_TO_MILESTONE",
+      "num_train_observations": 609,
+      "num_train_cases": 131,
+      "num_train_events": 18,
+      "censoring_rate_pct": 97.04,
+      "num_cases_with_events": 15,
+      "case_grouped_cv_folds": 5,
+      "cv_fold_event_counts": [
+        5,
+        3,
+        4,
+        4,
+        2
+      ],
+      "cv_fold_slopes": [
+        1.6117671355816339,
+        2.2679149083201953,
+        2.8292869554862685,
+        2.134535894973132,
+        1.5375732625643326
+      ],
+      "mean_cv_slope": 2.0762,
+      "cv_slope_std": 0.4718,
+      "overall_calibration_slope": 1.9513,
+      "calibration_slope_se": 0.2743,
+      "calibration_slope_pvalue": 0.0,
+      "horizon_calibration": {
+        "30d": {
+          "mean_predicted_survival": 0.999422,
+          "observed_km_survival": 0.998358,
+          "calibration_difference": 0.001065
+        },
+        "90d": {
+          "mean_predicted_survival": 0.99078,
+          "observed_km_survival": 0.974527,
+          "calibration_difference": 0.016253
+        },
+        "180d": {
+          "mean_predicted_survival": 0.98944,
+          "observed_km_survival": 0.971014,
+          "calibration_difference": 0.018426
+        },
+        "365d": {
+          "mean_predicted_survival": 0.988704,
+          "observed_km_survival": 0.969139,
+          "calibration_difference": 0.019565
+        },
+        "730d": {
+          "mean_predicted_survival": 0.988704,
+          "observed_km_survival": 0.969139,
+          "calibration_difference": 0.019565
+        }
+      },
+      "calibration_status": "PARTIAL \u2014 CALIBRATION NOT RELIABLE DUE TO EVENT SPARSITY",
+      "rationale": "Event count (18) is below statistical guidelines for parametric recalibration. Baseline hazard step function from Cox model retained.",
+      "limitations": [
+        "TRAIN cohort contains only 18 observed events across 131 cases (97.04% censoring)."
+      ]
+    }
+  }
+}

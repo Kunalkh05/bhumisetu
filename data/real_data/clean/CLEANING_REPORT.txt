@@ -1,0 +1,293 @@
+================================================================================
+          BHUMISETU — REAL DATASET CLEANING & PREPARATION REPORT
+================================================================================
+Generated: September 29, 2026
+Phase    : Cleaning & Preparation Only (No ML Training, No Model Modification)
+Status   : COMPLETE
+
+--------------------------------------------------------------------------------
+1. EXECUTIVE SUMMARY
+--------------------------------------------------------------------------------
+The authentic Maharashtra government land acquisition dataset was cleaned,
+deduplicated, classified, and restructured into a verified, high-provenance
+dataset in `data/real_data/clean/`.
+
+Key Metrics:
+- Raw Ingested Documents      : 344 PDF files (915.94 MB) across 5 Collectorates
+- Duplicate Documents Pruned  : 7 records (identical SHA-256 byte digests)
+- Irrelevant Documents Flagged: 26 unique records (30 total in raw ingest) from
+                                Yavatmal Collectorate (NOT_LAND_ACQUISITION)
+- Clean Relevant LA Documents : 311 authentic statutory PDF documents
+- Clean Structured Events     : 311 verified statutory event rows
+- Reconstructed Clean Cases   : 271 distinct acquisition cases
+- Multi-Event Timeline Cases  : 26 cases (13 two-event, 12 three-event, 1 four-event)
+- Single-Event Pipeline Cases : 245 cases (active in-progress acquisitions)
+- Contradictory Stage Orders  : 0 (eliminated via hierarchical clustering)
+- Total Cases with Delay Evid.: 35 cases (4 explicit extensions, 31 date breaches)
+- Data Provenance             : 100% auditable back to NIC S3WaaS source URLs
+
+
+--------------------------------------------------------------------------------
+2. CLEAN ARTIFACTS INVENTORY
+--------------------------------------------------------------------------------
+All cleaned data files reside in `data/real_data/clean/`:
+
+1. source_manifest_clean.csv (337 unique rows)
+   - Deduplicated catalog of all downloaded documents with SHA-256 digests.
+   - Includes `classification` ('LAND_ACQUISITION' vs 'NOT_LAND_ACQUISITION'),
+     `is_land_acquisition` (boolean), and `exclusion_reason`.
+
+2. real_land_acquisition_events_clean.csv (311 verified event rows)
+   - Granular event log with fields: event_id, case_id, case_number, district,
+     taluka, village, project_name, act_key, event_type, event_date,
+     recording_date, stage, source_document, source_url, source_page,
+     source_document_hash, extraction_method, contradiction_flag, raw_text_snippet.
+   - Sorted strictly chronologically by (case_id, event_date, event_id).
+
+3. real_land_acquisition_cases_clean.csv (271 reconstructed cases)
+   - Reconstructed acquisition cases with statutory milestone dates, extension
+     counts, case statuses, missingness semantics, feature provenance, and
+     derived features.
+   - Unavailable fields are stored as NULL, never populated with zero.
+
+4. data_quality_report.md
+   - Comprehensive data quality audit and cleaning funnel documentation.
+
+5. feature_coverage_report.md
+   - Detailed feature taxonomy, missingness semantics, and ML suitability analysis.
+
+
+--------------------------------------------------------------------------------
+3. INGESTION & CLEANING FUNNEL
+--------------------------------------------------------------------------------
+Stage                                   Count   Notes
+--------------------------------------------------------------------------------
+Raw Documents Ingested                   344    Nagpur (207), Pune (81), Yavatmal (35),
+                                                Nashik (13), Solapur (8)
+Duplicate Documents Removed               -7    Pruned based on SHA-256 equality
+Unique Ingested Documents                337    Verified unique cryptographic digests
+Irrelevant Documents Flagged             -26    Classified as NOT_LAND_ACQUISITION
+Clean Land Acquisition Documents         311    Genuine statutory gazette files
+Clean Statutory Events Generated         311    Exactly 1 event per verified document
+Reconstructed Clean Cases                271    Clustered hierarchically
+
+
+--------------------------------------------------------------------------------
+4. DUPLICATE RECORDS PRUNED (TASK 1)
+--------------------------------------------------------------------------------
+7 duplicate documents (14 rows in raw manifest) were removed due to pagination
+overlap on official portals. One canonical copy was retained:
+
+Canonical Doc ID  Duplicate Doc ID  District  SHA-256 Digest (first 16 chars)
+--------------------------------------------------------------------------------
+SRC_NAGPUR_013    SRC_NAGPUR_021    Nagpur    377801b5c8bcf313...
+SRC_NAGPUR_012    SRC_NAGPUR_018    Nagpur    dc080802a80b8966...
+SRC_NAGPUR_150    SRC_NAGPUR_153    Nagpur    608e60c4ee5e9b10...
+SRC_YAVATMAL_318  SRC_YAVATMAL_325  Yavatmal  8b961ad22e9bb6e8...
+SRC_YAVATMAL_319  SRC_YAVATMAL_324  Yavatmal  41cc00a32f255bb5...
+SRC_YAVATMAL_320  SRC_YAVATMAL_323  Yavatmal  02098e0e78e4857c...
+SRC_YAVATMAL_321  SRC_YAVATMAL_322  Yavatmal  0f7edbb951b51360...
+
+Original raw PDF files in `raw_documents/` remain completely untouched.
+
+
+--------------------------------------------------------------------------------
+5. IRRELEVANT DOCUMENTS REMOVED (TASK 2)
+--------------------------------------------------------------------------------
+26 unique administrative documents (30 rows in raw manifest) from Yavatmal
+Collectorate were marked as NOT_LAND_ACQUISITION in source_manifest_clean.csv
+and excluded from events and cases:
+
+1. Compassionate Appointment Lists & Seniority Objections (13 docs):
+   SRC_YAVATMAL_315 to SRC_YAVATMAL_326
+   (Group C & D recruitment lists for Collector's office staff).
+
+2. Agricultural Well Subsidy Beneficiary Lists (13 docs):
+   SRC_YAVATMAL_328 to SRC_YAVATMAL_340
+   (Dhadak Sinchan Vihir farmer subsidy beneficiary lists).
+
+3. District Road Development Master Plans & Maps (5 docs):
+   SRC_YAVATMAL_341 to SRC_YAVATMAL_345
+   (20-year master road development draft plans and taluka maps).
+
+5 authentic Land Acquisition Citizen Charters and office notices in Yavatmal
+(SRC_YAVATMAL_311, 312, 313, 314, 327) were retained in the clean dataset.
+
+
+--------------------------------------------------------------------------------
+6. REFINED CASE CLUSTERING (TASK 3)
+--------------------------------------------------------------------------------
+Previous naive clustering grouped notices solely by case_number, causing
+different villages sharing serials (e.g., 4/A-65/2025-2026) to merge
+inappropriately and create artificial date reversals.
+
+New Hierarchical Key:
+Cluster Key = District + Taluka + Mouza/Village + Case Number
+
+Case Identifier Breakdown:
+- Official Case Number Present: 163 cases (60.1%) (case_id_type = OFFICIAL_CASE_NUMBER)
+- Derived Identifier Used      : 108 cases (39.9%) (case_id_type = DERIVED)
+                                 (case_number is recorded as NULL, not fabricated)
+
+Contradictory Event Orderings: Dropped from 6 down to EXACTLY 0.
+
+
+--------------------------------------------------------------------------------
+7. CLEAN EVENT & CASE DATASETS (TASKS 4 & 5)
+--------------------------------------------------------------------------------
+Clean Events Dataset (real_land_acquisition_events_clean.csv):
+- 311 verified events sorted chronologically by (case_id, event_date, event_id).
+- Contradiction Flag: NORMAL for all 311 events (0 contradictions).
+
+Milestone Breakdown in Clean Cases (271 cases):
+- Section 11(1) Preliminary Notices: 91 cases (33.6%)
+- Section 19(1) Declarations       : 47 cases (17.3%)
+- Section 21 Claims/Hearings       : 19 cases  (7.0%)
+- Final Awards (Sec 23/25)         : 24 cases  (8.9%)
+- Statutory Extension Orders       :  4 cases  (1.5%)
+- Complete Sec 11 -> Sec 19        : 17 cases  (6.3%)
+- Complete Sec 11 -> 19 -> Award   :  0 cases  (0.0%) (No single case in 2024-26
+                                     scrape has all 3 published simultaneously)
+
+
+--------------------------------------------------------------------------------
+8. REAL FEATURES & MISSINGNESS SEMANTICS (TASKS 6 & 7)
+--------------------------------------------------------------------------------
+Unavailable fields are NEVER populated with zero unless the government source
+affirmatively establishes zero. Instead, they are set to NULL with an explicit
+reason code recorded in a dedicated audit column:
+
+Field Name              Status       Missingness Code / Reason
+--------------------------------------------------------------------------------
+objection_count         NULL (100%)  NOT_PUBLISHED_IN_GAZETTE
+                                     (Citizen objection registers under Sec 15
+                                     are internal collectorate records)
+parcel_count            NULL (100%)  NOT_PUBLISHED_IN_STRUCTURED_DATA
+                                     (Individual survey numbers remain in
+                                     unparsed PDF schedule tables)
+open_issue_count        NULL (100%)  NOT_APPLICABLE_IN_REAL_DATA
+                                     (Synthetic data pipeline artifact)
+compensation_amount_inr NULL (100%)  UNPARSED_FROM_PDF_AWARDS
+notified_area_hectares  NULL (100%)  UNPARSED_SCHEDULE_TABLE
+
+Feature Provenance Fields:
+- feature_source_document  : Specific originating PDF filename
+- feature_source_page      : Specific page number in document
+- feature_extraction_method: Method used (TEXT or OCR)
+- source_documents         : Semicolon-delimited list of all linked PDFs
+- source_document_hashes   : Semicolon-delimited list of all linked SHA-256 hashes
+- source_urls              : Semicolon-delimited list of all source URLs
+
+
+--------------------------------------------------------------------------------
+9. DERIVED FEATURES (TASK 8)
+--------------------------------------------------------------------------------
+All derived features are explicitly prefixed with `derived_` to prevent
+confusion with raw government facts:
+
+Derived Feature                           Coverage      Empirical Distribution
+--------------------------------------------------------------------------------
+derived_days_since_case_initiation        271 (100.0%)  Mean: 412d, Min: 7d, Max: 1012d
+derived_days_in_current_stage             271 (100.0%)  Mean: 386d, Min: 7d, Max: 1012d
+derived_days_since_latest_notice          271 (100.0%)  Mean: 386d, Min: 7d, Max: 1012d
+derived_notice_count                      271 (100.0%)  Range: 1 to 4 notices per case
+derived_extension_count                   271 (100.0%)  4 cases have 1 to 2 extensions
+derived_has_statutory_extension           271 (100.0%)  Boolean (True for 4 cases)
+derived_statutory_sec19_proximity_ratio    91 ( 33.6%)  (T_ref - date_sec11) / 365.0
+derived_sec11_to_sec19_duration            17 (  6.3%)  Mean: 74.8d, Min: 0d, Max: 241d
+derived_project_type                      271 (100.0%)  Ring Road, Highway, Metro, etc.
+derived_is_direct_purchase                271 (100.0%)  Boolean (True for 16 cases)
+delay_evidence_type                       271 (100.0%)  EXPLICIT_EXTENSION (4),
+                                                        DATE_DERIVED_DELAY (31),
+                                                        NONE_OBSERVED (236)
+
+
+--------------------------------------------------------------------------------
+10. ANSWERS TO TASK 10 EXPLICIT QUESTIONS
+--------------------------------------------------------------------------------
+Q1: How many clean cases remain?
+A1: 271 clean cases.
+
+Q2: How many clean events remain?
+A2: 311 clean events.
+
+Q3: How many multi-event cases remain?
+A3: 26 multi-event cases (13 two-event, 12 three-event, 1 four-event).
+    The remaining 245 cases have 1 recorded event representing active,
+    in-progress pipelines.
+
+Q4: How many complete timelines exist?
+A4: - Section 11 -> Section 19 -> Final Award: 0 cases.
+    - Section 11 -> Section 19: 17 cases.
+    - Section 19 -> Statutory Extensions -> Final Award: 1 case
+      (CAS_CLEAN_130 / Case 9/A-65/2021-2022).
+
+Q5: Which features are now available?
+A5: - derived_days_in_current_stage (100% coverage, 271 cases)
+    - derived_days_since_latest_notice (100% coverage, 271 cases)
+    - derived_days_since_case_initiation (100% coverage, 271 cases)
+    - derived_notice_count (100% coverage, 271 cases)
+    - award_recorded / award_date (8.9% coverage, 24 cases)
+    - section_11_date (33.6% coverage, 91 cases)
+    - section_19_date (17.3% coverage, 47 cases)
+    - section_21_date (7.0% coverage, 19 cases)
+    - extension_count & has_statutory_extension (4 cases with 1-2 extensions)
+    - derived_statutory_sec19_proximity_ratio (91 cases)
+    - derived_sec11_to_sec19_duration (17 cases)
+    - district (100% coverage, 271 cases)
+    - taluka (60.9% coverage, 165 cases)
+    - village (64.2% coverage, 174 cases)
+    - acquiring_authority (100% coverage, 271 cases)
+    - act_key (100% coverage, 271 cases)
+    - derived_project_type (100% coverage, 271 cases)
+    - derived_is_direct_purchase (100% coverage, 271 cases)
+
+Q6: Which features remain unavailable?
+A6: - objection_count: NULL (NOT_PUBLISHED_IN_GAZETTE)
+    - parcel_count: NULL (NOT_PUBLISHED_IN_STRUCTURED_DATA)
+    - open_issue_count: NULL (NOT_APPLICABLE_IN_REAL_DATA)
+    - notified_area_hectares: NULL (UNPARSED_SCHEDULE_TABLE)
+    - affected_landowner_count: NULL (UNPARSED_SCHEDULE_TABLE)
+    - compensation_amount_inr: NULL (UNPARSED_FROM_PDF_AWARDS)
+
+Q7: How many cases have reliable delay evidence?
+A7: 35 cases total:
+    - 4 cases with explicit statutory extension orders under Section 25 /
+      Section 19(1) proviso.
+    - 1 completed case with 390 days between Section 19 and Award (> 365-day
+      statutory limit).
+    - 12 cases with Section 11 published > 365 days ago with no Section 19
+      declaration on record.
+    - 18 cases with Section 19 published > 365 days ago with no Final Award
+      on record.
+
+Q8: Whether the dataset is suitable for binary delay classification, survival
+    analysis, both, or neither?
+A8: - Binary delay classification: POOR / NOT SUITED.
+      (Only 24 cases are completed; 91.1% of cases are active in-progress
+      pipelines. Treating open cases as non-delayed causes severe label
+      leakage, while discarding them discards 91% of data).
+    - Survival analysis: EXCELLENT / HIGHLY SUITED.
+      (Naturally handles right-censored time-to-stage-exit and duration modeling
+      across all 271 cases without discarding open pipelines or fabricating
+      completion labels).
+    - Both: NO.
+    - Neither: NO.
+
+
+--------------------------------------------------------------------------------
+11. DATA PROVENANCE PRESERVATION
+--------------------------------------------------------------------------------
+Every cleaned and derived record maintains an unbreakable audit trail:
+
+Official NIC Portal URL
+  -> Downloaded PDF File (data/real_data/raw_documents/)
+  -> SHA-256 Cryptographic Hash
+  -> Source Manifest Clean Record (source_manifest_clean.csv)
+  -> Granular Statutory Event (real_land_acquisition_events_clean.csv)
+  -> Reconstructed Case (real_land_acquisition_cases_clean.csv)
+  -> Derived Feature & Delay Classification
+
+================================================================================
+                                 END OF REPORT
+================================================================================

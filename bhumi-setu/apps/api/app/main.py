@@ -37,9 +37,11 @@ import logging
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from app.api.auth import auth_router
 from app.api.routers import ALL_ROUTERS
 from app.errors import DomainError, ErrorCode, ErrorEnvelope
 from app.settings import CoreSettings, get_core_settings, get_database_settings
@@ -118,7 +120,17 @@ def create_app(core: CoreSettings | None = None) -> FastAPI:
         redoc_url=None,
         openapi_url=None if core.is_production else "/openapi.json",
     )
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
     _register_error_handlers(app)
+
+    # Auth and persona endpoints
+    app.include_router(auth_router)
 
     # The §9 consumer surfaces. Each is a GatedRoute router, so an endpoint a later
     # task registers on it is redacted at the boundary by construction (§8.2).
@@ -134,14 +146,25 @@ def create_app(core: CoreSettings | None = None) -> FastAPI:
             import redis
             from app.security.auth import RedisOfficerSessionBackend
             from app.settings import get_broker_settings
-            redis_client = redis.from_url(get_broker_settings().redis_url)
-            configure_auth_backend(RedisOfficerSessionBackend(redis_client))
+            try:
+                redis_client = redis.from_url(get_broker_settings().redis_url, socket_timeout=1)
+                redis_client.ping()
+                configure_auth_backend(RedisOfficerSessionBackend(redis_client))
+                logger.info("Configured Redis officer session backend")
+            except Exception as redis_exc:
+                logger.info("Redis not active (%s), falling back to InMemorySessionBackend", redis_exc)
+                from app.security.in_memory_auth import InMemorySessionBackend
+                configure_auth_backend(InMemorySessionBackend())
     except Exception as exc:
-        logger.warning("Could not auto-configure Redis auth backend: %s", exc)
+        logger.warning("Could not auto-configure auth backend: %s", exc)
 
     @app.get("/healthz", include_in_schema=False)
     async def healthz() -> dict[str, str]:
         return {"status": "ok"}
+
+    @app.get("/api/healthz", include_in_schema=False)
+    async def api_healthz() -> dict[str, str]:
+        return {"status": "ok", "app": "BHUMISETU", "version": "1.0.0"}
 
     return app
 

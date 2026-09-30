@@ -1,0 +1,661 @@
+================================================================================
+                    BHUMISETU — REAL DATASET AUDIT
+================================================================================
+
+1. DATASET SUMMARY
+--------------------------------------------------------------------------------
+A comprehensive forensic audit of all downloaded government land acquisition
+documents and structured tables was conducted.
+
+- Total Downloaded Documents: 344 PDF files (915.94 MB)
+- Total Cryptographic Hashes Verified: 100% computed SHA-256 digests
+- Total Structured Events: 344 statutory event records
+- Total Reconstructed Cases: 278 distinct acquisition cases
+- Geographic Coverage: 5 Maharashtra District Collectorates
+    * Nagpur:   207 documents (674.8 MB), 142 cases, 207 events
+    * Pune:      81 documents (190.8 MB),  80 cases,  81 events
+    * Yavatmal:  35 documents  (41.1 MB),  35 cases,  35 events
+    * Nashik:    13 documents  (24.4 MB),  13 cases,  13 events
+    * Solapur:    8 documents   (4.8 MB),   8 cases,   8 events
+- Temporal Period Covered: 2017-01-01 to 2026-09-29 (active statutory
+  notifications concentrated in 2021 – 2026)
+- Statutory Frameworks Identified:
+    * RFCTLARR Act 2013 (Right to Fair Compensation and Transparency in Land
+      Acquisition, Rehabilitation and Resettlement Act, 2013) — Primary
+      framework (93.9% of notices)
+    * National Highways Act 1956 (Sections 3A, 3D, 3G)
+    * Railways (Amendment) Act 2008 (Section 20A)
+    * Maharashtra Highways Act 1955
+    * Maharashtra Industrial Development (MIDC) Act 1961
+
+
+2. SOURCES
+--------------------------------------------------------------------------------
+All files were retrieved from official Indian Government District Administration
+portals operated on the National Informatics Centre (NIC) S3WaaS infrastructure:
+
+1. District Collectorate & Administration Nagpur
+   - Department: Revenue & Land Acquisition Department; Sub-Divisional Officers
+   - URL: https://nagpur.gov.in/documents/
+   - Data: Preliminary notices Sec 11(1), Declarations Sec 19(1), Public
+     Hearings Sec 21, Final Awards Sec 23, Direct Purchase notices, Sec 25
+     Extension Orders
+   - Access: HTTPS Public GET (NIC S3WaaS CDN)
+
+2. District Collectorate & Administration Pune
+   - Department: Special Land Acquisition Office (SLAD / PLAQ Branches);
+     SDO Haveli, Maval, Khed
+   - URL: https://pune.gov.in/en/documents/
+   - Data: Pune Ring Road gazettes, Metro Rail interchange acquisitions,
+     Urban Development Plan (DP) road widening notifications, Final awards
+   - Access: HTTPS Public GET (NIC S3WaaS CDN)
+
+3. District Collectorate & Administration Nashik
+   - Department: Special Land Acquisition Office
+   - URL: https://nashik.gov.in/en/documents/
+   - Data: Nashik Ring Road notifications (Sec 11, Sec 19), Land acquisition
+     final awards across Niphad, Sinnar, Dindori
+   - Access: HTTPS Public GET (NIC S3WaaS CDN)
+
+4. District Collectorate & Administration Solapur
+   - Department: Private & Additional Land Acquisition (PALAQ) Branch
+   - URL: https://solapur.gov.in/en/documents/
+   - Data: Solapur-Wadi 3rd/4th Railway line notices (Sec 20A), National
+     Highway widenings, Sec 25 statutory extension orders
+   - Access: HTTPS Public GET (NIC S3WaaS CDN)
+
+5. District Collectorate & Administration Yavatmal
+   - Department: Deputy Collector (Land Acquisition) Bembla Project Office
+   - URL: https://yavatmal.gov.in/en/documents/
+   - Data: Bembla River Irrigation Canal notifications, Citizens Charters,
+     District administrative gazettes
+   - Access: HTTPS Public GET (NIC S3WaaS CDN)
+
+
+3. FILES COLLECTED
+--------------------------------------------------------------------------------
+A. Inventory of Downloaded Datasets and Structured Files:
+
+1. source_manifest.csv
+   - File Path: data/real_data/source_manifest.csv
+   - File Type: CSV
+   - Source Org: Automated crawler across 5 Maharashtra Collectorates
+   - Source URL: NIC S3WaaS endpoints for Nagpur, Pune, Nashik, Solapur, Yavatmal
+   - District/State: Maharashtra (5 districts)
+   - Date Range: 2017-01-01 to 2026-09-29
+   - Dimensions: 344 rows x 16 columns
+   - What One Row Represents: One downloaded official PDF gazette/notice with
+     cryptographic digest (SHA-256), download timestamp, byte size, and portal
+     publication metadata.
+   - Level: Document-level
+
+2. real_land_acquisition_events.csv
+   - File Path: data/real_data/real_land_acquisition_events.csv
+   - File Type: CSV
+   - Source Org: Extracted directly from 344 downloaded government documents
+   - Source URL: 344 direct S3WaaS PDF URLs
+   - District/State: Maharashtra (5 districts)
+   - Date Range: 2017-01-01 to 2026-09-29
+   - Dimensions: 344 rows x 20 columns
+   - What One Row Represents: One statutory acquisition event/stage transition
+     (e.g., Section 11 notice, Section 19 declaration, Section 21 hearing,
+     Final Award, Extension order) tied to a case.
+   - Level: Event-level
+
+3. real_land_acquisition_cases.csv
+   - File Path: data/real_data/real_land_acquisition_cases.csv
+   - File Type: CSV
+   - Source Org: Synthesized by clustering events across the 5 Collectorates
+   - Source URL: Aggregate links to source documents
+   - District/State: Maharashtra (5 districts)
+   - Date Range: 2017-01-01 to 2026-09-29
+   - Dimensions: 278 rows x 32 columns
+   - What One Row Represents: One reconstructed land acquisition case proceedings
+     lifecycle.
+   - Level: Case-level
+
+4. DOCUMENT_TRACKER.csv & all_documents/TRACKER.csv
+   - File Path: data/real_data/DOCUMENT_TRACKER.csv
+   - File Type: CSV
+   - Dimensions: 344 rows x 15 columns
+   - What One Row Represents: Cross-reference mapping each organized PDF filename
+     to its original local path, source URL, district, stage, village, and SHA-256.
+   - Level: Document-level
+
+5. raw_documents/
+   - File Path: data/real_data/raw_documents/{district}/
+   - Total Files: 344 original PDF files partitioned into 5 district subfolders:
+     * nagpur/ (207 files, 674.8 MB)
+     * pune/ (81 files, 190.8 MB)
+     * yavatmal/ (35 files, 41.1 MB)
+     * nashik/ (13 files, 24.4 MB)
+     * solapur/ (8 files, 4.8 MB)
+   - Level: Raw Binary Documents
+
+6. all_documents/
+   - File Path: data/real_data/all_documents/
+   - Total Files: 344 PDF files consolidated into a single tracking folder with
+     standardized naming:
+     [DISTRICT]__[INDEX]__[STAGE]__[VILLAGE/PROJECT]__[CASE_NO].pdf
+   - Catalog: INDEX.md (Interactive Markdown document catalog)
+   - Level: Consolidated Normalized Document Store
+
+B. Identification of Duplicate or Overlapping Datasets:
+- 100% Identical File Duplication: DOCUMENT_TRACKER.csv and
+  all_documents/TRACKER.csv are identical duplicates.
+- Document File Duplication: The 344 PDFs in all_documents/ are hardlinked
+  replicas of the 344 PDFs in raw_documents/.
+- Portal Duplicate Downloads (Exact Byte Duplicates): Exactly 7 documents
+  (14 rows in source_manifest.csv) share identical SHA-256 hashes because the
+  official government portals published identical PDF links across consecutive
+  pagination pages:
+    * 377801b5c8... (nagpur_013 & nagpur_021: Notice 11(1) Case 22/A-65/2025-26)
+    * dc080802a8... (nagpur_012 & nagpur_018: Notice 11(1) Case 27/A-65/2025-26)
+    * 608e60c4ee... (nagpur_150 & nagpur_153: Direct Purchase Bhiwapur)
+    * 8b961ad22e... (yavatmal_318 & yavatmal_325)
+    * 41cc00a32f... (yavatmal_319 & yavatmal_324)
+    * 02098e0e78... (yavatmal_320 & yavatmal_323)
+    * 0f7edbb951... (yavatmal_321 & yavatmal_322)
+- Out-of-Scope Administrative Documents in Yavatmal: 29 of the 35 documents
+  downloaded from Yavatmal Collectorate are administrative personnel waiting
+  lists (compassionate appointments / 11 docs), agricultural well subsidy lists
+  (Dhadak Sinchan Vihir / 13 docs), or general district road master plans (5 docs)
+  rather than statutory land acquisition case files.
+
+
+4. DATASET SCHEMAS
+--------------------------------------------------------------------------------
+TABLE 1: real_land_acquisition_events.csv (Event-Level, 344 rows)
+--------------------------------------------------------------------------------
+Column Name           Type    Example Value          Missing Count (%)  Meaning / Source
+-------------------------------------------------------------------------------------------------------------
+event_id              str     EVT_NAGPUR_001         0 (0.0%)           Deterministic event ID / DERIVED
+case_id               str     CAS_NAGPUR_001         0 (0.0%)           Linked case ID / DERIVED
+source_id             str     SRC_NAGPUR_001         0 (0.0%)           Linked source manifest ID / DERIVED
+case_number           str     29/A-65/2026-2027      0 (0.0%)           Statutory LAC case string / Official Text
+district              str     Nagpur                 0 (0.0%)           Administrative District / Portal Header
+village               str     Sayki                  151 (43.9%)        Mouza / Village / Notice Text
+taluka                str     Umred                  138 (40.1%)        Tahsil / Taluka / Notice Text
+project_name          str     MIDC Land Acquisition  307 (89.2%)        Public Project Name / Notice Text
+act_key               str     RFCTLARR_2013          0 (0.0%)           Governing Statutory Act / Document Text
+event_type            str     SECTION_11             0 (0.0%)           Milestone Stage / DERIVED (Classified)
+event_date            str     2026-09-22             0 (0.0%)           Date Notice Signed/Published / Doc Text
+recording_date        str     2026-09-22             0 (0.0%)           Date Published on Portal / Portal Date
+stage                 str     SECTION_11             0 (0.0%)           Statutory Stage / DERIVED
+description           str     Publication of notice  0 (0.0%)           Official Gazette Title / Portal Header
+source_document       str     nagpur_001_...pdf      0 (0.0%)           Filename on local storage / S3WaaS
+source_url            str     https://cdn.s3waas...  0 (0.0%)           Direct PDF URL / Official Portal
+source_page           int64   1                      0 (0.0%)           Extracted Page / Pipeline
+extraction_method     str     TEXT                   0 (0.0%)           Extraction Engine (TEXT vs OCR)
+source_document_hash  str     1c8775f96a14eeec...    0 (0.0%)           SHA-256 Digest / DERIVED
+raw_text_snippet      str     Publication of notice  0 (0.0%)           First 300 chars of extracted text / PDF
+
+--------------------------------------------------------------------------------
+TABLE 2: real_land_acquisition_cases.csv (Case-Level, 278 rows)
+--------------------------------------------------------------------------------
+Column Name           Type    Example Value          Missing Count (%)  Meaning / Source
+-------------------------------------------------------------------------------------------------------------
+case_id               str     CAS_NAGPUR_001         0 (0.0%)           Reconstructed Case ID / DERIVED
+case_number           str     29/A-65/2026-2027      138 (49.6%)        Official Case Reference / Document Header
+project_id            str     PRJ_NAGPUR             0 (0.0%)           Project Identifier / DERIVED
+project_name          str     Pune Ring Road Project 242 (87.1%)        Infrastructure Project Name / Doc Text
+acquiring_authority   str     District Collectorate  0 (0.0%)           Competent LA Office / Official Portal
+act_key               str     RFCTLARR_2013          0 (0.0%)           Statute / Document Text
+state                 str     Maharashtra            0 (0.0%)           State / Official Portal
+district              str     Nagpur                 0 (0.0%)           District / Official Portal
+taluka                str     Umred                  131 (47.1%)        Taluka Revenue Division / Doc Text
+village               str     Sayki                  146 (52.5%)        Mouza / Village / Doc Text
+section_11_date       str     2026-09-22             193 (69.4%)        Sec 11(1) Notice Date / Doc Date
+section_19_date       str     2025-11-28             241 (86.7%)        Sec 19(1) Declaration Date / Doc Date
+section_21_date       str     2026-01-12             262 (94.2%)        Sec 21 Hearing Notice Date / Doc Date
+award_date            str     2026-07-14             254 (91.4%)        Sec 23/25 Final Award Date / Doc Date
+payment_date          float64 None                   278 (100.0%)       Compensation Payout Date / NOT AVAILABLE
+possession_date       float64 None                   278 (100.0%)       Land Possession Date / NOT AVAILABLE
+completion_date       float64 None                   278 (100.0%)       Case Closure Date / NOT AVAILABLE
+notice_count          int64   1                      0 (0.0%)           Notices Published / DERIVED (Count)
+objection_count       int64   0                      0 (0.0%)           Objections Filed / NOT AVAILABLE (0)
+parcel_count          int64   0                      0 (0.0%)           Parcels Acquired / NOT AVAILABLE (0 in CSV)
+extension_count       int64   0                      0 (0.0%)           Statutory Extensions / DERIVED (Count)
+first_extension_date  str     2025-02-14             274 (98.6%)        First Extension Order Date / Doc Date
+last_extension_date   str     2025-11-18             274 (98.6%)        Latest Extension Order Date / Doc Date
+compensation_amount   float64 None                   278 (100.0%)       Awarded Amount in INR / NOT AVAILABLE
+case_status           str     IN_PROGRESS            0 (0.0%)           Pipeline Status / DERIVED
+source_organization   str     District Collectorate  0 (0.0%)           Acquiring Office / Official Portal
+source_document       str     nagpur_001_...pdf      0 (0.0%)           Local PDF Reference / Pipeline
+source_url            str     https://cdn.s3waas...  0 (0.0%)           Source PDF Link / Official Portal
+source_date           str     2026-09-22             0 (0.0%)           Primary Document Date / Doc Date
+extraction_method     str     TEXT                   0 (0.0%)           Extraction Method / Pipeline
+source_page           int64   1                      0 (0.0%)           PDF Page / Pipeline
+source_document_hash  str     1c8775f96a14eeec...    0 (0.0%)           SHA-256 Digest / DERIVED
+
+--------------------------------------------------------------------------------
+TABLE 3: source_manifest.csv (Document-Level, 344 rows)
+--------------------------------------------------------------------------------
+Column Name           Type    Example Value          Missing Count (%)  Meaning / Source
+-------------------------------------------------------------------------------------------------------------
+source_id             str     SRC_NAGPUR_001         0 (0.0%)           Deterministic Manifest ID / DERIVED
+source_title          str     Publication of notice  0 (0.0%)           Portal Title / Official Portal
+source_organization   str     District Collectorate  0 (0.0%)           Government Org / Official Portal
+source_department     str     Revenue & Land Acq     0 (0.0%)           Branch Office / Official Portal
+source_state          str     Maharashtra            0 (0.0%)           State / Official Portal
+source_district       str     Nagpur                 0 (0.0%)           District / Official Portal
+source_url            str     https://nagpur.gov.in  0 (0.0%)           HTML Page URL / Official Portal
+source_pdf_url        str     https://cdn.s3waas...  0 (0.0%)           Direct PDF URL / Official Portal
+source_publication_date str   2026-09-22             0 (0.0%)           Portal Publication Date / Portal
+download_timestamp    str     2026-09-29T09:52:10Z   0 (0.0%)           Download Timestamp / Execution Clock
+local_file_path       str     raw_documents/...pdf   0 (0.0%)           Local Path / File System
+sha256_hash           str     1c8775f96a14eeec...    0 (0.0%)           SHA-256 Hash / DERIVED
+file_size_bytes       int64   1271941                0 (0.0%)           File Size in Bytes / File System
+mime_type             str     application/pdf        0 (0.0%)           MIME Type / HTTP Header
+act_key               str     RFCTLARR_2013          0 (0.0%)           Governing Statute / Document Text
+extraction_method     str     TEXT                   0 (0.0%)           Text Extraction Method / Pipeline
+
+
+5. UNIQUE CASES
+--------------------------------------------------------------------------------
+A. Case Identifier Analysis:
+1. Official Case / LAC Number:
+   - In Maharashtra Revenue Administration, every Land Acquisition Officer (LAO)
+     or Sub-Divisional Officer (SDO) assigns a case number using the standard
+     format: [Case_Serial]/A-65/[Financial_Year] (e.g., 4/A-65/2025-2026,
+     9/A-65/2021-2022).
+   - Infrastructure projects use project-specific case codes: Case No - 07-2025,
+     Case No.16-2025, S.R. 28/2019, 2026/LAQ/KARYA-1/RR-1233/2026.
+   - Presence in Data: 140 of 278 cases (50.4%) in real_land_acquisition_cases.csv
+     and 205 of 344 events (59.6%) in real_land_acquisition_events.csv have an
+     extracted official case number. The remaining 138 represent scanned Marathi
+     notices or general gazettes where regex did not detect a case string.
+2. The True Statutory Acquisition Unit:
+   - A single major public project receives an overarching project serial, but
+     the statutory declaration, hearing, and award occur village by village
+     (Mouza by Mouza).
+   - Therefore, the unique statutory acquisition unit is:
+     Unique Case = (District, Taluka, Mouza/Village, Case Number)
+3. Can the same case be followed across multiple documents?
+   - YES. 31 cases in real_land_acquisition_cases.csv cluster between 2 and 7
+     documents.
+   - When grouped strictly by (District, Village, Case Number), there are 32
+     distinct groups with >= 2 documents, and 17 groups with >= 3 sequential
+     statutory documents (Section 11 -> Section 19 -> Section 21).
+
+B. 10 Real Case Identifier Examples from Collected Data:
+1. CAS_NAGPUR_057 | Case: 9/A-65/2021-2022  | Dist: Nagpur | Taluka: Saoner  | Mouza: Khairy Dhalgaon | 4 Events
+2. CAS_NAGPUR_068 | Case: 3/A-65/2025-2026  | Dist: Nagpur | Taluka: Kuhi    | Mouza: Kitali          | 6 Events
+3. CAS_NAGPUR_071 | Case: 1/A-65/2025-2026  | Dist: Nagpur | Taluka: Kuhi    | Mouza: Pratappur       | 6 Events
+4. CAS_NAGPUR_072 | Case: 2/A-65/2025-2026  | Dist: Nagpur | Taluka: Kuhi    | Mouza: Bhivapur/Taroli | 6 Events
+5. CAS_NAGPUR_073 | Case: 8/A-65/2024-2025  | Dist: Nagpur | Taluka: Kuhi    | Mouza: Ruyad           | 4 Events
+6. CAS_NAGPUR_074 | Case: 7/A-65/2024-2025  | Dist: Nagpur | Taluka: Kuhi    | Mouza: Takli           | 4 Events
+7. CAS_NAGPUR_075 | Case: 6/A-65/2024-2025  | Dist: Nagpur | Taluka: Kuhi    | Mouza: Awarmara        | 4 Events
+8. CAS_NAGPUR_076 | Case: 5/A-65/2024-2025  | Dist: Nagpur | Taluka: Kuhi    | Mouza: Amti            | 3 Events
+9. CAS_NAGPUR_069 | Case: 7/A-65/2025-2026  | Dist: Nagpur | Taluka: Kuhi    | Mouza: Rajola          | 3 Events
+10.CAS_SOLAPUR_241| Case: RR-1233/2026      | Dist: Solapur| Taluka: South   | Mouza: UNSPECIFIED     | 1 Event
+
+
+6. EVENT TYPES
+--------------------------------------------------------------------------------
+A. Events Actually Present in Real Data:
+--------------------------------------------------------------------------------
+Event Type        Count  Unique Cases  Date Fields              Chronological?
+--------------------------------------------------------------------------------
+GENERAL_NOTICE     135       131       event_date, recording_date    YES
+SECTION_11          93        85       event_date, recording_date    YES
+SECTION_19          47        37       event_date, recording_date    YES
+AWARD               24        24       event_date, recording_date    YES
+DIRECT_PURCHASE     20        16       event_date, recording_date    YES
+SECTION_21          20        16       event_date, recording_date    YES
+EXTENSION            5         4       event_date, recording_date    YES
+--------------------------------------------------------------------------------
+TOTAL              344       278                                     YES
+
+B. Events NOT Present in Real Data (Marked NOT AVAILABLE):
+- OBJECTION: NOT AVAILABLE (0 events). Individual citizen objection filings are
+  internal collectorate files not gazetted on public web portals.
+- HEARING: NOT AVAILABLE as a separate tag (subsumed under SECTION_21).
+- COMPENSATION: NOT AVAILABLE as a structured numeric event stream.
+- PAYMENT: NOT AVAILABLE (0 events). Managed via treasury systems (e-Kuber).
+- POSSESSION: NOT AVAILABLE (0 events). Panchnamas are revenue field records.
+- COURT_EVENT: NOT AVAILABLE (0 events). Managed on separate judicial portals.
+
+
+7. EXAMPLE REAL CASE TIMELINES
+--------------------------------------------------------------------------------
+CASE: CAS_NAGPUR_057
+Case Number : 9/A-65/2021-2022
+District    : Nagpur (Taluka Saoner / Kuhi)
+Mouza       : Khairy Dhalgaon (Gaothan)
+Project     : Kanhan River / Kochhi Barrage Project
+
+Date          Event        Document File
+--------------------------------------------------------------------------------
+2025-02-14    EXTENSION    nagpur_149_2025022545.pdf (Ext 12 Mo for Sec 19)
+2025-06-19    SECTION_19   nagpur_139_2025061995.pdf (Declaration U/s 19(1))
+2025-11-18    EXTENSION    nagpur_109_17634605603236.pdf (Ext 6 Mo for Sec 23 Award)
+2026-07-14    AWARD        nagpur_060_17840326736570.pdf (Final Award Passed)
+
+--------------------------------------------------------------------------------
+CASE: CAS_NAGPUR_068
+Case Number : 3/A-65/2025-2026
+District    : Nagpur (Taluka Kuhi)
+Mouza       : Kitali
+
+Date          Event        Document File
+--------------------------------------------------------------------------------
+2025-09-19    SECTION_11   nagpur_126_17592257339985.pdf
+2025-09-29    SECTION_11   nagpur_119_17592276931104.pdf (Corrigendum)
+2025-11-28    SECTION_19   nagpur_105_17643244302467.pdf (Declaration)
+2025-12-15    SECTION_19   nagpur_095_17657929816208.pdf (Corrigendum)
+2026-01-12    SECTION_21   nagpur_085_17682067345749.pdf (Claims Notice)
+2026-01-19    SECTION_21   nagpur_074_17688247428111.pdf (Hearing Notice)
+
+--------------------------------------------------------------------------------
+CASE: CAS_NAGPUR_071
+Case Number : 1/A-65/2025-2026
+District    : Nagpur (Taluka Kuhi)
+Mouza       : Pratappur
+
+Date          Event           Document File
+--------------------------------------------------------------------------------
+2025-09-19    SECTION_11      nagpur_123_17592262272831.pdf
+2025-09-29    SECTION_11      nagpur_122_17592269866310.pdf
+2025-11-28    SECTION_19      nagpur_100_17643338945074.pdf
+2025-12-15    SECTION_19      nagpur_094_17657931534237.pdf
+2026-01-12    SECTION_21      nagpur_080_17682072765352.pdf
+2026-01-19    GENERAL_NOTICE  nagpur_077_17688236116141.pdf
+
+--------------------------------------------------------------------------------
+CASE: CAS_NAGPUR_072 (Mouza Bhivapur)
+Case Number : 2/A-65/2025-2026
+District    : Nagpur (Taluka Kuhi)
+Mouza       : Bhivapur
+
+Date          Event        Document File
+--------------------------------------------------------------------------------
+2025-09-26    SECTION_11   nagpur_127_17592255886942.pdf (Sec 11(1) Notice)
+2025-12-15    SECTION_19   nagpur_096_17657928219926.pdf (Sec 19(1) Declaration)
+2026-01-19    SECTION_21   nagpur_078_17688230811101.pdf (Sec 21 Claims Notice)
+
+--------------------------------------------------------------------------------
+CASE: CAS_NAGPUR_072 (Mouza Taroli)
+Case Number : 2/A-65/2025-2026
+District    : Nagpur (Taluka Kuhi)
+Mouza       : Taroli
+
+Date          Event        Document File
+--------------------------------------------------------------------------------
+2025-09-29    SECTION_11   nagpur_116_17592278865441.pdf (Sec 11(1) Notice)
+2025-11-28    SECTION_19   nagpur_102_17643335594729.pdf (Sec 19(1) Declaration)
+2026-01-12    SECTION_21   nagpur_082_17682070532186.pdf (Sec 21 Claims Notice)
+
+--------------------------------------------------------------------------------
+CASE: CAS_NAGPUR_066 (Mouza Bramhani)
+Case Number : 4/A-65/2025-2026
+District    : Nagpur (Taluka Kuhi)
+Mouza       : Bramhani
+
+Date          Event        Document File
+--------------------------------------------------------------------------------
+2025-09-29    SECTION_11   nagpur_115_17592279312785.pdf (Sec 11(1) Notice)
+2025-11-28    SECTION_19   nagpur_101_17643337251910.pdf (Sec 19(1) Declaration)
+2026-01-12    SECTION_21   nagpur_081_17682072029182.pdf (Sec 21 Claims Notice)
+
+--------------------------------------------------------------------------------
+CASE: CAS_NAGPUR_073
+Case Number : 8/A-65/2024-2025
+District    : Nagpur (Taluka Kuhi)
+Mouza       : Ruyad
+
+Date          Event        Document File
+--------------------------------------------------------------------------------
+2025-09-29    SECTION_11   nagpur_117_17592278164656.pdf (Sec 11(1) Notice)
+2025-11-28    SECTION_19   nagpur_103_17643332825919.pdf (Sec 19(1) Declaration)
+2025-12-19    SECTION_19   nagpur_091_17663839169227.pdf (Declaration Corrigendum)
+2026-01-12    SECTION_21   nagpur_083_17682069896680.pdf (Sec 21 Claims Notice)
+
+--------------------------------------------------------------------------------
+CASE: CAS_NAGPUR_074
+Case Number : 7/A-65/2024-2025
+District    : Nagpur (Taluka Kuhi)
+Mouza       : Takli
+
+Date          Event        Document File
+--------------------------------------------------------------------------------
+2025-09-29    SECTION_11   nagpur_118_17592277702335.pdf (Sec 11(1) Notice)
+2025-11-28    SECTION_19   nagpur_104_17643330896183.pdf (Sec 19(1) Declaration)
+2025-12-19    SECTION_19   nagpur_092_17663837031156.pdf (Declaration Corrigendum)
+2026-01-12    SECTION_21   nagpur_084_17682069279623.pdf (Sec 21 Claims Notice)
+
+--------------------------------------------------------------------------------
+CASE: CAS_NAGPUR_075
+Case Number : 6/A-65/2024-2025
+District    : Nagpur (Taluka Kuhi)
+Mouza       : Awarmara
+
+Date          Event        Document File
+--------------------------------------------------------------------------------
+2025-09-29    SECTION_11   nagpur_120_17592276292380.pdf (Sec 11(1) Notice)
+2025-11-28    SECTION_19   nagpur_106_17643241497783.pdf (Sec 19(1) Declaration)
+2025-12-19    SECTION_19   nagpur_090_17663842614296.pdf (Declaration Corrigendum)
+2026-01-12    SECTION_21   nagpur_086_17682066548847.pdf (Sec 21 Claims Notice)
+
+--------------------------------------------------------------------------------
+CASE: CAS_NAGPUR_076
+Case Number : 5/A-65/2024-2025
+District    : Nagpur (Taluka Kuhi)
+Mouza       : Amti
+
+Date          Event        Document File
+--------------------------------------------------------------------------------
+2025-09-30    SECTION_11   nagpur_121_17592274189448.pdf (Sec 11(1) Notice)
+2025-11-28    SECTION_19   nagpur_107_17643239436369.pdf (Sec 19(1) Declaration)
+2026-01-12    SECTION_21   nagpur_087_17682065535035.pdf (Sec 21 Claims Notice)
+
+
+8. EXISTING FEATURE COVERAGE
+--------------------------------------------------------------------------------
+Empirical coverage calculated across all 278 real cases for BHUMISETU's
+existing 7 domain features:
+
+--------------------------------------------------------------------------------------------------------------------
+Feature                  Can real data provide it?  Source Column / Event         Direct / Derived  Coverage Count (%)
+--------------------------------------------------------------------------------------------------------------------
+days_in_current_stage    YES (PARTIAL)              event_date in events.csv      DERIVED           278/278 (100.0%) all;
+                                                                                                    134/278 (48.2%) stat.
+days_since_latest_notice YES                        Latest event_date             DERIVED           278/278 (100.0%)
+notice_count             YES                        notice_count / event count    DIRECT / DERIVED  278/278 (100.0%)
+objection_count          NO (NOT AVAILABLE)         objection_count in cases (0)  DERIVED           0/278 (0.0%)
+parcel_count             NO (NOT AVAILABLE)         parcel_count in cases (0)     DIRECT / DERIVED  0/278 (0.0%)
+award_recorded           YES                        award_date / AWARD in events  DIRECT            24/278 (8.6%)
+open_issue_count         NO (NOT AVAILABLE)         None (ISSUE events)           DERIVED           0/278 (0.0%)
+--------------------------------------------------------------------------------------------------------------------
+
+
+9. ADDITIONAL USEFUL FEATURES
+--------------------------------------------------------------------------------
+A. Timeline Features:
+- days_since_case_initiation: Delta t = T - date_sec11 (85 cases)
+- sec11_to_sec19_duration: Elapsed days between Sec 11 and Sec 19 (15 cases;
+  mean = 80.2 days, min = 0, max = 241)
+- statutory_sec19_proximity_ratio: (T - date_sec11) / 365 (85 cases)
+- extension_count: Total statutory extensions granted (4 cases have 1 to 2)
+- has_statutory_extension: Binary flag (100% coverage, 278 cases)
+
+B. Administrative Features:
+- district: Categorical (Nagpur, Pune, Nashik, Solapur, Yavatmal) (100% coverage)
+- taluka: Administrative sub-district (52.9% coverage, 147 cases)
+- acquiring_authority: Specific competent office (100% coverage, 278 cases)
+- act_key: Governing legislation (100% coverage, 278 cases)
+
+C. Complexity Features:
+- project_type: Infrastructure category (Ring Road, Highway, Irrigation,
+  Metro, Industrial, Rural Public Works) (36 major project cases)
+- is_direct_purchase: Private negotiation indicator (16 cases)
+
+D. Potential Unparsed PDF Features:
+- affected_landowners_count: In PDF schedule tables (NOT AVAILABLE in CSV)
+- notified_area_hectares: In PDF schedule tables (NOT AVAILABLE in CSV)
+- compensation_amount: In PDF awards (NOT AVAILABLE in CSV)
+
+
+10. POINT-IN-TIME PREDICTION FEASIBILITY
+--------------------------------------------------------------------------------
+Verdict: FEASIBLE FOR MULTI-EVENT CASES (11.2%), RIGHT-CENSORED SINGLE SNAPSHOT
+         FOR REMAINDER (88.8%)
+
+- Why It Works for Multi-Event Cases (31 Cases): Each event in
+  real_land_acquisition_events.csv has both event_date (occurrence time) and
+  recording_date (knowledge time). At any reference time T, filtering on
+  event_date <= T avoids future leakage.
+- Why It Is Limited for Single-Event Cases (247 Cases): 247 cases currently have
+  only 1 recorded document. Evaluating prior to that event yields empty history;
+  evaluating after yields static features. This reflects active, open pipelines
+  initiated in 2024-2026.
+
+
+11. DELAY LABEL FEASIBILITY
+--------------------------------------------------------------------------------
+Verdict: FEASIBLE FOR SECTION 11 -> 19 AND SECTION 19 -> AWARD STAGES
+
+Statutory deadlines under RFCTLARR 2013:
+1. Section 19(7): Declaration must be published within 12 months (365 days)
+   from Section 11(1).
+2. Section 25: Award must be made within 12 months (365 days) from Section 19(1).
+
+Empirical label assignments possible:
+- Explicit Statutory Extension: 4 cases (DELAYED - Ground Truth)
+- Completed Award Exceeding 365 Days: 1 case (CAS_NAGPUR_057: 390 days - DELAYED)
+- Completed Sec 19 within 365 Days: 12 cases (NOT_DELAYED - Stage Succeeded)
+- Overdue In-Progress Cases: 31 cases (12 with Sec 11 > 365d without Sec 19;
+  19 with Sec 19 > 365d without Award) (DELAYED / CENSORED)
+- Active Open Cases: 98 cases (CENSORED - Horizon not elapsed)
+
+
+12. EXPLICIT DELAY EVIDENCE
+--------------------------------------------------------------------------------
+Strict separation of explicit delay vs derived delay:
+
+A. Explicitly Documented Delay: 4 Unique Cases (5 Statutory Orders)
+1. CAS_NAGPUR_057 (Nagpur, Saoner, Khairy Dhalgaon — Case 9/A-65/2021-2022):
+   - Order 1 (2025-02-14): Extension Granted 12 Month for Section 19(1) Notice
+   - Order 2 (2025-11-18): Extension of time for 6 months for final award under Sec 23
+2. CAS_NAGPUR_115 (Nagpur, Saoner, Khariy Dhalgaon):
+   - Order (2024-10-11): Extension Granted 12 Month for Section 19(1) Notification
+3. CAS_SOLAPUR_241 (Solapur, PALAQ Branch — Letter 2026/LAQ/KARYA-1/RR-1233/2026):
+   - Order (2026-04-20): Formal Order under RFCTLARR Sec 25 extending award deadline
+4. CAS_NAGPUR_062 (Nagpur, Sitabuldi):
+   - Notice regarding time extension under Section 19 of LARR Act 2013
+
+B. Delay Derived from Dates: 32 Unique Cases
+- Completed Delayed Cases: 1 case (CAS_NAGPUR_057: 390 days > 365 days)
+- Overdue Section 11 Cases: 12 cases (Sec 11 > 365 days ago, no Sec 19)
+- Overdue Section 19 Cases: 19 cases (Sec 19 > 365 days ago, no Award)
+
+Total Unique Cases with Evidence of Delay (Explicit + Derived): 35 cases.
+
+
+13. DATA QUALITY
+--------------------------------------------------------------------------------
+Dimension                       Count       Percentage  Assessment
+--------------------------------------------------------------------------------
+Duplicate Cases (cases.csv)         0         0.0%      100% unique case IDs
+Duplicate Docs (manifest.csv)       7 (14 r)  2.0%      Duplicate portal links
+Duplicate Local File Paths          0         0.0%      100% unique paths
+Missing Case IDs                    0         0.0%      Every record has ID
+Missing/Unspecified Case Nos      138        49.6%      Regex missed scanned Marathi
+Missing Event Dates                 0         0.0%      100% events have date
+Invalid Dates                       0         0.0%      100% ISO 8601 valid
+Contradictory Event Ordering        6         2.2%      Naive grouping across villages
+Extraction: OCR vs Native TEXT    185/159    53.8%/46.2%53.8% required Apple Vision OCR
+Irrelevant Documents (Yavatmal)    29         8.4%      Employment & well subsidy lists
+Cases with Exactly 1 Event        247        88.8%      Active in-progress pipelines
+Cases with Multiple Events         31        11.2%      Multi-event timelines
+Complete Lifecycles (11+19+Award)   0         0.0%      No full-cycle case in scrape
+
+
+14. DATA PROVENANCE
+--------------------------------------------------------------------------------
+Verification Chain:
+Official Portal Source URL (NIC S3WaaS)
+  -> Downloaded PDF Gazette File (raw_documents/{district}/)
+  -> Cryptographic Digest (SHA-256 Verified)
+  -> Extracted Record (source_manifest.csv)
+  -> Granular Statutory Event (real_land_acquisition_events.csv)
+  -> Reconstructed Case Proceeding (real_land_acquisition_cases.csv)
+  -> Exact Source Page & Raw Text Snippet
+
+Example:
+- Event ID: EVT_NAGPUR_001
+- Source ID: SRC_NAGPUR_001
+- Original URL: https://nagpur.gov.in/document/publication-of-notice-111-in-land-acquisition-case-no-29-a-65-2026-2027-mouza-sayki-taluka-umred-dist-nagpur/
+- Direct PDF URL: https://cdn.s3waas.gov.in/s3d1f491a404d6854880943e5c3cd9ca25/uploads/2026/09/17900744752905.pdf
+- Local File: all_documents/NAGPUR__001__SEC11__Sayki__29_A_65_2026_2027.pdf
+- SHA-256: 1c8775f96a14eeecf2d25acdf912c5cc7f89e29fa4be4f04c5eac100e47c5a36
+- File Size: 1,271,941 bytes (1.21 MB)
+- Case ID: CAS_NAGPUR_001
+Traceability is 100% verified.
+
+
+15. REAL VS SYNTHETIC COMPARISON
+--------------------------------------------------------------------------------
+Capability / Attribute   Synthetic Dataset        Real Government Dataset
+--------------------------------------------------------------------------------
+Case ID Format           Synthetic integer/hash   Official LAC strings & CAS_DIST_XXX
+Event Timeline           Uniform, 100% complete   Fragmented (88.8% single, 11.2% multi)
+Section 11(1)            Simulated timestamps     93 authentic government notices
+Section 19(1)            Simulated timestamps     47 authentic declarations
+Section 21               Not simulated            20 authentic hearing/claims notices
+Final Award              100% simulated           24 authentic awards passed
+Objection Count          Simulated counts (1-15)  NOT AVAILABLE (0 records)
+Extension Orders         Not simulated            5 authentic Sec 25 extension orders
+Compensation Sums        Simulated breakdown      NOT AVAILABLE in CSV (in PDF tables)
+Parcel Count             Simulated counts (1-50)  NOT AVAILABLE in CSV (in PDF schedules)
+Delay Labels             Artificially generated   Authentic ground truth (35 cases)
+Point-in-Time Snapshots  Infinite replay          Feasible for multi-event cases
+
+
+16. WHAT WE CAN USE FOR ML
+--------------------------------------------------------------------------------
+1. Statutory Milestone Timing: Authentic Sec 11 and Sec 19 dates for 15 cases
+   with empirical intervals (mean = 80.2 days, min = 0, max = 241).
+2. Ground-Truth Delay Targets: 4 cases with explicit extension orders + 31 cases
+   breaching statutory 365-day limits.
+3. Core Timeline Features: days_in_current_stage, days_since_latest_notice,
+   notice_count, has_statutory_extension.
+4. Administrative & Categorical Features: district, acquiring_authority,
+   act_key, project_type.
+
+
+17. WHAT IS MISSING
+--------------------------------------------------------------------------------
+1. Features Missing from 7-Feature Set:
+   - objection_count: NOT AVAILABLE (0% coverage)
+   - parcel_count: NOT AVAILABLE in structured CSV (0% coverage)
+   - open_issue_count: NOT AVAILABLE (0% coverage)
+2. Missing Lifecycles: No single case in current scrape has Sec 11 + Sec 19 +
+   Award simultaneously present in gazettes.
+3. Unparsed PDF Data: Land area (hectares), affected landowners count,
+   compensation amounts.
+4. Cleaning Gaps: 29 non-acquisition docs in Yavatmal, 7 duplicate PDF manifest
+   entries, naive case-number-only clustering.
+
+
+18. RECOMMENDED NEXT STEP
+--------------------------------------------------------------------------------
+1. Clean the Real Dataset:
+   - Prune the 29 non-acquisition administrative documents from Yavatmal.
+   - Deduplicate the 7 duplicate PDF manifest entries.
+   - Refine case clustering from District + Case Number to:
+     (District + Taluka + Village + Case Number) to eliminate contradictory ordering.
+2. Adapt the Feature Extractor for Real-World Sparsity:
+   - In extractors.py, allow objection_count, parcel_count, and open_issue_count
+     to return FeatureValue(missing_reason="NOT_PUBLISHED_IN_GAZETTE") instead
+     of assuming zero or failing.
+   - Add real statutory features: has_statutory_extension,
+     statutory_sec19_proximity_ratio, and district.
+3. Formulate ML as Survival Analysis / Censored Time-to-Event:
+   - Formulating target as Survival Time-to-Stage-Exit (Cox Proportional Hazards
+     or Gradient Boosted Survival Analysis) allows both completed cases and open
+     right-censored cases to be utilized without survivorship bias.
+
+================================================================================
+                                 END OF AUDIT
+================================================================================

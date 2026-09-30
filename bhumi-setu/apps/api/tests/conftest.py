@@ -159,10 +159,13 @@ def migrated_url() -> _Iterator[str]:
     """A throwaway database with every migration applied."""
     skip_without_postgres()
     with temporary_database() as url:
+        from pathlib import Path
         from alembic import command
         from alembic.config import Config
 
-        config = Config("alembic.ini")
+        ini_path = Path(__file__).resolve().parent.parent / "alembic.ini"
+        config = Config(str(ini_path))
+        config.set_main_option("script_location", str(ini_path.parent / "alembic"))
         # Passed through env.py rather than exported into os.environ, so a test
         # session cannot leave a stray DATABASE_URL affecting anything else.
         config.attributes["test_url"] = url

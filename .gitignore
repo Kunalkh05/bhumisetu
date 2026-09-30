@@ -42,3 +42,5 @@ Thumbs.db
 postgres_data/
 minio_data/
 redis_data/
+dump.rdb
+data/real_data/scripts/ocr_pdf

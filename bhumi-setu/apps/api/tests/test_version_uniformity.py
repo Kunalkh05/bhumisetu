@@ -39,6 +39,12 @@ NON_VERSIONED_FORM_POSTS = frozenset(
         "/c/correction",
         "/api/officer/dsar/{request_id}/disposal",
         "/api/officer/imports",
+        "/api/auth/persona",
+        "/api/auth/logout",
+        "/internal/i18n/missing",
+        "/api/citizen/objection",
+        "/api/citizen/correction",
+        "/api/officer/cases/{case_id}/stage",
     }
 )
 
@@ -75,6 +81,11 @@ def _route_body_has_expected_version(route: APIRoute) -> bool:
         value = getattr(body_field, attr, None)
         if value is not None:
             candidates.update(_unwrap_models(value))
+    field_info = getattr(body_field, "field_info", None)
+    if field_info is not None:
+        annotation = getattr(field_info, "annotation", None)
+        if annotation is not None:
+            candidates.update(_unwrap_models(annotation))
     return any(_model_has_expected_version(model) for model in candidates)
 
 
@@ -89,10 +100,20 @@ def _route_depends_on_if_match(route: APIRoute) -> bool:
     return any(call is if_match_version for call in _dependant_calls(route.dependant))
 
 
+def _iter_all_routes(routes: Iterable[Any]) -> list[Any]:
+    flattened: list[Any] = []
+    for route in routes:
+        if type(route).__name__ == "_IncludedRouter":
+            flattened.extend(getattr(route.original_router, "routes", []))
+        else:
+            flattened.append(route)
+    return flattened
+
+
 def _version_contract_offences(app: FastAPI) -> list[str]:
     """Every mutating route lacking both accepted version inputs."""
     offences: list[str] = []
-    for route in app.routes:
+    for route in _iter_all_routes(app.routes):
         if not isinstance(route, APIRoute):
             continue
         methods = set(route.methods or ())

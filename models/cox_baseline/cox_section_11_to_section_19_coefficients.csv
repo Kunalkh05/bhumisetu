@@ -1,0 +1,4 @@
+covariate,coef,hazard_ratio,standard_error,coef_lower_95,coef_upper_95,hr_lower_95,hr_upper_95,z_score,p_value
+derived_days_in_current_stage,-0.006749,0.993274,0.002299,-0.011254,-0.002243,0.988809,0.997759,-2.9358,0.003326
+district_Solapur,-0.802442,0.448233,1.205103,-3.164401,1.559517,0.042239,4.756526,-0.6659,0.505494
+derived_project_type_Rural Infrastructure,-1.841092,0.158644,1.098051,-3.993234,0.311049,0.01844,1.364856,-1.6767,0.093603

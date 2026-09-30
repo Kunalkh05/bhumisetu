@@ -21,7 +21,10 @@ _FUNCTIONS = ("bhumisetu_ltree_label", "administrative_area_derive_path",
 
 
 def _config(url: str) -> Config:
-    config = Config("alembic.ini")
+    from pathlib import Path
+    ini_path = Path(__file__).resolve().parent.parent.parent / "alembic.ini"
+    config = Config(str(ini_path))
+    config.set_main_option("script_location", str(ini_path.parent / "alembic"))
     config.attributes["test_url"] = url
     return config
 

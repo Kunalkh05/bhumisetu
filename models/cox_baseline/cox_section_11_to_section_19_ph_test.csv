@@ -1,0 +1,4 @@
+covariate,test_statistic,p_value,ph_satisfied
+derived_days_in_current_stage,0.3641,0.546237,True
+derived_project_type_Rural Infrastructure,0.0001,0.991511,True
+district_Solapur,0.0022,0.962711,True

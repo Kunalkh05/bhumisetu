@@ -1,0 +1,15 @@
+covariate,test_statistic,p_value,ph_satisfied
+act_key_RFCTLARR_2013,0.0,0.996071,True
+current_stage_GENERAL_NOTICE,0.001,0.975054,True
+current_stage_INITIATION,0.0002,0.987459,True
+current_stage_SECTION_11,0.005,0.943884,True
+current_stage_SECTION_21,0.0001,0.993671,True
+derived_days_in_current_stage,0.0202,0.886925,True
+derived_is_direct_purchase,0.0008,0.977086,True
+derived_notice_count,0.0003,0.987175,True
+derived_project_type_Irrigation / Canal,0.0001,0.993771,True
+derived_project_type_Rural Infrastructure,0.0313,0.859539,True
+district_Pune,0.0004,0.983302,True
+district_Solapur,0.0012,0.972295,True
+district_Yavatmal,0.0,0.998246,True
+extension_count,0.0002,0.987459,True
