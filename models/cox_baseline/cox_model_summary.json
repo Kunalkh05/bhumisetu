@@ -1,0 +1,122 @@
+{
+  "SECTION_11_TO_SECTION_19": {
+    "num_observations": 84,
+    "num_events": 16,
+    "num_censored": 68,
+    "censoring_rate_pct": 80.95,
+    "num_parameters": 3,
+    "events_per_variable": 5.33,
+    "convergence_status": "CONVERGED",
+    "concordance_index": 0.8067,
+    "log_likelihood": -62.4692,
+    "partial_aic": 130.9384,
+    "predictor_columns_used": [
+      "derived_days_in_current_stage",
+      "district",
+      "derived_project_type"
+    ],
+    "encoded_feature_names": [
+      "derived_days_in_current_stage",
+      "district_Solapur",
+      "derived_project_type_Rural Infrastructure"
+    ],
+    "warnings": [
+      "Feature 'derived_notice_count' excluded from 'SECTION_11_TO_SECTION_19' due to zero variance (constant within cohort).",
+      "Feature 'extension_count' excluded from 'SECTION_11_TO_SECTION_19' due to zero variance (constant within cohort).",
+      "Feature 'has_statutory_extension' excluded from 'SECTION_11_TO_SECTION_19' due to zero variance (constant within cohort).",
+      "Feature 'current_stage' excluded from 'SECTION_11_TO_SECTION_19' due to zero variance (constant within cohort).",
+      "Feature 'act_key' excluded from 'SECTION_11_TO_SECTION_19' due to zero variance (constant within cohort).",
+      "Feature 'derived_is_direct_purchase' excluded from 'SECTION_11_TO_SECTION_19' due to zero variance (constant within cohort).",
+      "Feature 'acquiring_authority' excluded from 'SECTION_11_TO_SECTION_19' because it is 1:1 collinear with 'district'.",
+      "Feature 'derived_days_since_case_initiation' excluded from 'SECTION_11_TO_SECTION_19' due to collinearity with 'derived_days_in_current_stage' (Pearson r = 1.000).",
+      "Feature 'derived_days_since_latest_notice' excluded from 'SECTION_11_TO_SECTION_19' due to collinearity with 'derived_days_in_current_stage' (Pearson r = 1.000).",
+      "Feature 'derived_statutory_sec19_proximity_ratio' excluded from 'SECTION_11_TO_SECTION_19' due to collinearity with 'derived_days_in_current_stage' (Pearson r = 1.000)."
+    ]
+  },
+  "SECTION_19_TO_AWARD": {
+    "num_observations": 203,
+    "num_events": 6,
+    "num_censored": 197,
+    "censoring_rate_pct": 97.04,
+    "num_parameters": 8,
+    "events_per_variable": 0.75,
+    "convergence_status": "CONVERGED",
+    "concordance_index": 1.0,
+    "log_likelihood": -9.7759,
+    "partial_aic": 35.5518,
+    "predictor_columns_used": [
+      "derived_days_since_case_initiation",
+      "derived_days_in_current_stage",
+      "derived_notice_count",
+      "extension_count",
+      "has_statutory_extension",
+      "current_stage",
+      "derived_project_type"
+    ],
+    "encoded_feature_names": [
+      "derived_days_since_case_initiation",
+      "derived_days_in_current_stage",
+      "derived_notice_count",
+      "extension_count",
+      "has_statutory_extension",
+      "current_stage_SECTION_19",
+      "current_stage_SECTION_21",
+      "derived_project_type_Rural Infrastructure"
+    ],
+    "warnings": [
+      "Feature 'derived_statutory_sec19_proximity_ratio' excluded from 'SECTION_19_TO_AWARD' due to high structural missingness (126/203 = 62.1%).",
+      "Feature 'district' excluded from 'SECTION_19_TO_AWARD' due to zero variance (constant within cohort).",
+      "Feature 'acquiring_authority' excluded from 'SECTION_19_TO_AWARD' due to zero variance (constant within cohort).",
+      "Feature 'act_key' excluded from 'SECTION_19_TO_AWARD' due to zero variance (constant within cohort).",
+      "Feature 'derived_is_direct_purchase' excluded from 'SECTION_19_TO_AWARD' due to zero variance (constant within cohort).",
+      "Feature 'derived_days_since_latest_notice' excluded from 'SECTION_19_TO_AWARD' due to collinearity with 'derived_days_in_current_stage' (Pearson r = 1.000).",
+      "Severe small-event limitation: Events Per Variable (EPV = 0.75) is below standard statistical guidelines (EPV >= 10). Model is susceptible to small-sample bias."
+    ]
+  },
+  "CASE_INITIATION_TO_MILESTONE": {
+    "num_observations": 609,
+    "num_events": 18,
+    "num_censored": 591,
+    "censoring_rate_pct": 97.04,
+    "num_parameters": 14,
+    "events_per_variable": 1.29,
+    "convergence_status": "CONVERGED",
+    "concordance_index": 0.9667,
+    "log_likelihood": -99.2133,
+    "partial_aic": 226.4266,
+    "predictor_columns_used": [
+      "derived_days_in_current_stage",
+      "derived_notice_count",
+      "extension_count",
+      "current_stage",
+      "district",
+      "act_key",
+      "derived_project_type",
+      "derived_is_direct_purchase"
+    ],
+    "encoded_feature_names": [
+      "derived_days_in_current_stage",
+      "derived_notice_count",
+      "extension_count",
+      "derived_is_direct_purchase",
+      "current_stage_GENERAL_NOTICE",
+      "current_stage_INITIATION",
+      "current_stage_SECTION_11",
+      "current_stage_SECTION_21",
+      "district_Pune",
+      "district_Solapur",
+      "district_Yavatmal",
+      "act_key_RFCTLARR_2013",
+      "derived_project_type_Irrigation / Canal",
+      "derived_project_type_Rural Infrastructure"
+    ],
+    "warnings": [
+      "Feature 'derived_statutory_sec19_proximity_ratio' excluded from 'CASE_INITIATION_TO_MILESTONE' due to high structural missingness (505/609 = 82.9%).",
+      "Feature 'acquiring_authority' excluded from 'CASE_INITIATION_TO_MILESTONE' because it is 1:1 collinear with 'district'.",
+      "Feature 'derived_days_since_case_initiation' excluded from 'CASE_INITIATION_TO_MILESTONE' due to collinearity with 'derived_days_in_current_stage' (Pearson r = 0.989).",
+      "Feature 'derived_days_since_latest_notice' excluded from 'CASE_INITIATION_TO_MILESTONE' due to collinearity with 'derived_days_in_current_stage' (Pearson r = 1.000).",
+      "Feature 'has_statutory_extension' excluded from 'CASE_INITIATION_TO_MILESTONE' due to collinearity with 'extension_count' (Pearson r = 1.000).",
+      "Severe small-event limitation: Events Per Variable (EPV = 1.29) is below standard statistical guidelines (EPV >= 10). Model is susceptible to small-sample bias."
+    ]
+  }
+}
