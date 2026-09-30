@@ -112,6 +112,17 @@ export const SurvivalRiskDashboard: React.FC<SurvivalRiskDashboardProps> = ({
             <span className="text-[10px] font-mono text-slate-500">
               SNAPSHOT: {snapshotDate}
             </span>
+            {riskData && (
+              riskData.is_degraded_simulation ? (
+                <span className="text-[10px] font-mono font-bold bg-amber-600 text-white px-2 py-0.5 rounded flex items-center gap-1 shadow-xs">
+                  <AlertTriangle className="w-3 h-3" /> DEGRADED / SIMULATION MODE
+                </span>
+              ) : (
+                <span className="text-[10px] font-mono font-bold bg-emerald-700 text-white px-2 py-0.5 rounded flex items-center gap-1 shadow-xs">
+                  <Activity className="w-3 h-3" /> LIVE MODEL OUTPUT
+                </span>
+              )
+            )}
           </div>
           <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
             {language === 'en'
@@ -210,18 +221,49 @@ export const SurvivalRiskDashboard: React.FC<SurvivalRiskDashboardProps> = ({
       {/* Content Rendered on Success */}
       {!loading && !error && riskData && (
         <>
+          {/* DEGRADED / SIMULATION MODE AUDIT BANNER (STEP 8 - CRITICAL SAFETY REQUIREMENT) */}
+          {riskData.is_degraded_simulation && (
+            <div
+              className="p-4 bg-amber-500/15 border-2 border-amber-600 rounded-xl text-amber-950 space-y-2 shadow-sm animate-in fade-in"
+              role="alert"
+              aria-label="Degraded Simulation Mode Warning"
+            >
+              <div className="flex items-center gap-2 flex-wrap">
+                <AlertTriangle className="w-5 h-5 text-amber-700 shrink-0" />
+                <span className="font-mono text-xs font-black uppercase tracking-wider bg-amber-700 text-white px-2.5 py-0.5 rounded shadow-xs">
+                  DEGRADED / SIMULATION MODE
+                </span>
+                <span className="text-xs font-bold text-amber-900 uppercase tracking-wide">
+                  EMPIRICAL BASELINE / SIMULATION (NOT LIVE MODEL OUTPUT)
+                </span>
+              </div>
+              <p className="text-xs leading-relaxed text-amber-900 font-medium">
+                <strong>CRITICAL SAFETY NOTICE TO REVENUE OFFICERS:</strong> The live BHUMISETU Cox PH machine learning inference service is currently offline or unreachable.
+                The indicators displayed below are <em>uncalibrated empirical baseline demonstrations</em>. They are <strong>NOT</strong> live ML predictions, <strong>NOT</strong> case-specific forecasts, and <strong>NOT</strong> calibrated for administrative decisions.
+              </p>
+            </div>
+          )}
+
           {/* Prominent Distinction: RELATIVE HAZARD vs EVENT PROBABILITY (STEP 3 & STEP 5) */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Metric 1: Relative Hazard (NOT A PROBABILITY!) */}
-            <div className="gov-surface-card p-4 sm:p-5 flex flex-col justify-between border-t-4 border-t-[#002642]">
+            <div className={`gov-surface-card p-4 sm:p-5 flex flex-col justify-between border-t-4 ${
+              riskData.is_degraded_simulation ? 'border-t-amber-600 bg-amber-50/20' : 'border-t-[#002642]'
+            }`}>
               <div>
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
                     Relative Hazard (Ratio)
                   </span>
-                  <span className="text-[10px] font-semibold text-slate-400">
-                    Baseline: 1.00x
-                  </span>
+                  {riskData.is_degraded_simulation ? (
+                    <span className="text-[10px] font-mono font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded">
+                      SIMULATION BASELINE
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-semibold text-slate-400">
+                      Baseline: 1.00x
+                    </span>
+                  )}
                 </div>
                 <div className="text-2xl sm:text-3xl font-black font-mono text-slate-900 mt-1">
                   {riskData.relative_hazard.toFixed(3)}x
@@ -233,20 +275,32 @@ export const SurvivalRiskDashboard: React.FC<SurvivalRiskDashboardProps> = ({
                 </span>
               </div>
               <div className="mt-3 pt-2.5 border-t border-slate-100 text-[10px] text-slate-500 leading-tight">
-                <strong>Important:</strong> Relative hazard is a proportional intensity ratio ($\exp(\eta)$), <em>not</em> an event probability.
+                {riskData.is_degraded_simulation ? (
+                  <strong className="text-amber-800">Static baseline ratio; NOT a live case-specific prediction.</strong>
+                ) : (
+                  <><strong>Important:</strong> Relative hazard is a proportional intensity ratio (&eta; &rarr; exp(&eta;)), <em>not</em> an event probability.</>
+                )}
               </div>
             </div>
 
             {/* Metric 2: 90-Day Transition Event Probability */}
-            <div className="gov-surface-card p-4 sm:p-5 flex flex-col justify-between border-t-4 border-t-emerald-600">
+            <div className={`gov-surface-card p-4 sm:p-5 flex flex-col justify-between border-t-4 ${
+              riskData.is_degraded_simulation ? 'border-t-amber-600 bg-amber-50/20' : 'border-t-emerald-600'
+            }`}>
               <div>
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
                     90-Day Transition Probability
                   </span>
-                  <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">
-                    P(Event by 90d)
-                  </span>
+                  {riskData.is_degraded_simulation ? (
+                    <span className="text-[10px] font-mono font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded">
+                      SIMULATION ONLY
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">
+                      P(Event by 90d)
+                    </span>
+                  )}
                 </div>
                 <div className="text-2xl sm:text-3xl font-black font-mono text-[#002642] mt-1">
                   {(riskData.event_probability_90d * 100).toFixed(2)}%
@@ -256,7 +310,11 @@ export const SurvivalRiskDashboard: React.FC<SurvivalRiskDashboardProps> = ({
                 </span>
               </div>
               <div className="mt-3 pt-2.5 border-t border-slate-100 text-[10px] text-slate-500 leading-tight">
-                Probability of completing transition within statutory Section 15 objection window.
+                {riskData.is_degraded_simulation ? (
+                  <strong className="text-amber-800">Historical frequency; NOT a live case-specific probability.</strong>
+                ) : (
+                  <>Probability of completing transition within statutory Section 15 objection window.</>
+                )}
               </div>
             </div>
 
@@ -279,7 +337,7 @@ export const SurvivalRiskDashboard: React.FC<SurvivalRiskDashboardProps> = ({
                 </span>
               </div>
               <div className="mt-3 pt-2.5 border-t border-slate-100 text-[10px] text-slate-500 leading-tight">
-                Model Version: <span className="font-mono">{riskData.model_version}</span>
+                Model: <span className="font-mono">{riskData.model_version}</span>
               </div>
             </div>
           </div>

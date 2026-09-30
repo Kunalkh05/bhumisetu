@@ -45,6 +45,8 @@ export interface OfficerSurvivalRisk {
   extrapolation_status: ExtrapolationFlags;
   data_quality_warning: string;
   governance_disclaimer: string;
+  is_degraded_simulation?: boolean;
+  mode_label?: 'LIVE_MODEL_INFERENCE' | 'DEGRADED_SIMULATION_BASELINE';
 }
 
 export interface HazardFactorContribution {

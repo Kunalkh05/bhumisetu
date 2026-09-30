@@ -116,11 +116,14 @@ class SurvivalRiskService {
    * POST /api/officer/survival-risk/predict
    */
   public async predictSurvivalRisk(payload: SurvivalPredictPayload): Promise<OfficerSurvivalRisk> {
-    return this.request<OfficerSurvivalRisk>('/officer/survival-risk/predict', {
+    const data = await this.request<OfficerSurvivalRisk>('/officer/survival-risk/predict', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
+    data.is_degraded_simulation = false;
+    data.mode_label = 'LIVE_MODEL_INFERENCE';
+    return data;
   }
 
   /**
@@ -155,6 +158,8 @@ class SurvivalRiskService {
         const data = await this.request<OfficerSurvivalRisk>(
           `/officer/cases/${caseId}/survival-risk?${params.toString()}`
         );
+        data.is_degraded_simulation = false;
+        data.mode_label = 'LIVE_MODEL_INFERENCE';
         this.riskCache.set(cacheKey, { data, timestamp: Date.now() });
         return data;
       } catch (err: any) {
@@ -205,6 +210,8 @@ class SurvivalRiskService {
         const data = await this.request<OfficerSurvivalExplanation>(
           `/officer/cases/${caseId}/survival-risk/explanation?${params.toString()}`
         );
+        data.is_degraded_simulation = false;
+        data.mode_label = 'LIVE_MODEL_INFERENCE';
         this.explanationCache.set(cacheKey, { data, timestamp: Date.now() });
         return data;
       } catch (err: any) {
@@ -281,12 +288,23 @@ class SurvivalRiskService {
   ): OfficerSurvivalRisk {
     const effectiveDate = snapshotDate || new Date().toISOString().split('T')[0];
 
+    const baseSimulationFields = {
+      is_degraded_simulation: true,
+      mode_label: 'DEGRADED_SIMULATION_BASELINE' as const,
+      model_version: '1.0.0-cox-baseline (DEGRADED_SIMULATION)',
+      calibration_status: 'SIMULATION — UNCALIBRATED OFFLINE BASELINE',
+      data_quality_warning:
+        'DEGRADED / SIMULATION MODE: Backend ML service unreachable. Displaying empirical baseline simulation (NOT a live case prediction).',
+      governance_disclaimer:
+        'DEGRADED / SIMULATION MODE: The estimates below reflect an uncalibrated historical baseline demonstration. They are NOT live ML predictions, NOT case-specific forecasts, and NOT calibrated for decision making.',
+    };
+
     if (transition === 'SECTION_19_TO_AWARD') {
       return {
+        ...baseSimulationFields,
         case_id: String(caseId),
         snapshot_date: effectiveDate,
         transition,
-        model_version: '1.0.0-cox-production-baseline',
         linear_predictor: 0.0,
         relative_hazard: 1.0,
         survival_probability_30d: 1.0,
@@ -299,22 +317,18 @@ class SurvivalRiskService {
         event_probability_180d: 0.015,
         event_probability_365d: 0.030,
         event_probability_730d: 0.030,
-        risk_band_90d: 'ADVISORY_EVAL_ZERO_EVENTS_EXTREME_UNCERTAINTY',
-        calibration_status: 'CALIBRATION NOT RELIABLE — INSUFFICIENT EVENTS',
-        uncertainty_status: 'EXTREME_UNCERTAINTY_ZERO_EVAL_EVENTS',
+        risk_band_90d: 'SIMULATION_EVAL_ZERO_EVENTS',
+        uncertainty_status: 'EXTREME_UNCERTAINTY_ZERO_EVENTS',
         extrapolation_status: { '30d': false, '90d': false, '180d': true, '365d': true, '730d': true },
-        data_quality_warning: 'ZERO-EVENT EVALUATION: No events observed in holdout evaluation cohort.',
-        governance_disclaimer:
-          'NON_AUTONOMOUS_DECISION_SUPPORT: Model estimates are advisory statistical indicators intended exclusively for administrative workload prioritization by authorized revenue officers. In accordance with RFCTLARR 2013 and administrative due process, this system does not make automated decisions to acquire land, approve or reject proceedings, determine compensation awards, or make legally binding determinations.',
       };
     }
 
     if (transition === 'CASE_INITIATION_TO_MILESTONE') {
       return {
+        ...baseSimulationFields,
         case_id: String(caseId),
         snapshot_date: effectiveDate,
         transition,
-        model_version: '1.0.0-cox-production-baseline',
         linear_predictor: -0.928645,
         relative_hazard: 0.395089,
         survival_probability_30d: 0.9992,
@@ -327,22 +341,18 @@ class SurvivalRiskService {
         event_probability_180d: 0.0288,
         event_probability_365d: 0.0350,
         event_probability_730d: 0.0399,
-        risk_band_90d: 'ADVISORY_LOW_RELATIVE_HAZARD',
-        calibration_status: 'PARTIAL — CALIBRATION NOT RELIABLE DUE TO EVENT SPARSITY',
+        risk_band_90d: 'SIMULATION_LOW_RELATIVE_HAZARD',
         uncertainty_status: 'HIGH_UNCERTAINTY_SPARSE_EVENTS',
         extrapolation_status: { '30d': false, '90d': false, '180d': true, '365d': true, '730d': true },
-        data_quality_warning: 'HIGH UNCERTAINTY: Estimates derived from sparse administrative milestone occurrences.',
-        governance_disclaimer:
-          'NON_AUTONOMOUS_DECISION_SUPPORT: Model estimates are advisory statistical indicators intended exclusively for administrative workload prioritization by authorized revenue officers.',
       };
     }
 
     // Default: SECTION_11_TO_SECTION_19
     return {
+      ...baseSimulationFields,
       case_id: String(caseId),
       snapshot_date: effectiveDate,
       transition: 'SECTION_11_TO_SECTION_19',
-      model_version: '1.0.0-cox-production-baseline',
       linear_predictor: -2.947239,
       relative_hazard: 0.052484,
       survival_probability_30d: 0.999541,
@@ -355,13 +365,9 @@ class SurvivalRiskService {
       event_probability_180d: 0.008022,
       event_probability_365d: 0.008824,
       event_probability_730d: 0.008824,
-      risk_band_90d: 'ADVISORY_MEDIAN_RELATIVE_HAZARD',
-      calibration_status: 'PARTIAL — CALIBRATION NOT RELIABLE DUE TO EVENT SPARSITY',
+      risk_band_90d: 'SIMULATION_MEDIAN_RELATIVE_HAZARD',
       uncertainty_status: 'HIGH_UNCERTAINTY_SPARSE_EVENTS',
       extrapolation_status: { '30d': false, '90d': false, '180d': true, '365d': true, '730d': true },
-      data_quality_warning: 'HIGH UNCERTAINTY: Estimates derived from sparse administrative milestone occurrences.',
-      governance_disclaimer:
-        'NON_AUTONOMOUS_DECISION_SUPPORT: Model estimates are advisory statistical indicators intended exclusively for administrative workload prioritization by authorized revenue officers. In accordance with RFCTLARR 2013 and administrative due process, this system does not make automated decisions to acquire land, approve or reject proceedings, determine compensation awards, or make legally binding determinations.',
     };
   }
 
@@ -379,7 +385,7 @@ class SurvivalRiskService {
       return {
         ...risk,
         summary_narrative:
-          "The model estimated a relative hazard of 0.40x relative to baseline (linear predictor: -0.9286). This estimate is mathematically driven by 1 positive feature association and 3 negative feature associations. This reflects statistical model correlation, not causal delay.",
+          "[DEGRADED / SIMULATION MODE] Live model explanation service unreachable. The demonstration factors below reflect historical sample correlations, NOT live inference for this specific case.",
         why_hazard_is_higher: [
           {
             feature: 'act_key_RFCTLARR_2013',
@@ -388,7 +394,7 @@ class SurvivalRiskService {
             contribution: 0.200499,
             hazard_multiplier: 1.222012,
             narrative:
-              "Statutory Act: RFCTLARR 2013 contributed +0.2005 to the model's estimated log-hazard (hazard multiplier: 1.222x relative to baseline).",
+              "Statutory Act: RFCTLARR 2013 contributed +0.2005 to the sample log-hazard (hazard multiplier: 1.222x relative to baseline).",
           },
         ],
         why_hazard_is_lower: [
@@ -399,7 +405,7 @@ class SurvivalRiskService {
             contribution: -0.455803,
             hazard_multiplier: 0.633939,
             narrative:
-              "Stage: Preliminary Notification contributed -0.4558 to the model's estimated log-hazard (hazard multiplier: 0.634x relative to baseline).",
+              "Stage: Preliminary Notification contributed -0.4558 to the sample log-hazard (hazard multiplier: 0.634x relative to baseline).",
           },
           {
             feature: 'derived_notice_count',
@@ -408,7 +414,7 @@ class SurvivalRiskService {
             contribution: -0.290293,
             hazard_multiplier: 0.748044,
             narrative:
-              "Statutory Notice Publications contributed -0.2903 to the model's estimated log-hazard (hazard multiplier: 0.748x relative to baseline).",
+              "Statutory Notice Publications contributed -0.2903 to the sample log-hazard (hazard multiplier: 0.748x relative to baseline).",
           },
           {
             feature: 'derived_project_type_Irrigation / Canal',
@@ -417,7 +423,7 @@ class SurvivalRiskService {
             contribution: -0.201931,
             hazard_multiplier: 0.817151,
             narrative:
-              "Project Type: Irrigation / Canal contributed -0.2019 to the model's estimated log-hazard (hazard multiplier: 0.817x relative to baseline).",
+              "Project Type: Irrigation / Canal contributed -0.2019 to the sample log-hazard (hazard multiplier: 0.817x relative to baseline).",
           },
         ],
         missing_features: [],
@@ -428,7 +434,7 @@ class SurvivalRiskService {
       return {
         ...risk,
         summary_narrative:
-          'The model estimated a relative hazard of 1.00x relative to baseline cohort. No target events were observed in the evaluation cohort; estimates carry extreme statistical uncertainty.',
+          '[DEGRADED / SIMULATION MODE] Live model explanation service unreachable. Section 19 to Award transition had 0 target events observed in holdout evaluation cohort; extreme uncertainty applies.',
         why_hazard_is_higher: [],
         why_hazard_is_lower: [],
         missing_features: [],
@@ -438,7 +444,7 @@ class SurvivalRiskService {
     return {
       ...risk,
       summary_narrative:
-        'The model estimated a relative hazard of 0.05x relative to baseline (linear predictor: -2.9472). This estimate is mathematically driven by 0 positive feature associations and 3 negative feature associations. This reflects statistical model correlation, not causal delay.',
+        '[DEGRADED / SIMULATION MODE] Live model explanation service unreachable. The demonstration factors below reflect historical sample correlations, NOT live inference for this specific case.',
       why_hazard_is_higher: [],
       why_hazard_is_lower: [
         {
@@ -448,7 +454,7 @@ class SurvivalRiskService {
           contribution: -1.841092,
           hazard_multiplier: 0.158644,
           narrative:
-            "Project Type: Rural Infrastructure contributed -1.8411 to the model's estimated log-hazard (hazard multiplier: 0.159x relative to baseline).",
+            "Project Type: Rural Infrastructure contributed -1.8411 to the sample log-hazard (hazard multiplier: 0.159x relative to baseline).",
         },
         {
           feature: 'district_Solapur',
@@ -457,7 +463,7 @@ class SurvivalRiskService {
           contribution: -0.802442,
           hazard_multiplier: 0.448233,
           narrative:
-            "District: Solapur contributed -0.8024 to the model's estimated log-hazard (hazard multiplier: 0.448x relative to baseline).",
+            "District: Solapur contributed -0.8024 to the sample log-hazard (hazard multiplier: 0.448x relative to baseline).",
         },
         {
           feature: 'derived_days_in_current_stage',
@@ -466,7 +472,7 @@ class SurvivalRiskService {
           contribution: -0.303705,
           hazard_multiplier: 0.738079,
           narrative:
-            "Elapsed Days in Current Procedural Stage contributed -0.3037 to the model's estimated log-hazard (hazard multiplier: 0.738x relative to baseline).",
+            "Elapsed Days in Current Procedural Stage contributed -0.3037 to the sample log-hazard (hazard multiplier: 0.738x relative to baseline).",
         },
       ],
       missing_features: [],
