@@ -28,6 +28,7 @@ import { formatCurrencyINR, formatDate } from '../../lib/utils';
 import { CaseStage, RiskBand } from '../../types';
 import { ReraIntegrationHub } from './ReraIntegrationHub';
 import { reraService } from '../../services/reraService';
+import { SurvivalRiskDashboard } from './survival/SurvivalRiskDashboard';
 
 export const CaseWorkspace: React.FC<{ onNavigateToOcr?: () => void }> = ({ onNavigateToOcr }) => {
   const { 
@@ -317,7 +318,7 @@ export const CaseWorkspace: React.FC<{ onNavigateToOcr?: () => void }> = ({ onNa
             { id: 'OBJECTIONS', label: 'Sec 15 Objections', count: c.objections.length },
             { id: 'COMPENSATION', label: 'Awards & DBT Payouts', count: c.awards.length },
             { id: 'VALIDATION', label: 'Validation Rules', count: c.validationIssues.length },
-            { id: 'AI_EXPLANATION', label: 'AI Risk Factors', count: c.explanationFactors.length },
+            { id: 'AI_EXPLANATION', label: 'Survival Risk & ML Engine (Cox PH)', count: undefined },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -828,61 +829,13 @@ export const CaseWorkspace: React.FC<{ onNavigateToOcr?: () => void }> = ({ onNa
         </div>
       )}
 
-      {/* Sub Tab 7: AI DELAY EXPLAINABILITY */}
+      {/* Sub Tab 7: SURVIVAL RISK & EXPLAINABILITY ENGINE (LOOP 12) */}
       {activeTab === 'AI_EXPLANATION' && (
-        <div className="gov-surface-card p-5 space-y-5">
-          <div className="border-b border-slate-100 pb-3 flex justify-between items-start flex-wrap gap-2">
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-amber-500" />
-                  <span>{language === 'en' ? 'Top Delay Explanation Factors (SHAP Contributions)' : 'शीर्ष विलंब व्याख्या कारक (SHAP)'}</span>
-                </h3>
-                <span className="text-[10px] font-bold px-2 py-0.5 bg-blue-50 text-blue-800 rounded-md border border-blue-200">
-                  Decision Support
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 mt-1">
-                {language === 'en' ? 'Calibrated delay probability: ' : 'कैलिब्रेटेड विलंब संभावना: '}
-                <strong className="text-red-600 font-mono text-xs">{Math.round(c.riskProbability * 100)}% ({c.riskBand})</strong>
-                <span className="text-slate-400 ml-2">Requires officer independent administrative review.</span>
-              </p>
-            </div>
-            <span className="text-xs font-mono text-slate-400 bg-slate-50 px-2 py-1 rounded border border-slate-200">Model: {c.modelVersion}</span>
-          </div>
-
-          <div className="space-y-3">
-            {c.explanationFactors.map((factor) => {
-              const isDelayIncrease = factor.direction === 'INCREASES_DELAY';
-              const widthPct = Math.abs(factor.magnitude) * 150;
-
-              return (
-                <div key={factor.featureName} className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-2">
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="font-bold text-slate-900">
-                      {language === 'en' ? factor.label : factor.labelHi}
-                    </span>
-                    <span className={`font-mono font-bold ${isDelayIncrease ? 'text-red-600' : 'text-emerald-700'}`}>
-                      {isDelayIncrease ? `+${(factor.magnitude * 100).toFixed(0)}% Risk Impact` : `${(factor.magnitude * 100).toFixed(0)}% Mitigation`}
-                    </span>
-                  </div>
-
-                  {/* Impact bar */}
-                  <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all duration-300 ${isDelayIncrease ? 'bg-red-500' : 'bg-emerald-600'}`}
-                      style={{ width: `${Math.min(widthPct, 100)}%` }}
-                    />
-                  </div>
-
-                  <p className="text-xs text-slate-600">
-                    {factor.description}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        <SurvivalRiskDashboard
+          caseId={c.id}
+          currentStageName={c.stage}
+          onNavigateToTimeline={() => setActiveTab('OVERVIEW')}
+        />
       )}
 
       {/* Sub Tab 8: RERA PROJECT STATUS & STATUTORY MILESTONE CROSS-REFERENCE */}
