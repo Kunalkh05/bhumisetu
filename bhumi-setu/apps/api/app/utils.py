@@ -48,10 +48,11 @@ def add_working_days(start: date, days: int) -> date:
 
     Used for calculating statutory deadlines under RFCTLARR Act.
     """
+    step_day = 1
     current = start
     added = 0
     while added < days:
-        current += timedelta(days=1)
+        current += timedelta(days=step_day)
         if is_working_day(current):
             added += 1
     return current
@@ -59,12 +60,13 @@ def add_working_days(start: date, days: int) -> date:
 
 def count_working_days(start: date, end: date) -> int:
     """Count working days between two dates (exclusive of both endpoints)."""
+    step_day = 1
     count = 0
-    current = start + timedelta(days=1)
+    current = start + timedelta(days=step_day)
     while current < end:
         if is_working_day(current):
             count += 1
-        current += timedelta(days=1)
+        current += timedelta(days=step_day)
     return count
 
 

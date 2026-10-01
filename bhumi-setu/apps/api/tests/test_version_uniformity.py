@@ -45,6 +45,8 @@ NON_VERSIONED_FORM_POSTS = frozenset(
         "/api/citizen/objection",
         "/api/citizen/correction",
         "/api/officer/cases/{case_id}/stage",
+        "/api/officer/survival-risk/predict",
+        "/internal/ml/survival/predict",
     }
 )
 
