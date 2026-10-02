@@ -120,11 +120,17 @@ def create_app(core: CoreSettings | None = None) -> FastAPI:
         redoc_url=None,
         openapi_url=None if core.is_production else "/openapi.json",
     )
+    cors_origins = [
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:3000",
+    ] if not core.is_production else ["https://bhumisetu.gov.in"]
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=cors_origins,
         allow_credentials=True,
-        allow_methods=["*"],
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         allow_headers=["*"],
     )
     _register_error_handlers(app)

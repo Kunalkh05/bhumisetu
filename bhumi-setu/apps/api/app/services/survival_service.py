@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 import logging
+import math
 from pathlib import Path
 import time
 from typing import Any, Mapping
@@ -119,10 +120,25 @@ class SurvivalService:
         snapshot_date: str,
         transition: str,
         features: Mapping[str, Any],
+        case_id: str | int | None = None,
         horizon: int | None = None,
         require_features: bool = False,
     ) -> datetime:
         """Validate point-in-time constraints, transition, and feature allowlists."""
+        # 0. Case ID validation
+        if case_id is not None:
+            case_str = str(case_id).strip()
+            if (
+                not case_str
+                or len(case_str) > 128
+                or ".." in case_str
+                or any(c in case_str for c in ("\r", "\n", "\0", "'", '"', ";", "<", ">", "\\"))
+            ):
+                raise ValidationFailed(
+                    "Invalid case_id: cannot be empty, oversized, or contain path traversal/injection characters.",
+                    details={"case_id": str(case_id)},
+                )
+
         # 1. Transition validation
         if transition not in VALID_TRANSITIONS:
             raise ValidationFailed(
@@ -141,8 +157,10 @@ class SurvivalService:
         try:
             # Handle YYYY-MM-DD or YYYYMMDD
             clean_date = snapshot_date.replace("-", "").strip()
+            if len(clean_date) != 8 or not clean_date.isdigit():
+                raise ValueError("Malformed date format")
             parsed_date = datetime.strptime(clean_date, "%Y%m%d").date()
-        except ValueError:
+        except Exception:
             raise ValidationFailed(
                 f"Malformed snapshot_date '{snapshot_date}'. Expected format YYYY-MM-DD or YYYYMMDD.",
                 details={"snapshot_date": snapshot_date},
@@ -162,7 +180,44 @@ class SurvivalService:
                 details={"error": "empty_features", "transition": transition},
             )
 
-        # 5. Required features validation
+        # 5. Numerical / type sanity and boundedness validation
+        numeric_feature_names = {
+            "derived_days_in_current_stage",
+            "derived_days_since_case_initiation",
+            "derived_days_since_latest_notice",
+            "derived_notice_count",
+            "derived_statutory_sec19_proximity_ratio",
+            "extension_count",
+            "has_statutory_extension",
+            "derived_is_direct_purchase",
+        }
+        for k, v in features.items():
+            if k in numeric_feature_names and v is not None:
+                if isinstance(v, (list, dict, set, tuple)):
+                    raise ValidationFailed(
+                        f"Invalid type for feature '{k}': expected scalar numeric.",
+                        details={"feature": k, "type": type(v).__name__},
+                    )
+                try:
+                    num_val = float(v)
+                except (ValueError, TypeError):
+                    raise ValidationFailed(
+                        f"Malformed numerical feature '{k}': cannot convert {v!r} to float.",
+                        details={"feature": k, "value": str(v)},
+                    )
+                if math.isnan(num_val) or math.isinf(num_val):
+                    raise ValidationFailed(
+                        f"Non-finite numerical feature '{k}': NaN and Infinity are rejected.",
+                        details={"feature": k, "value": str(v)},
+                    )
+                if "days" in k or "count" in k:
+                    if num_val < 0.0:
+                        raise ValidationFailed(
+                            f"Invalid negative duration/count for feature '{k}': got {num_val}.",
+                            details={"feature": k, "value": num_val},
+                        )
+
+        # 6. Required features validation
         if require_features:
             required = REQUIRED_FEATURES_BY_TRANSITION.get(transition, ())
             missing = [k for k in required if k not in features or features[k] is None]
@@ -172,7 +227,7 @@ class SurvivalService:
                     details={"missing_features": missing, "transition": transition},
                 )
 
-        # 6. Purged features / leakage validation
+        # 7. Purged features / leakage validation
         overlap = set(features.keys()).intersection(PURGED_LEAKAGE_FEATURES)
         if overlap:
             raise ValidationFailed(
@@ -197,6 +252,7 @@ class SurvivalService:
             snapshot_date,
             transition,
             features,
+            case_id=case_id,
             horizon=horizon,
             require_features=require_features,
         )
@@ -209,7 +265,10 @@ class SurvivalService:
 
         df = pd.DataFrame([row_dict])
         assert self._risk_layer is not None
-        predictions = self._risk_layer.predict_risk(df)
+        try:
+            predictions = self._risk_layer.predict_risk(df)
+        except (ValueError, TypeError) as e:
+            raise ValidationFailed(f"Model prediction failed: {e}") from e
         if not predictions:
             raise ValidationFailed("Could not generate prediction for input features.")
 
@@ -226,6 +285,8 @@ class SurvivalService:
             "feature_version": FEATURE_VERSION,
             "latency_ms": latency_ms,
         }
+        if len(self.audit_log) >= 10000:
+            self.audit_log = self.audit_log[-5000:]
         self.audit_log.append(audit_entry)
 
         logger.info(
@@ -327,6 +388,18 @@ class SurvivalService:
         days_in_stage: int = 45,
     ) -> CitizenMilestoneTimelineOut:
         """Generate sanitized, rights-oriented timeline view for citizens."""
+        case_str = str(case_id).strip()
+        if (
+            not case_str
+            or len(case_str) > 128
+            or ".." in case_str
+            or any(c in case_str for c in ("\r", "\n", "\0", "'", '"', ";", "<", ">", "\\"))
+        ):
+            raise ValidationFailed(
+                "Invalid case_id: cannot be empty, oversized, or contain path traversal/injection characters.",
+                details={"case_id": str(case_id)},
+            )
+
         if transition not in VALID_TRANSITIONS:
             raise ValidationFailed(f"Invalid transition '{transition}'.")
 
