@@ -177,6 +177,8 @@ def get_survival_health(
     service: SurvivalService = Depends(get_survival_service),
 ) -> SurvivalMLHealthOut:
     """Report health and artifact integrity for survival ML subsystem."""
+    if principal.kind != "OFFICER":
+        raise NotAuthorised()
     return service.get_health()
 
 
@@ -196,8 +198,8 @@ def get_citizen_milestone_timeline(
     service: SurvivalService = Depends(get_survival_service),
 ) -> CitizenMilestoneTimelineOut:
     """Retrieve citizen rights and statutory milestone progress timeline."""
-    if principal.kind == "CITIZEN" and principal.case_id is not None:
-        if str(principal.case_id) != str(case_id):
+    if principal.kind == "CITIZEN":
+        if principal.case_id is None or str(principal.case_id) != str(case_id):
             raise NotAuthorised()
     return service.get_citizen_milestone_timeline(
         case_id=case_id,
@@ -217,6 +219,8 @@ def internal_predict_survival_risk(
     service: SurvivalService = Depends(get_survival_service),
 ) -> OfficerSurvivalRiskOut:
     """Internal service endpoint for survival risk prediction."""
+    if principal.kind != "SERVICE":
+        raise NotAuthorised()
     return service.predict_officer_risk(
         case_id=payload.case_id,
         snapshot_date=payload.snapshot_date,
