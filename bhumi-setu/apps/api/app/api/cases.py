@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from app.api.routers import officer_router
 from app.db.event_log import AsOfMode, EventLog
 from app.db.session import get_engine
+from app.errors import NotAuthorised
 from app.models.acquisition_case import AcquisitionCase
 from app.schemas.cases import CaseOut, TimelineEventOut
 from app.security.access import Principal, authenticate, scoped
@@ -216,6 +217,8 @@ def _mock_workspace(case_id: int) -> dict:
     response_model=list[CaseOut],
 )
 def list_cases(principal: Principal = Depends(authenticate)) -> list[Any]:
+    if principal.kind != "OFFICER":
+        raise NotAuthorised()
     try:
         with _read_session() as session:
             stmt = scoped(
@@ -240,6 +243,8 @@ def get_case(
     case_id: int,
     principal: Principal = Depends(authenticate),
 ) -> Any:
+    if principal.kind != "OFFICER":
+        raise NotAuthorised()
     try:
         with _read_session() as session:
             stmt = scoped(
@@ -264,6 +269,8 @@ def case_timeline(
     case_id: int,
     principal: Principal = Depends(authenticate),
 ) -> list[TimelineEventOut]:
+    if principal.kind != "OFFICER":
+        raise NotAuthorised()
     try:
         with _read_session() as session:
             scoped_case = scoped(
@@ -310,6 +317,8 @@ def get_case_workspace(
     case_id: int,
     principal: Principal = Depends(authenticate),
 ) -> Any:
+    if principal.kind != "OFFICER":
+        raise NotAuthorised()
     from app.models.project import Project
     from app.models.land_parcel import LandParcel
     from app.models.case_parcel import CaseParcel
@@ -490,6 +499,8 @@ def transition_case_stage(
     body: dict,
     principal: Principal = Depends(authenticate),
 ) -> Any:
+    if principal.kind != "OFFICER":
+        raise NotAuthorised()
     from app.db.session import unit_of_work
     from app.db.event_log import Actor
 
