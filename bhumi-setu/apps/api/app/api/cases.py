@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from datetime import datetime, timezone
-from typing import Iterator
+from typing import Any, Iterator
 
 from fastapi import Depends
 from sqlalchemy import select

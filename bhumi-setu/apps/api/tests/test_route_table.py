@@ -34,7 +34,7 @@ so a later refactor that quietly defeats the check cannot pass unnoticed. This m
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Any, Optional
 
 from fastapi import APIRouter, FastAPI
 from fastapi.responses import JSONResponse

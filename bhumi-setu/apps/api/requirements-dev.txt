@@ -11,3 +11,7 @@ brotli==1.1.0
 # Read by tests/test_settings.py to compare the settings field names against the
 # variable names committed in docker-compose.yml.
 PyYAML==6.0.3
+
+# Linter and formatter executed by GitHub Actions CI Pipeline
+ruff>=0.8.0
+
