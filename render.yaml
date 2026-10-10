@@ -1,0 +1,70 @@
+services:
+  # 1. FastAPI REST API Gateway & ML Inference Engine
+  - type: web
+    name: bhumisetu-api
+    env: docker
+    dockerfilePath: ./Dockerfile.production
+    dockerContext: .
+    plan: starter
+    healthCheckPath: /api/healthz
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: LOG_LEVEL
+        value: INFO
+      - key: PORT
+        value: 8000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: bhumisetu-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: bhumisetu-redis
+          property: connectionString
+      - key: OBJECT_STORAGE_BUCKET
+        value: bhumisetu-documents
+      - key: CORS_ORIGINS
+        value: "*"
+
+  # 2. Celery Worker (Asynchronous OCR & Spatial Import Queue)
+  - type: worker
+    name: bhumisetu-worker
+    env: docker
+    dockerfilePath: ./Dockerfile.production
+    dockerContext: .
+    dockerCommand: celery -A app.workers.celery_app worker -l info --concurrency=2
+    plan: starter
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: bhumisetu-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: bhumisetu-redis
+          property: connectionString
+      - key: JWT_SECRET
+        fromService:
+          type: web
+          name: bhumisetu-api
+          envVarKey: JWT_SECRET
+
+  # 3. Managed Redis Service
+  - type: redis
+    name: bhumisetu-redis
+    plan: starter
+    ipAllowList: []
+
+databases:
+  # 4. Managed PostgreSQL Database (Requires PostGIS Extension)
+  - name: bhumisetu-postgres
+    plan: starter
+    databaseName: bhumisetu
+    user: bhumisetu

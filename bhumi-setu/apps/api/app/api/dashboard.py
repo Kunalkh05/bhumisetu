@@ -6,6 +6,7 @@ from fastapi import Depends
 
 from app.api.cases import _read_session
 from app.api.routers import officer_router
+from app.errors import NotAuthorised
 from app.schemas.dashboard import DashboardBandPointOut, DashboardMetricOut, DashboardOut
 from app.security.access import Principal, authenticate
 from app.services.dashboard import dashboard_response
@@ -15,6 +16,8 @@ __all__ = []
 
 @officer_router.get("/dashboard", response_model=DashboardOut)
 def dashboard(principal: Principal = Depends(authenticate)) -> DashboardOut:
+    if principal.kind != "OFFICER":
+        raise NotAuthorised()
     with _read_session() as session:
         response = dashboard_response(session, principal=principal)
         return DashboardOut(

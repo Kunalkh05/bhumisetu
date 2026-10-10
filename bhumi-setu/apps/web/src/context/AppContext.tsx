@@ -110,13 +110,29 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const getInitialPortal = (): PortalMode => {
+    if (typeof window !== 'undefined') {
+      const p = new URLSearchParams(window.location.search).get('portal')?.toUpperCase();
+      if (p === 'OFFICER' || p === 'CITIZEN') return p as PortalMode;
+    }
+    return 'CITIZEN';
+  };
+
+  const getInitialOfficerTab = (): OfficerTab => {
+    if (typeof window !== 'undefined') {
+      const t = new URLSearchParams(window.location.search).get('tab')?.toUpperCase();
+      if (t) return t as OfficerTab;
+    }
+    return 'DASHBOARD';
+  };
+
   const [currentUser, setCurrentUser] = useState<UserSession>(DEMO_USERS[0]); // Default to Collector
-  const [portalMode, setPortalMode] = useState<PortalMode>('CITIZEN'); // Default to Citizen Portal to showcase public homepage & scheme banners
+  const [portalMode, setPortalMode] = useState<PortalMode>(getInitialPortal);
   const [language, setLanguage] = useState<Language>('en');
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   const [isHighContrast, setIsHighContrast] = useState<boolean>(false);
   const [fontScale, setFontScale] = useState<FontScale>('normal');
-  const [officerTab, setOfficerTab] = useState<OfficerTab>('DASHBOARD');
+  const [officerTab, setOfficerTab] = useState<OfficerTab>(getInitialOfficerTab);
   
   const [cases, setCases] = useState<AcquisitionCase[]>(INITIAL_CASES);
   const [selectedCaseId, setSelectedCaseId] = useState<string>(INITIAL_CASES[0].id);

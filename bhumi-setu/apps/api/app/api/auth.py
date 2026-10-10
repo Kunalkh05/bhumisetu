@@ -44,6 +44,8 @@ def login_persona(payload: PersonaLoginRequest, response: Response) -> PersonaLo
     backend = get_auth_backend()
 
     if payload.isCitizen:
+        response.delete_cookie(OFFICER_SESSION_COOKIE, path="/")
+        response.delete_cookie(CSRF_COOKIE, path="/")
         bundle = backend.create_citizen_session(
             subject_id=payload.userId,
             case_id=1,
@@ -65,6 +67,7 @@ def login_persona(payload: PersonaLoginRequest, response: Response) -> PersonaLo
         )
 
     # Officer session
+    response.delete_cookie(CITIZEN_SESSION_COOKIE, path="/")
     bundle = backend.create_officer_session(DEV_OFFICER_ID)
     response.set_cookie(
         key=OFFICER_SESSION_COOKIE,

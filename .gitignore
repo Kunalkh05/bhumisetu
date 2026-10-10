@@ -44,3 +44,10 @@ minio_data/
 redis_data/
 dump.rdb
 data/real_data/scripts/ocr_pdf
+
+# Deployment Harness
+bhumisetu_deployment_harness/.env.harness
+bhumisetu_deployment_harness/reports/
+bhumisetu_deployment_harness/.state/
+reports/
+.state/
