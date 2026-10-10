@@ -35,6 +35,13 @@ import {
   RotateCcw
 } from 'lucide-react';
 import { LandParcel } from '../../types';
+
+declare global {
+  interface Window {
+    __BHUMISETU_MAP_RENDER_MS?: number;
+  }
+}
+
 import { 
   HISTORICAL_SURVEY_METADATA, 
   HISTORICAL_CADASTRAL_PARCELS, 
@@ -245,6 +252,7 @@ export const GisMapViewer: React.FC<{ onSelectCase?: (caseId: string) => void }>
   // Initialize Leaflet Map
   useEffect(() => {
     if (!mapContainerRef.current || mapInstanceRef.current) return;
+    const renderStartTime = performance.now();
 
     const initialCenter: [number, number] = [18.3855, 73.8940];
     const map = L.map(mapContainerRef.current, {
@@ -294,6 +302,12 @@ export const GisMapViewer: React.FC<{ onSelectCase?: (caseId: string) => void }>
       const found = allParcelsWithCase.find(p => ST_Contains(p.coordinates, clickPoint));
       if (found) {
         setSelectedParcel(found);
+      }
+    });
+
+    map.whenReady(() => {
+      if (typeof window !== 'undefined') {
+        window.__BHUMISETU_MAP_RENDER_MS = Math.max(1, performance.now() - renderStartTime);
       }
     });
 
@@ -1070,7 +1084,7 @@ export const GisMapViewer: React.FC<{ onSelectCase?: (caseId: string) => void }>
 
             {/* Leaflet Map Stage Container */}
             <div className="bg-slate-950 rounded-2xl border border-slate-800 shadow-xl overflow-hidden relative h-[520px]">
-              <div ref={mapContainerRef} className="w-full h-full" />
+              <div ref={mapContainerRef} data-testid="parcel-map" className="w-full h-full" />
 
               {/* Map Footer Coordinate Bar */}
               <div className="absolute bottom-3 left-3 right-3 z-[1000] bg-slate-900/90 backdrop-blur-md px-3 py-2 rounded-xl border border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-300 shadow-lg pointer-events-auto">
