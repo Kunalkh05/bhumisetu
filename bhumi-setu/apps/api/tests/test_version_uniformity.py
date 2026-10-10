@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import ast
 from pathlib import Path
-from typing import Iterable, get_args
+from typing import Any, Iterable, get_args
 
 from fastapi import APIRouter, Depends, FastAPI
 from fastapi.routing import APIRoute

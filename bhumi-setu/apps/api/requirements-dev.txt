@@ -4,6 +4,7 @@
 # pinned here because the atomicity boundary in §5.2 is worth exercising over
 # generated operation sequences from the start.
 pytest==8.3.4
+pytest-cov>=5.0.0
 hypothesis==6.123.2
 httpx==0.28.1
 # Brotli compression at quality 11, matching the Caddy proxy's encoding (§10.5).
@@ -11,3 +12,7 @@ brotli==1.1.0
 # Read by tests/test_settings.py to compare the settings field names against the
 # variable names committed in docker-compose.yml.
 PyYAML==6.0.3
+
+# Linter and formatter executed by GitHub Actions CI Pipeline
+ruff>=0.8.0
+

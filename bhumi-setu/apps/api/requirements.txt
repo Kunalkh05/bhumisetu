@@ -19,3 +19,10 @@ celery[redis]==5.4.0
 redis==5.2.1
 # Citizen passcodes are Argon2id-hashed before being stored (§19.2).
 argon2-cffi==23.1.0
+
+# Scientific & Survival ML runtime dependencies (Loops 7C–15)
+numpy>=1.26.0
+pandas>=2.1.0
+scipy>=1.11.0
+lifelines>=0.29.0
+

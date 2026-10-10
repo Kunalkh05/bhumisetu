@@ -114,6 +114,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (typeof window !== 'undefined') {
       const p = new URLSearchParams(window.location.search).get('portal')?.toUpperCase();
       if (p === 'OFFICER' || p === 'CITIZEN') return p as PortalMode;
+      if (window.location.pathname.startsWith('/officer')) return 'OFFICER';
     }
     return 'CITIZEN';
   };
@@ -122,6 +123,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (typeof window !== 'undefined') {
       const t = new URLSearchParams(window.location.search).get('tab')?.toUpperCase();
       if (t) return t as OfficerTab;
+      if (window.location.pathname.includes('/map')) return 'GIS_MAP';
     }
     return 'DASHBOARD';
   };
