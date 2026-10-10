@@ -127,7 +127,14 @@ const MainContent: React.FC<{
 };
 
 export default function App() {
-  const [publicTab, setPublicTab] = useState<PublicTab>('HOME');
+  const getInitialPublicTab = (): PublicTab => {
+    if (typeof window !== 'undefined') {
+      const t = (new URLSearchParams(window.location.search).get('citizenTab') || new URLSearchParams(window.location.search).get('tab'))?.toUpperCase();
+      if (t) return t as PublicTab;
+    }
+    return 'HOME';
+  };
+  const [publicTab, setPublicTab] = useState<PublicTab>(getInitialPublicTab);
   const [demoLoginOpen, setDemoLoginOpen] = useState(false);
 
   return (
